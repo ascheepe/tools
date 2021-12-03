@@ -40,20 +40,13 @@ options:\n\
 #include "array.h"
 #include "utils.h"
 
-/* the disk size in bytes */
-static off_t disk_size;
-
-/* collected files are stored in this array */
-static struct array *files;
-
-/* should we link the files? */
-static int do_link_files;
-
-/* or just show how many disks it would take? */
-static int do_show_only;
-
-/* should the search be recursive? */
-static int do_recursive_search;
+static struct program_context {
+	off_t disk_size;
+	struct array *files;
+	int lflag;
+	int nflag;
+	int rflag;
+} ctx;
 
 /*
  * To be able to fit files and present a disklist file_info stores the
@@ -149,7 +142,7 @@ disk_print(struct disk *disk)
 	sizestr = number_to_string(disk->free);
 	sprintf(header, "Disk #%lu, %d%% (%s) free:",
 	    (unsigned long) disk->id,
-	    (int) (disk->free * 100 / disk_size), sizestr);
+	    (int) (disk->free * 100 / ctx.disk_size), sizestr);
 	free(sizestr);
 
 	hline(strlen(header));
@@ -252,7 +245,7 @@ fit_files(struct array *files, struct array *disks)
 		if (!added) {
 			struct disk *disk;
 
-			disk = disk_new(disk_size);
+			disk = disk_new(ctx.disk_size);
 			array_add(disk->files, fi);
 			disk->free -= fi->size;
 			array_add(disks, disk);
@@ -273,20 +266,20 @@ collect_files(const char *filename, const struct stat *sb, int typeflag,
 		return 0;
 
 	/* skip subdirectories if not doing a recursive collect */
-	if (!do_recursive_search && ftwbuf->level > 1)
+	if (!ctx.rflag && ftwbuf->level > 1)
 		return 0;
 
 	/* collect regular files which can fit on a disk */
 	if (typeflag == FTW_F) {
 		struct file_info *fi;
 
-		if (sb->st_size > disk_size) {
+		if (sb->st_size > ctx.disk_size) {
 			errx(1, "Can never fit '%s' (%s).",
 			    filename, number_to_string(sb->st_size));
 		}
 
 		fi = file_info_new(xstrdup(filename), sb->st_size);
-		array_add(files, fi);
+		array_add(ctx.files, fi);
 	} else
 		err(1, "'%s' is not a regular file.", filename);
 
@@ -314,37 +307,37 @@ main(int argc, char **argv)
 		switch (opt) {
 		case 'l':
 			destdir = clean_path(optarg);
-			do_link_files = true;
+			ctx.lflag = true;
 			break;
 
 		case 'n':
-			do_show_only = true;
+			ctx.nflag = true;
 			break;
 
 		case 'r':
-			do_recursive_search = true;
+			ctx.rflag = true;
 			break;
 
 		case 's':
-			disk_size = string_to_number(optarg);
+			ctx.disk_size = string_to_number(optarg);
 			break;
 		}
 	}
 
 	/* A path argument and the size option is mandatory. */
-	if (optind >= argc || disk_size <= 0)
+	if (optind >= argc || ctx.disk_size <= 0)
 		usage();
 
-	files = array_new();
+	ctx.files = array_new();
 
 	for (arg = optind; arg < argc; ++arg)
 		nftw(argv[arg], collect_files, MAXFD, 0);
 
-	if (files->size == 0)
+	if (ctx.files->size == 0)
 		errx(1, "no files found.");
 
 	disks = array_new();
-	fit_files(files, disks);
+	fit_files(ctx.files, disks);
 
 	/*
 	 * Be realistic about the number of disks to support, the helper
@@ -353,7 +346,7 @@ main(int argc, char **argv)
 	if (disks->size > 9999)
 		errx(1, "Fitting takes too many (%lu) disks.", disks->size);
 
-	if (do_show_only) {
+	if (ctx.nflag) {
 		printf("%lu disk%s.\n",
 		    (unsigned long) disks->size, disks->size > 1 ? "s" : "");
 		exit(EXIT_SUCCESS);
@@ -362,18 +355,18 @@ main(int argc, char **argv)
 	for (i = 0; i < disks->size; ++i) {
 		struct disk *disk = disks->items[i];
 
-		if (do_link_files)
+		if (ctx.lflag)
 			disk_link(disk, destdir);
 		else
 			disk_print(disk);
 	}
 
-	array_for_each(files, file_info_free);
+	array_for_each(ctx.files, file_info_free);
 	array_for_each(disks, disk_free);
-	array_free(files);
+	array_free(ctx.files);
 	array_free(disks);
 
-	if (do_link_files)
+	if (ctx.lflag)
 		free(destdir);
 
 	return EXIT_SUCCESS;
