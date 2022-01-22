@@ -78,25 +78,6 @@ xstrdup(const char *str)
 	return ret;
 }
 
-int
-string_ends_with(const char *str, const char *tail)
-{
-	const char *strpos, *tailpos;
-
-	strpos = str + strlen(str);
-	tailpos = tail + strlen(tail);
-
-	while (tailpos >= tail && strpos >= str) {
-		if (tolower(*tailpos--) != tolower(*strpos--))
-			return false;
-	}
-
-	if (strpos < str && tailpos >= tail)
-		return false;
-
-	return true;
-}
-
 #define KB 1000L
 #define MB (KB * KB)
 #define GB (MB * KB)

@@ -38,6 +38,7 @@ options:\n\
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 
 #include <magic.h>
@@ -71,7 +72,8 @@ collect_files(const char *filename, const struct stat *sb,
 
 	/* if both extension and media-type are set prefer extension search */
 	if (ctx.extension != NULL)
-		playable = string_ends_with(filename, ctx.extension);
+		playable = strcasecmp(filename + strlen(filename) -
+		    strlen(ctx.extension), ctx.extension) == 0;
 	else if (ctx.media_type != NULL) {
 		const char *file_type;
 
