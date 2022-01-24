@@ -23,68 +23,61 @@
 #include "array.h"
 #include "utils.h"
 
-struct array *
-array_new(void)
-{
-	struct array *a;
+struct array *array_new(void) {
+    struct array *array;
 
-	a = xmalloc(sizeof(*a));
-	a->items = xcalloc(INITIAL_ARRAY_CAPACITY, sizeof(a->items[0]));
-	a->cap = INITIAL_ARRAY_CAPACITY;
-	a->size = 0;
+    array = xmalloc(sizeof(*array));
+    array->items = xcalloc(INITIAL_ARRAY_CAPACITY, sizeof(array->items[0]));
+    array->capacity = INITIAL_ARRAY_CAPACITY;
+    array->size = 0;
 
-	return a;
+    return array;
 }
 
-void
-array_free(struct array *a)
-{
-	free(a->items);
-	free(a);
+void array_free(struct array *array) {
+    free(array->items);
+    free(array);
 }
 
-void
-array_add(struct array *a, void *data)
-{
-	if (a->size == a->cap) {
-		size_t newcap;
+void array_add(struct array *array, void *data) {
+    if (array->size == array->capacity) {
+        size_t new_capacity;
 
-		newcap = a->cap * 3 / 2;
-		a->items = xrealloc(a->items, newcap * sizeof(a->items[0]));
-		a->cap = newcap;
-	}
+        new_capacity = array->capacity * 3 / 2;
+        array->items = xrealloc(array->items,
+                new_capacity * sizeof(array->items[0]));
+        array->capacity = new_capacity;
+    }
 
-	a->items[a->size++] = data;
+    array->items[array->size++] = data;
 }
 
-void
-array_for_each(const struct array *a, void (*f)(void *))
-{
-	size_t i;
+void array_for_each(const struct array *array, void (*function)(void *)) {
+    size_t i;
 
-	for (i = 0; i < a->size; ++i)
-		f(a->items[i]);
+    for (i = 0; i < array->size; ++i) {
+        function(array->items[i]);
+    }
 }
 
-void
-array_shuffle(struct array *a)
-{
-	static int seeded = false;
-	size_t i;
+void array_shuffle(struct array *array) {
+    static int is_seeded = false;
+    size_t i;
 
-	if (!seeded) {
-		srandom(time(NULL) ^ getpid());
-		seeded = true;
-	}
+    if (!is_seeded) {
+        srandom(time(NULL) ^ getpid());
+        is_seeded = true;
+    }
 
-	for (i = a->size - 1; i > 0; --i) {
-		size_t j;
-		void *tmp;
+    for (i = array->size - 1; i > 0; --i) {
+        size_t j;
+        void *tmp;
 
-		j = random() % (i + 1);
+        j = random() % (i + 1);
 
-		tmp = a->items[i];
-		a->items[i] = a->items[j];
-		a->items[j] = tmp;
-	}
+        tmp = array->items[i];
+        array->items[i] = array->items[j];
+        array->items[j] = tmp;
+    }
 }
+

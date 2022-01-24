@@ -18,11 +18,11 @@ static const char *const usage_string = "\
 usage:  fit -s size [-l destdir] [-nr] path [path ...]\n\
 \n\
 options:\n\
-	-s size disk	size in k, m, g, or t.\n\
-	-l destdir	directory to link files into,\n\
-			if omitted just print the disks.\n\
-	-n		show the number of disks it takes.\n\
-	path		path to the files to fit.\n\
+  -s size disk  size in k, m, g, or t.\n\
+  -l destdir    directory to link files into,\n\
+                if omitted just print the disks.\n\
+  -n            show the number of disks it takes.\n\
+  path          path to the files to fit.\n\
 \n";
 
 #include <sys/stat.h>
@@ -41,11 +41,11 @@ options:\n\
 #include "utils.h"
 
 static struct program_context {
-	off_t disk_size;
-	struct array *files;
-	int lflag;
-	int nflag;
-	int rflag;
+    off_t disk_size;
+    struct array *files;
+    int lflag;
+    int nflag;
+    int rflag;
 } ctx;
 
 /*
@@ -53,29 +53,25 @@ static struct program_context {
  * size and the name of a file.
  */
 struct file_info {
-	off_t size;
-	char *name;
+    off_t size;
+    char *name;
 };
 
-static struct file_info *
-file_info_new(char *name, off_t size)
-{
-	struct file_info *fi;
+static struct file_info *file_info_new(char *name, off_t size) {
+    struct file_info *file_info;
 
-	fi = xmalloc(sizeof(*fi));
-	fi->name = name;
-	fi->size = size;
+    file_info = xmalloc(sizeof(*file_info));
+    file_info->name = name;
+    file_info->size = size;
 
-	return fi;
+    return file_info;
 }
 
-static void
-file_info_free(void *file_info_ptr)
-{
-	struct file_info *fi = file_info_ptr;
+static void file_info_free(void *file_info_ptr) {
+    struct file_info *file_info = file_info_ptr;
 
-	free(fi->name);
-	free(fi);
+    free(file_info->name);
+    free(file_info);
 }
 
 /*
@@ -84,130 +80,124 @@ file_info_free(void *file_info_ptr)
  * disks made.
  */
 struct disk {
-	struct array *files;
-	off_t free;
-	size_t id;
+    struct array *files;
+    off_t free;
+    size_t id;
 };
 
-static struct disk *
-disk_new(off_t size)
-{
-	static size_t disk_id;
-	struct disk *disk;
+static struct disk *disk_new(off_t size) {
+    static size_t disk_id;
+    struct disk *disk;
 
-	disk = xmalloc(sizeof(*disk));
-	disk->files = array_new();
-	disk->free = size;
-	disk->id = ++disk_id;
+    disk = xmalloc(sizeof(*disk));
+    disk->files = array_new();
+    disk->free = size;
+    disk->id = ++disk_id;
 
-	return disk;
+    return disk;
 }
 
-static void
-disk_free(void *disk_ptr)
-{
-	struct disk *disk = disk_ptr;
+static void disk_free(void *disk_ptr) {
+    struct disk *disk = disk_ptr;
 
-	/*
-	 * NOTE: Files are shared with the files array so we don't use a
-	 * free function to clean them up here; we
-	 * would double free otherwise.
-	 */
-	array_free(disk->files);
-	free(disk);
+    /*
+     * NOTE: Files are shared with the files array so we don't use a
+     * free function to clean them up here; we
+     * would double free otherwise.
+     */
+    array_free(disk->files);
+    free(disk);
 }
 
-static void
-hline(int len)
-{
-	int i;
+static void hline(int len) {
+    int i;
 
-	for (i = 0; i < len; ++i)
-		putchar('-');
+    for (i = 0; i < len; ++i) {
+        putchar('-');
+    }
 
-	putchar('\n');
+    putchar('\n');
 }
 
 /*
  * Pretty print a disk and it's contents.
  */
-static void
-disk_print(struct disk *disk)
-{
-	char header[BUFSIZE];
-	char *sizestr;
-	size_t i;
+static void disk_print(struct disk *disk) {
+    char header[BUFSIZE];
+    char *size_string;
+    size_t i;
 
-	/* print a nice header */
-	sizestr = number_to_string(disk->free);
-	sprintf(header, "Disk #%lu, %d%% (%s) free:",
-	    (unsigned long) disk->id,
-	    (int) (disk->free * 100 / ctx.disk_size), sizestr);
-	free(sizestr);
+    /* print a nice header */
+    size_string = number_to_string(disk->free);
+    sprintf(header, "Disk #%lu, %d%% (%s) free:", (unsigned long) disk->id,
+            (int) (disk->free * 100 / ctx.disk_size), size_string);
+    free(size_string);
 
-	hline(strlen(header));
-	printf("%s\n", header);
-	hline(strlen(header));
+    hline(strlen(header));
+    printf("%s\n", header);
+    hline(strlen(header));
 
-	/* and the contents */
-	for (i = 0; i < disk->files->size; ++i) {
-		struct file_info *fi = disk->files->items[i];
+    /* and the contents */
+    for (i = 0; i < disk->files->size; ++i) {
+        struct file_info *file_info = disk->files->items[i];
 
-		sizestr = number_to_string(fi->size);
-		printf("%10s %s\n", sizestr, fi->name);
-		free(sizestr);
-	}
+        size_string = number_to_string(file_info->size);
+        printf("%10s %s\n", size_string, file_info->name);
+        free(size_string);
+    }
 
-	putchar('\n');
+    putchar('\n');
 }
 
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void
-disk_link(struct disk *disk, char *destdir)
-{
-	char *path, *tmp;
-	size_t i;
+static void disk_link(struct disk *disk, char *destdir) {
+    char *path;
+    char *tmp;
+    size_t i;
 
-	if (disk->id > 9999)
-		errx(1, "Number too big for format string.");
+    if (disk->id > 9999) {
+        errx(1, "Number too big for format string.");
+    }
 
-	path = xmalloc(strlen(destdir) + 6);
-	sprintf(path, "%s/%04lu", destdir, (unsigned long) disk->id);
-	tmp = clean_path(path);
-	free(path);
-	path = tmp;
+    path = xmalloc(strlen(destdir) + 6);
+    sprintf(path, "%s/%04lu", destdir, (unsigned long) disk->id);
+    tmp = clean_path(path);
+    free(path);
+    path = tmp;
 
-	for (i = 0; i < disk->files->size; ++i) {
-		struct file_info *fi = disk->files->items[i];
-		char *slashpos, *destfile;
+    for (i = 0; i < disk->files->size; ++i) {
+        struct file_info *file_info = disk->files->items[i];
+        char *slashpos;
+        char *destfile;
 
-		destfile = xmalloc(strlen(path) + strlen(fi->name) + 2);
-		sprintf(destfile, "%s/%s", path, fi->name);
-		slashpos = strrchr(destfile, '/');
-		*slashpos = '\0';
-		make_dirs(destfile);
-		*slashpos = '/';
+        destfile = xmalloc(strlen(path) + strlen(file_info->name) + 2);
+        sprintf(destfile, "%s/%s", path, file_info->name);
+        slashpos = strrchr(destfile, '/');
+        *slashpos = '\0';
+        make_dirs(destfile);
+        *slashpos = '/';
 
-		if (link(fi->name, destfile) == -1)
-			err(1, "Can't link '%s' to '%s'.", fi->name, destfile);
+        if (link(file_info->name, destfile) == -1) {
+            err(1, "Can't link '%s' to '%s'.", file_info->name, destfile);
+        }
 
-		printf("%s -> %s\n", fi->name, path);
-		free(destfile);
-	}
+        printf("%s -> %s\n", file_info->name, path);
+        free(destfile);
+    }
 
-	free(path);
+    free(path);
 }
 
-static int
-by_size_descending(const void *fi_a, const void *fi_b)
-{
-	struct file_info *a = *((struct file_info **) fi_a);
-	struct file_info *b = *((struct file_info **) fi_b);
+static int by_size_descending(const void *file_info_a,
+        const void *file_info_b) {
 
-	/* order by size, descending */
-	return b->size - a->size;
+    struct file_info *a = *((struct file_info **) file_info_a);
+    struct file_info *b = *((struct file_info **) file_info_b);
+
+    /* order by size, descending */
+    return b->size - a->size;
 }
 
 /*
@@ -217,157 +207,158 @@ by_size_descending(const void *fi_a, const void *fi_b)
  * rapidly fill disks while the smaller remaining files will usually
  * make a good final fit.
  */
-static void
-fit_files(struct array *files, struct array *disks)
-{
-	size_t i;
+static void fit_files(struct array *files, struct array *disks) {
+    size_t i;
 
-	qsort(files->items, files->size, sizeof(files->items[0]),
-	    by_size_descending);
+    qsort(files->items, files->size, sizeof(files->items[0]),
+            by_size_descending);
 
-	for (i = 0; i < files->size; ++i) {
-		struct file_info *fi = files->items[i];
-		int added;
-		size_t j;
+    for (i = 0; i < files->size; ++i) {
+        struct file_info *file_info = files->items[i];
+        int added = false;
+        size_t j;
 
-		added = false;
-		for (j = 0; j < disks->size; ++j) {
-			struct disk *disk = disks->items[j];
+        for (j = 0; j < disks->size; ++j) {
+            struct disk *disk = disks->items[j];
 
-			if (disk->free - fi->size >= 0) {
-				array_add(disk->files, fi);
-				disk->free -= fi->size;
-				added = true;
-				break;
-			}
-		}
+            if (disk->free - file_info->size >= 0) {
+                array_add(disk->files, file_info);
+                disk->free -= file_info->size;
+                added = true;
+                break;
+            }
+        }
 
-		if (!added) {
-			struct disk *disk;
+        if (!added) {
+            struct disk *disk;
 
-			disk = disk_new(ctx.disk_size);
-			array_add(disk->files, fi);
-			disk->free -= fi->size;
-			array_add(disks, disk);
-		}
-	}
+            disk = disk_new(ctx.disk_size);
+            array_add(disk->files, file_info);
+            disk->free -= file_info->size;
+            array_add(disks, disk);
+        }
+    }
 }
 
-int
-collect_files(const char *filename, const struct stat *sb, int typeflag,
-    struct FTW *ftwbuf)
-{
-	/* there might be access errors */
-	if (typeflag == FTW_NS || typeflag == FTW_SLN || typeflag == FTW_DNR)
-		err(1, "Can't access '%s'.", filename);
+int collect_files(const char *filename, const struct stat *sb, int typeflag,
+        struct FTW *ftwbuf) {
 
-	/* skip directories */
-	if (typeflag == FTW_D)
-		return 0;
+    /* there might be access errors */
+    if (typeflag == FTW_NS || typeflag == FTW_SLN || typeflag == FTW_DNR) {
+        err(1, "Can't access '%s'.", filename);
+    }
 
-	/* skip subdirectories if not doing a recursive collect */
-	if (!ctx.rflag && ftwbuf->level > 1)
-		return 0;
+    /* skip directories */
+    if (typeflag == FTW_D) {
+        return 0;
+    }
 
-	/* collect regular files which can fit on a disk */
-	if (typeflag == FTW_F) {
-		struct file_info *fi;
+    /* skip subdirectories if not doing a recursive collect */
+    if (!ctx.rflag && ftwbuf->level > 1) {
+        return 0;
+    }
 
-		if (sb->st_size > ctx.disk_size) {
-			errx(1, "Can never fit '%s' (%s).",
-			    filename, number_to_string(sb->st_size));
-		}
+    /* collect regular files which can fit on a disk */
+    if (typeflag == FTW_F) {
+        struct file_info *file_info;
 
-		fi = file_info_new(xstrdup(filename), sb->st_size);
-		array_add(ctx.files, fi);
-	} else
-		err(1, "'%s' is not a regular file.", filename);
+        if (sb->st_size > ctx.disk_size) {
+            errx(1, "Can never fit '%s' (%s).", filename,
+                    number_to_string(sb->st_size));
+        }
 
-	return 0;
+        file_info = file_info_new(xstrdup(filename), sb->st_size);
+        array_add(ctx.files, file_info);
+    } else {
+        err(1, "'%s' is not a regular file.", filename);
+    }
+
+    return 0;
 }
 
-static void
-usage(void)
-{
-	fprintf(stderr, "%s", usage_string);
-	exit(EXIT_FAILURE);
+static void usage(void) {
+    fprintf(stderr, "%s", usage_string);
+    exit(EXIT_FAILURE);
 }
 
-int
-main(int argc, char **argv)
-{
-	char *destdir;
-	struct array *disks;
-	int arg, opt;
-	size_t i;
+int main(int argc, char **argv) {
+    char *destdir = NULL;
+    struct array *disks;
+    int arg, opt;
+    size_t i;
 
-	destdir = NULL;
+    while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
+        switch (opt) {
+            case 'l':
+                destdir = clean_path(optarg);
+                ctx.lflag = true;
+                break;
 
-	while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
-		switch (opt) {
-		case 'l':
-			destdir = clean_path(optarg);
-			ctx.lflag = true;
-			break;
+            case 'n':
+                ctx.nflag = true;
+                break;
 
-		case 'n':
-			ctx.nflag = true;
-			break;
+            case 'r':
+                ctx.rflag = true;
+                break;
 
-		case 'r':
-			ctx.rflag = true;
-			break;
+            case 's':
+                ctx.disk_size = string_to_number(optarg);
+                break;
+        }
+    }
 
-		case 's':
-			ctx.disk_size = string_to_number(optarg);
-			break;
-		}
-	}
+    /* A path argument and the size option is mandatory. */
+    if (optind >= argc || ctx.disk_size <= 0) {
+        usage();
+    }
 
-	/* A path argument and the size option is mandatory. */
-	if (optind >= argc || ctx.disk_size <= 0)
-		usage();
+    ctx.files = array_new();
 
-	ctx.files = array_new();
+    for (arg = optind; arg < argc; ++arg) {
+        nftw(argv[arg], collect_files, MAXFD, 0);
+    }
 
-	for (arg = optind; arg < argc; ++arg)
-		nftw(argv[arg], collect_files, MAXFD, 0);
+    if (ctx.files->size == 0) {
+        errx(1, "no files found.");
+    }
 
-	if (ctx.files->size == 0)
-		errx(1, "no files found.");
+    disks = array_new();
+    fit_files(ctx.files, disks);
 
-	disks = array_new();
-	fit_files(ctx.files, disks);
+    /*
+     * Be realistic about the number of disks to support, the helper
+     * functions above assume a format string which will fit 4 digits.
+     */
+    if (disks->size > 9999) {
+        errx(1, "Fitting takes too many (%lu) disks.", disks->size);
+    }
 
-	/*
-	 * Be realistic about the number of disks to support, the helper
-	 * functions above assume a format string which will fit 4 digits.
-	 */
-	if (disks->size > 9999)
-		errx(1, "Fitting takes too many (%lu) disks.", disks->size);
+    if (ctx.nflag) {
+        printf("%lu disk%s.\n", (unsigned long) disks->size,
+                disks->size > 1 ? "s" : "");
+        exit(EXIT_SUCCESS);
+    }
 
-	if (ctx.nflag) {
-		printf("%lu disk%s.\n",
-		    (unsigned long) disks->size, disks->size > 1 ? "s" : "");
-		exit(EXIT_SUCCESS);
-	}
+    for (i = 0; i < disks->size; ++i) {
+        struct disk *disk = disks->items[i];
 
-	for (i = 0; i < disks->size; ++i) {
-		struct disk *disk = disks->items[i];
+        if (ctx.lflag) {
+            disk_link(disk, destdir);
+        } else {
+            disk_print(disk);
+        }
+    }
 
-		if (ctx.lflag)
-			disk_link(disk, destdir);
-		else
-			disk_print(disk);
-	}
+    array_for_each(ctx.files, file_info_free);
+    array_for_each(disks, disk_free);
+    array_free(ctx.files);
+    array_free(disks);
 
-	array_for_each(ctx.files, file_info_free);
-	array_for_each(disks, disk_free);
-	array_free(ctx.files);
-	array_free(disks);
+    if (ctx.lflag) {
+        free(destdir);
+    }
 
-	if (ctx.lflag)
-		free(destdir);
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
+

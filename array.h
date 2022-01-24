@@ -18,17 +18,18 @@
 #define ARRAY_H
 
 struct array {
-	void **items;
-	size_t size;
-	size_t cap;
+    void **items;
+    size_t size;
+    size_t capacity;
 };
 
 #define INITIAL_ARRAY_CAPACITY 128
 
 struct array *array_new(void);
-void array_free(struct array *);
-void array_add(struct array *, void *);
-void array_for_each(const struct array *, void (*)(void *));
-void array_shuffle(struct array *);
+void array_free(struct array *array);
+void array_add(struct array *array, void *data);
+void array_for_each(const struct array *array, void (*function)(void *));
+void array_shuffle(struct array *array);
 
 #endif
+

@@ -36,3 +36,4 @@ char *clean_path(char *);
 void make_dirs(char *);
 
 #endif
+
