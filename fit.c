@@ -120,7 +120,7 @@ static void disk_free(void *disk_ptr) {
     free(disk);
 }
 
-static void hline(int len) {
+static void print_separator(int len) {
     int i;
 
     for (i = 0; i < len; ++i) {
@@ -144,9 +144,9 @@ static void disk_print(struct disk *disk) {
             (int) (disk->free * 100 / ctx.disk_size), size_string);
     free(size_string);
 
-    hline(strlen(header));
+    print_separator(strlen(header));
     printf("%s\n", header);
-    hline(strlen(header));
+    print_separator(strlen(header));
 
     /* and the contents */
     for (i = 0; i < disk->files->size; ++i) {
