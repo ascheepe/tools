@@ -149,7 +149,7 @@ char *clean_path(char *path) {
         }
     }
 
-    if ((bufpos > (buf + 1)) && (bufpos[-1] == '/')) {
+    if (bufpos > (buf + 1) && bufpos[-1] == '/') {
         bufpos[-1] = '\0';
     } else {
         *bufpos = '\0';
