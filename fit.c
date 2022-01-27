@@ -57,11 +57,11 @@ struct file_info {
     char *name;
 };
 
-static struct file_info *file_info_new(char *name, off_t size) {
+static struct file_info *file_info_new(const char *name, off_t size) {
     struct file_info *file_info;
 
     file_info = xmalloc(sizeof(*file_info));
-    file_info->name = name;
+    file_info->name = xstrdup(name);
     file_info->size = size;
 
     return file_info;
@@ -267,7 +267,7 @@ int collect_files(const char *filename, const struct stat *sb, int typeflag,
                     number_to_string(sb->st_size));
         }
 
-        file_info = file_info_new(xstrdup(filename), sb->st_size);
+        file_info = file_info_new(filename, sb->st_size);
         array_add(ctx.files, file_info);
     } else {
         err(1, "'%s' is not a regular file.", filename);
