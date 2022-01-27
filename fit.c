@@ -97,6 +97,17 @@ static struct disk *disk_new(off_t size) {
     return disk;
 }
 
+static int disk_add_file(struct disk *disk, struct file_info *file_info) {
+    if (disk->free - file_info->size < 0) {
+        return 0;
+    }
+
+    array_add(disk->files, file_info);
+    disk->free -= file_info->size;
+
+    return 1;
+}
+
 static void disk_free(void *disk_ptr) {
     struct disk *disk = disk_ptr;
 
@@ -221,11 +232,8 @@ static void fit_files(struct array *files, struct array *disks) {
         for (j = 0; j < disks->size; ++j) {
             struct disk *disk = disks->items[j];
 
-            if (disk->free - file_info->size >= 0) {
-                array_add(disk->files, file_info);
-                disk->free -= file_info->size;
+            if (disk_add_file(disk, file_info)) {
                 added = true;
-                break;
             }
         }
 
@@ -233,8 +241,10 @@ static void fit_files(struct array *files, struct array *disks) {
             struct disk *disk;
 
             disk = disk_new(ctx.disk_size);
-            array_add(disk->files, file_info);
-            disk->free -= file_info->size;
+            if (!disk_add_file(disk, file_info)) {
+                errx(1, "can't fit file onto disk.");
+            }
+
             array_add(disks, disk);
         }
     }
