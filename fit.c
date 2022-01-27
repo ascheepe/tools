@@ -43,9 +43,9 @@ options:\n\
 static struct program_context {
     off_t disk_size;
     struct array *files;
-    int lflag;
-    int nflag;
-    int rflag;
+    int do_link_files;
+    int do_show_ndisks;
+    int do_recursive_search;
 } ctx;
 
 /*
@@ -254,7 +254,7 @@ int collect_files(const char *filename, const struct stat *sb, int typeflag,
     }
 
     /* skip subdirectories if not doing a recursive collect */
-    if (!ctx.rflag && ftwbuf->level > 1) {
+    if (!ctx.do_recursive_search && ftwbuf->level > 1) {
         return 0;
     }
 
@@ -291,15 +291,15 @@ int main(int argc, char **argv) {
         switch (opt) {
             case 'l':
                 destdir = clean_path(optarg);
-                ctx.lflag = true;
+                ctx.do_link_files = true;
                 break;
 
             case 'n':
-                ctx.nflag = true;
+                ctx.do_show_ndisks = true;
                 break;
 
             case 'r':
-                ctx.rflag = true;
+                ctx.do_recursive_search = true;
                 break;
 
             case 's':
@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
         errx(1, "Fitting takes too many (%lu) disks.", disks->size);
     }
 
-    if (ctx.nflag) {
+    if (ctx.do_show_ndisks) {
         printf("%lu disk%s.\n", (unsigned long) disks->size,
                 disks->size > 1 ? "s" : "");
         exit(EXIT_SUCCESS);
@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
     for (i = 0; i < disks->size; ++i) {
         struct disk *disk = disks->items[i];
 
-        if (ctx.lflag) {
+        if (ctx.do_link_files) {
             disk_link(disk, destdir);
         } else {
             disk_print(disk);
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
     array_free(ctx.files);
     array_free(disks);
 
-    if (ctx.lflag) {
+    if (ctx.do_link_files) {
         free(destdir);
     }
 
