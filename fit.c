@@ -250,16 +250,16 @@ static void fit_files(struct array *files, struct array *disks) {
     }
 }
 
-int collect_files(const char *filename, const struct stat *sb, int typeflag,
+int collect_files(const char *filename, const struct stat *sb, int file_type,
         struct FTW *ftwbuf) {
 
     /* there might be access errors */
-    if (typeflag == FTW_NS || typeflag == FTW_SLN || typeflag == FTW_DNR) {
+    if (file_type == FTW_NS || file_type == FTW_SLN || file_type == FTW_DNR) {
         err(1, "Can't access '%s'.", filename);
     }
 
     /* skip directories */
-    if (typeflag == FTW_D) {
+    if (file_type == FTW_D) {
         return 0;
     }
 
@@ -269,7 +269,7 @@ int collect_files(const char *filename, const struct stat *sb, int typeflag,
     }
 
     /* collect regular files which can fit on a disk */
-    if (typeflag == FTW_F) {
+    if (file_type == FTW_F) {
         struct file_info *file_info;
 
         if (sb->st_size > ctx.disk_size) {

@@ -57,7 +57,7 @@ static struct program_context {
 } ctx;
 
 static int collect_files(const char *filename, const struct stat *sb,
-        int typeflag, struct FTW *ftwbuf) {
+        int file_type, struct FTW *ftwbuf) {
 
     int playable = false;
 
@@ -66,7 +66,7 @@ static int collect_files(const char *filename, const struct stat *sb,
     (void) ftwbuf;
 
     /* skip non regular files */
-    if (typeflag != FTW_F) {
+    if (file_type != FTW_F) {
         return 0;
     }
 
@@ -75,14 +75,14 @@ static int collect_files(const char *filename, const struct stat *sb,
         playable = strcasecmp(filename + strlen(filename) -
                 strlen(ctx.extension), ctx.extension) == 0;
     else if (ctx.media_type != NULL) {
-        const char *file_type;
+        const char *media_type;
 
-        file_type = magic_file(ctx.magic_cookie, filename);
-        if (file_type == NULL) {
+        media_type = magic_file(ctx.magic_cookie, filename);
+        if (media_type == NULL) {
             errx(1, "%s", magic_error(ctx.magic_cookie));
         }
 
-        playable = strncmp(ctx.media_type, file_type,
+        playable = strncmp(ctx.media_type, media_type,
                 strlen(ctx.media_type)) == 0;
     } else {
         errx(1, "Extension or media type is not set.");
