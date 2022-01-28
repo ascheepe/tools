@@ -120,10 +120,10 @@ static void disk_free(void *disk_ptr) {
     free(disk);
 }
 
-static void print_separator(int len) {
+static void print_separator(int length) {
     int i;
 
-    for (i = 0; i < len; ++i) {
+    for (i = 0; i < length; ++i) {
         putchar('-');
     }
 
