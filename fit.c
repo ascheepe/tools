@@ -234,6 +234,7 @@ static void fit_files(struct array *files, struct array *disks) {
 
             if (disk_add_file(disk, file_info)) {
                 added = true;
+                break;
             }
         }
 
