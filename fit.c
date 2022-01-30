@@ -57,7 +57,7 @@ struct file_info {
     char *name;
 };
 
-static struct file_info *file_info_new(const char *name, off_t size) {
+static struct file_info *new_file_info(const char *name, off_t size) {
     struct file_info *file_info;
 
     file_info = xmalloc(sizeof(*file_info));
@@ -67,7 +67,7 @@ static struct file_info *file_info_new(const char *name, off_t size) {
     return file_info;
 }
 
-static void file_info_free(void *file_info_ptr) {
+static void free_file_info(void *file_info_ptr) {
     struct file_info *file_info = file_info_ptr;
 
     free(file_info->name);
@@ -85,30 +85,19 @@ struct disk {
     size_t id;
 };
 
-static struct disk *disk_new(off_t size) {
+static struct disk *new_disk(off_t size) {
     static size_t disk_id;
     struct disk *disk;
 
     disk = xmalloc(sizeof(*disk));
-    disk->files = array_new();
+    disk->files = new_array();
     disk->free = size;
     disk->id = ++disk_id;
 
     return disk;
 }
 
-static int disk_add_file(struct disk *disk, struct file_info *file_info) {
-    if (disk->free - file_info->size < 0) {
-        return 0;
-    }
-
-    array_add(disk->files, file_info);
-    disk->free -= file_info->size;
-
-    return 1;
-}
-
-static void disk_free(void *disk_ptr) {
+static void free_disk(void *disk_ptr) {
     struct disk *disk = disk_ptr;
 
     /*
@@ -116,8 +105,19 @@ static void disk_free(void *disk_ptr) {
      * free function to clean them up here; we
      * would double free otherwise.
      */
-    array_free(disk->files);
+    free_array(disk->files);
     free(disk);
+}
+
+static int add_file_to_disk(struct disk *disk, struct file_info *file_info) {
+    if (disk->free - file_info->size < 0) {
+        return 0;
+    }
+
+    add_to_array(disk->files, file_info);
+    disk->free -= file_info->size;
+
+    return 1;
 }
 
 static void print_separator(int length) {
@@ -133,7 +133,7 @@ static void print_separator(int length) {
 /*
  * Pretty print a disk and it's contents.
  */
-static void disk_print(struct disk *disk) {
+static void print_disk(struct disk *disk) {
     char header[BUFSIZE];
     char *size_string;
     size_t i;
@@ -163,7 +163,7 @@ static void disk_print(struct disk *disk) {
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void disk_link(struct disk *disk, char *destdir) {
+static void link_disk(struct disk *disk, char *destdir) {
     char *path;
     char *tmp;
     size_t i;
@@ -232,7 +232,7 @@ static void fit_files(struct array *files, struct array *disks) {
         for (j = 0; j < disks->size; ++j) {
             struct disk *disk = disks->items[j];
 
-            if (disk_add_file(disk, file_info)) {
+            if (add_file_to_disk(disk, file_info)) {
                 added = true;
                 break;
             }
@@ -241,12 +241,12 @@ static void fit_files(struct array *files, struct array *disks) {
         if (!added) {
             struct disk *disk;
 
-            disk = disk_new(ctx.disk_size);
-            if (!disk_add_file(disk, file_info)) {
+            disk = new_disk(ctx.disk_size);
+            if (!add_file_to_disk(disk, file_info)) {
                 errx(1, "Can't fit file onto disk.");
             }
 
-            array_add(disks, disk);
+            add_to_array(disks, disk);
         }
     }
 }
@@ -278,8 +278,8 @@ int collect_files(const char *filename, const struct stat *sb, int file_type,
                     number_to_string(sb->st_size));
         }
 
-        file_info = file_info_new(filename, sb->st_size);
-        array_add(ctx.files, file_info);
+        file_info = new_file_info(filename, sb->st_size);
+        add_to_array(ctx.files, file_info);
     } else {
         err(1, "'%s' is not a regular file.", filename);
     }
@@ -324,7 +324,7 @@ int main(int argc, char **argv) {
         usage();
     }
 
-    ctx.files = array_new();
+    ctx.files = new_array();
 
     for (arg = optind; arg < argc; ++arg) {
         nftw(argv[arg], collect_files, MAXFD, 0);
@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
         errx(1, "no files found.");
     }
 
-    disks = array_new();
+    disks = new_array();
     fit_files(ctx.files, disks);
 
     /*
@@ -355,16 +355,16 @@ int main(int argc, char **argv) {
         struct disk *disk = disks->items[i];
 
         if (ctx.do_link_files) {
-            disk_link(disk, destdir);
+            link_disk(disk, destdir);
         } else {
-            disk_print(disk);
+            print_disk(disk);
         }
     }
 
-    array_for_each(ctx.files, file_info_free);
-    array_for_each(disks, disk_free);
-    array_free(ctx.files);
-    array_free(disks);
+    for_each_array_item(ctx.files, free_file_info);
+    for_each_array_item(disks, free_disk);
+    free_array(ctx.files);
+    free_array(disks);
 
     if (ctx.do_link_files) {
         free(destdir);

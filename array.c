@@ -23,7 +23,7 @@
 #include "array.h"
 #include "utils.h"
 
-struct array *array_new(void) {
+struct array *new_array(void) {
     struct array *array;
 
     array = xmalloc(sizeof(*array));
@@ -34,12 +34,12 @@ struct array *array_new(void) {
     return array;
 }
 
-void array_free(struct array *array) {
+void free_array(struct array *array) {
     free(array->items);
     free(array);
 }
 
-void array_add(struct array *array, void *data) {
+void add_to_array(struct array *array, void *data) {
     if (array->size == array->capacity) {
         size_t new_capacity;
 
@@ -52,7 +52,7 @@ void array_add(struct array *array, void *data) {
     array->items[array->size++] = data;
 }
 
-void array_for_each(const struct array *array, void (*function)(void *)) {
+void for_each_array_item(const struct array *array, void (*function)(void *)) {
     size_t i;
 
     for (i = 0; i < array->size; ++i) {
@@ -60,7 +60,7 @@ void array_for_each(const struct array *array, void (*function)(void *)) {
     }
 }
 
-void array_shuffle(struct array *array) {
+void shuffle_array(struct array *array) {
     static int is_seeded = false;
     size_t i;
 

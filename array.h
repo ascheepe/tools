@@ -25,11 +25,11 @@ struct array {
 
 #define INITIAL_ARRAY_CAPACITY 128
 
-struct array *array_new(void);
-void array_free(struct array *array);
-void array_add(struct array *array, void *data);
-void array_for_each(const struct array *array, void (*function)(void *));
-void array_shuffle(struct array *array);
+struct array *new_array(void);
+void free_array(struct array *array);
+void add_to_array(struct array *array, void *data);
+void for_each_array_item(const struct array *array, void (*function)(void *));
+void shuffle_array(struct array *array);
 
 #endif
 

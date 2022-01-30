@@ -89,7 +89,7 @@ static int collect_files(const char *filename, const struct stat *sb,
     }
 
     if (playable) {
-        array_add(ctx.files, xstrdup(filename));
+        add_to_array(ctx.files, xstrdup(filename));
     }
 
     return 0;
@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
         fflush(stdout);
     }
 
-    ctx.files = array_new();
+    ctx.files = new_array();
 
     if (path != NULL) {
         nftw(path, collect_files, MAXFD, FTW_PHYS);
@@ -234,16 +234,16 @@ int main(int argc, char **argv) {
         printf("%lu files found.\n", (unsigned long) ctx.files->size);
     }
 
-    array_shuffle(ctx.files);
-    array_for_each(ctx.files, play_file);
+    shuffle_array(ctx.files);
+    for_each_array_item(ctx.files, play_file);
 
     if (path != NULL) {
         free(path);
     }
 
     free(ctx.command);
-    array_for_each(ctx.files, free);
-    array_free(ctx.files);
+    for_each_array_item(ctx.files, free);
+    free_array(ctx.files);
     return EXIT_SUCCESS;
 }
 
