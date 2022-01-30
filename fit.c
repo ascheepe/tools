@@ -163,7 +163,7 @@ static void print_disk(struct disk *disk) {
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void link_disk(struct disk *disk, char *destdir) {
+static void link_files_from_disk(struct disk *disk, char *destdir) {
     char *path;
     char *tmp;
     size_t i;
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
         struct disk *disk = disks->items[i];
 
         if (ctx.do_link_files) {
-            link_disk(disk, destdir);
+            link_files_from_disk(disk, destdir);
         } else {
             print_disk(disk);
         }
