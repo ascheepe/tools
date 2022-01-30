@@ -53,31 +53,31 @@ void add_to_array(struct array *array, void *data) {
 }
 
 void for_each_array_item(const struct array *array, void (*function)(void *)) {
-    size_t i;
+    size_t item_nr;
 
-    for (i = 0; i < array->size; ++i) {
-        function(array->items[i]);
+    for (item_nr = 0; item_nr < array->size; ++item_nr) {
+        function(array->items[item_nr]);
     }
 }
 
 void shuffle_array(struct array *array) {
     static int is_seeded = false;
-    size_t i;
+    size_t item_nr;
 
     if (!is_seeded) {
         srandom(time(NULL) ^ getpid());
         is_seeded = true;
     }
 
-    for (i = array->size - 1; i > 0; --i) {
-        size_t j;
+    for (item_nr = array->size - 1; item_nr > 0; --item_nr) {
+        size_t random_item_nr;
         void *tmp;
 
-        j = random() % (i + 1);
+        random_item_nr = random() % (item_nr + 1);
 
-        tmp = array->items[i];
-        array->items[i] = array->items[j];
-        array->items[j] = tmp;
+        tmp = array->items[item_nr];
+        array->items[item_nr] = array->items[random_item_nr];
+        array->items[random_item_nr] = tmp;
     }
 }
 

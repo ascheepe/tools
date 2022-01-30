@@ -131,16 +131,16 @@ static void init_magic(void) {
     }
 }
 
-static void build_command(int argc, char **argv, int argend) {
+static void build_command(int argc, char **argv, int arg_end) {
     int command_length;
-    int i;
+    int arg_nr;
 
     /* reserve for command + filename + NULL */
-    command_length = argc - argend;
+    command_length = argc - arg_end;
     ctx.command = xmalloc((command_length + 2) * sizeof(char *));
 
-    for (i = argend; i < argc; ++i) {
-        ctx.command[i - argend] = argv[i];
+    for (arg_nr = arg_end; arg_nr < argc; ++arg_nr) {
+        ctx.command[arg_nr - arg_end] = argv[arg_nr];
     }
 
     ctx.filename_index = command_length;

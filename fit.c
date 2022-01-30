@@ -136,7 +136,7 @@ static void print_separator(int length) {
 static void print_disk(struct disk *disk) {
     char header[BUFSIZE];
     char *size_string;
-    size_t i;
+    size_t file_nr;
 
     /* print a nice header */
     size_string = number_to_string(disk->free);
@@ -149,8 +149,8 @@ static void print_disk(struct disk *disk) {
     print_separator(strlen(header));
 
     /* and the contents */
-    for (i = 0; i < disk->files->size; ++i) {
-        struct file_info *file_info = disk->files->items[i];
+    for (file_nr = 0; file_nr < disk->files->size; ++file_nr) {
+        struct file_info *file_info = disk->files->items[file_nr];
 
         size_string = number_to_string(file_info->size);
         printf("%10s %s\n", size_string, file_info->name);
@@ -166,7 +166,7 @@ static void print_disk(struct disk *disk) {
 static void link_files_from_disk(struct disk *disk, char *destdir) {
     char *path;
     char *tmp;
-    size_t i;
+    size_t file_nr;
 
     if (disk->id > 9999) {
         errx(1, "Number too big for format string.");
@@ -178,8 +178,8 @@ static void link_files_from_disk(struct disk *disk, char *destdir) {
     free(path);
     path = tmp;
 
-    for (i = 0; i < disk->files->size; ++i) {
-        struct file_info *file_info = disk->files->items[i];
+    for (file_nr = 0; file_nr < disk->files->size; ++file_nr) {
+        struct file_info *file_info = disk->files->items[file_nr];
         char *slashpos;
         char *destfile;
 
@@ -219,18 +219,18 @@ static int by_size_descending(const void *file_info_a,
  * make a good final fit.
  */
 static void fit_files(struct array *files, struct array *disks) {
-    size_t i;
+    size_t file_nr;
 
     qsort(files->items, files->size, sizeof(files->items[0]),
             by_size_descending);
 
-    for (i = 0; i < files->size; ++i) {
-        struct file_info *file_info = files->items[i];
+    for (file_nr = 0; file_nr < files->size; ++file_nr) {
+        struct file_info *file_info = files->items[file_nr];
         int added = false;
-        size_t j;
+        size_t disk_nr;
 
-        for (j = 0; j < disks->size; ++j) {
-            struct disk *disk = disks->items[j];
+        for (disk_nr = 0; disk_nr < disks->size; ++disk_nr) {
+            struct disk *disk = disks->items[disk_nr];
 
             if (add_file_to_disk(disk, file_info)) {
                 added = true;
@@ -296,7 +296,7 @@ int main(int argc, char **argv) {
     char *destdir = NULL;
     struct array *disks;
     int arg, opt;
-    size_t i;
+    size_t disk_nr;
 
     while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
         switch (opt) {
@@ -351,8 +351,8 @@ int main(int argc, char **argv) {
         exit(EXIT_SUCCESS);
     }
 
-    for (i = 0; i < disks->size; ++i) {
-        struct disk *disk = disks->items[i];
+    for (disk_nr = 0; disk_nr < disks->size; ++disk_nr) {
+        struct disk *disk = disks->items[disk_nr];
 
         if (ctx.do_link_files) {
             link_files_from_disk(disk, destdir);
