@@ -44,7 +44,7 @@ static struct program_context {
     off_t disk_size;
     struct array *files;
     int do_link_files;
-    int do_show_ndisks;
+    int do_show_number_of_disks;
     int do_recursive_search;
 } ctx;
 
@@ -306,7 +306,7 @@ int main(int argc, char **argv) {
                 break;
 
             case 'n':
-                ctx.do_show_ndisks = true;
+                ctx.do_show_number_of_disks = true;
                 break;
 
             case 'r':
@@ -345,7 +345,7 @@ int main(int argc, char **argv) {
         errx(1, "Fitting takes too many (%lu) disks.", disks->size);
     }
 
-    if (ctx.do_show_ndisks) {
+    if (ctx.do_show_number_of_disks) {
         printf("%lu disk%s.\n", (unsigned long) disks->size,
                 disks->size > 1 ? "s" : "");
         exit(EXIT_SUCCESS);
