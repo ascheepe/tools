@@ -165,18 +165,17 @@ static void print_disk(struct disk *disk) {
  */
 static void link_files_from_disk(struct disk *disk, char *destdir) {
     char *path;
-    char *tmp;
+    char *dirty_path;
     size_t file_nr;
 
     if (disk->id > 9999) {
         errx(1, "Number too big for format string.");
     }
 
-    path = xmalloc(strlen(destdir) + 6);
-    sprintf(path, "%s/%04lu", destdir, (unsigned long) disk->id);
-    tmp = clean_path(path);
-    free(path);
-    path = tmp;
+    dirty_path = xmalloc(strlen(destdir) + 6);
+    sprintf(dirty_path, "%s/%04lu", destdir, (unsigned long) disk->id);
+    path = clean_path(dirty_path);
+    free(dirty_path);
 
     for (file_nr = 0; file_nr < disk->files->size; ++file_nr) {
         struct file_info *file_info = disk->files->items[file_nr];
