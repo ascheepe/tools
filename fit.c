@@ -225,8 +225,8 @@ static void fit_files(struct array *files, struct array *disks) {
 
     for (file_nr = 0; file_nr < files->size; ++file_nr) {
         struct file_info *file_info = files->items[file_nr];
-        int added = false;
         size_t disk_nr;
+        int added = false;
 
         for (disk_nr = 0; disk_nr < disks->size; ++disk_nr) {
             struct disk *disk = disks->items[disk_nr];
