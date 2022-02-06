@@ -242,7 +242,7 @@ static void fit_files(struct array *files, struct array *disks) {
 
             disk = new_disk(ctx.disk_size);
             if (!add_file_to_disk(disk, file_info)) {
-                errx(1, "Can't fit file onto disk.");
+                errx(1, "Unexpected error while adding file to disk.");
             }
 
             add_to_array(disks, disk);
