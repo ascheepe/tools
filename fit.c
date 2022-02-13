@@ -121,9 +121,7 @@ static int add_file_to_disk(struct disk *disk, struct file_info *file_info) {
 }
 
 static void print_separator(int length) {
-    int i;
-
-    for (i = 0; i < length; ++i) {
+    while (length-- > 0) {
         putchar('-');
     }
 
