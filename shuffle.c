@@ -43,7 +43,7 @@ options:\n\
 
 #include <magic.h>
 
-#include "array.h"
+#include "vector.h"
 #include "utils.h"
 
 static struct program_context {
@@ -53,7 +53,7 @@ static struct program_context {
     char **command;
     int filename_index;
     int verbose;
-    struct array *files;
+    struct vector *files;
 } ctx;
 
 static int collect_files(const char *filename, const struct stat *sb,
@@ -89,7 +89,7 @@ static int collect_files(const char *filename, const struct stat *sb,
     }
 
     if (playable) {
-        add_to_array(ctx.files, xstrdup(filename));
+        add_to_vector(ctx.files, xstrdup(filename));
     }
 
     return 0;
@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
         fflush(stdout);
     }
 
-    ctx.files = new_array();
+    ctx.files = new_vector();
 
     if (path != NULL) {
         nftw(path, collect_files, MAXFD, FTW_PHYS);
@@ -234,16 +234,16 @@ int main(int argc, char **argv) {
         printf("%lu files found.\n", (unsigned long) ctx.files->size);
     }
 
-    shuffle_array(ctx.files);
-    for_each_array_item(ctx.files, play_file);
+    shuffle_vector(ctx.files);
+    for_each_vector_item(ctx.files, play_file);
 
     if (path != NULL) {
         free(path);
     }
 
     free(ctx.command);
-    for_each_array_item(ctx.files, free);
-    free_array(ctx.files);
+    for_each_vector_item(ctx.files, free);
+    free_vector(ctx.files);
     return EXIT_SUCCESS;
 }
 

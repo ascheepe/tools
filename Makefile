@@ -3,7 +3,7 @@ CFLAGS+= -fstack-protector-strong -fPIE -D_FORTIFY_SOURCE=2
 CFLAGS+= -D_XOPEN_SOURCE=600
 #CFLAGS+= -Og -g -fsanitize=address,leak
 
-COMMON_OBJS= utils.o array.o
+COMMON_OBJS= utils.o vector.o
 
 all: shuffle fit
 
@@ -13,7 +13,7 @@ shuffle: $(COMMON_OBJS) shuffle.o
 fit: $(COMMON_OBJS) fit.o
 	$(CC) $(CFLAGS) -o fit $(COMMON_OBJS) fit.o
 
-array.o: array.h
+vector.o: vector.h
 utils.o: utils.h
 
 clean:

@@ -14,22 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef VECTOR_H
+#define VECTOR_H
 
-struct array {
+struct vector {
     void **items;
     size_t size;
     size_t capacity;
 };
 
-#define INITIAL_ARRAY_CAPACITY 128
+#define INITIAL_VECTOR_CAPACITY 128
 
-struct array *new_array(void);
-void free_array(struct array *array);
-void add_to_array(struct array *array, void *data);
-void for_each_array_item(const struct array *array, void (*function)(void *));
-void shuffle_array(struct array *array);
+struct vector *new_vector(void);
+void free_vector(struct vector *vector);
+void add_to_vector(struct vector *vector, void *data);
+void for_each_vector_item(const struct vector *vector,
+                          void (*function)(void *));
+void shuffle_vector(struct vector *vector);
 
 #endif
 

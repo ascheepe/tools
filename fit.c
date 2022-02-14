@@ -37,12 +37,12 @@ options:\n\
 #include <stdlib.h>
 #include <string.h>
 
-#include "array.h"
+#include "vector.h"
 #include "utils.h"
 
 static struct program_context {
     off_t disk_size;
-    struct array *files;
+    struct vector *files;
     int do_link_files;
     int do_show_number_of_disks;
     int do_recursive_search;
@@ -75,12 +75,12 @@ static void free_file_info(void *file_info_ptr) {
 }
 
 /*
- * A disk with 'free' free space contains a array of files. It's id
+ * A disk with 'free' free space contains a vector of files. It's id
  * is an incrementing number which doubles as the total number of
  * disks made.
  */
 struct disk {
-    struct array *files;
+    struct vector *files;
     off_t free;
     size_t id;
 };
@@ -90,7 +90,7 @@ static struct disk *new_disk(off_t size) {
     struct disk *disk;
 
     disk = xmalloc(sizeof(*disk));
-    disk->files = new_array();
+    disk->files = new_vector();
     disk->free = size;
     disk->id = ++disk_id;
 
@@ -101,11 +101,11 @@ static void free_disk(void *disk_ptr) {
     struct disk *disk = disk_ptr;
 
     /*
-     * NOTE: Files are shared with the files array so we don't use a
+     * NOTE: Files are shared with the files vector so we don't use a
      * free function to clean them up here; we
      * would double free otherwise.
      */
-    free_array(disk->files);
+    free_vector(disk->files);
     free(disk);
 }
 
@@ -114,7 +114,7 @@ static int add_file_to_disk(struct disk *disk, struct file_info *file_info) {
         return 0;
     }
 
-    add_to_array(disk->files, file_info);
+    add_to_vector(disk->files, file_info);
     disk->free -= file_info->size;
 
     return 1;
@@ -215,7 +215,7 @@ static int by_size_descending(const void *file_info_a,
  * rapidly fill disks while the smaller remaining files will usually
  * make a good final fit.
  */
-static void fit_files(struct array *files, struct array *disks) {
+static void fit_files(struct vector *files, struct vector *disks) {
     size_t file_nr;
 
     qsort(files->items, files->size, sizeof(files->items[0]),
@@ -243,7 +243,7 @@ static void fit_files(struct array *files, struct array *disks) {
                 errx(1, "Unexpected error while adding file to disk.");
             }
 
-            add_to_array(disks, disk);
+            add_to_vector(disks, disk);
         }
     }
 }
@@ -276,7 +276,7 @@ int collect_files(const char *filename, const struct stat *sb, int file_type,
         }
 
         file_info = new_file_info(filename, sb->st_size);
-        add_to_array(ctx.files, file_info);
+        add_to_vector(ctx.files, file_info);
     } else {
         err(1, "'%s' is not a regular file.", filename);
     }
@@ -291,7 +291,7 @@ static void usage(void) {
 
 int main(int argc, char **argv) {
     char *destdir = NULL;
-    struct array *disks;
+    struct vector *disks;
     int arg, opt;
     size_t disk_nr;
 
@@ -321,7 +321,7 @@ int main(int argc, char **argv) {
         usage();
     }
 
-    ctx.files = new_array();
+    ctx.files = new_vector();
 
     for (arg = optind; arg < argc; ++arg) {
         nftw(argv[arg], collect_files, MAXFD, 0);
@@ -331,7 +331,7 @@ int main(int argc, char **argv) {
         errx(1, "no files found.");
     }
 
-    disks = new_array();
+    disks = new_vector();
     fit_files(ctx.files, disks);
 
     /*
@@ -358,10 +358,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    for_each_array_item(ctx.files, free_file_info);
-    for_each_array_item(disks, free_disk);
-    free_array(ctx.files);
-    free_array(disks);
+    for_each_vector_item(ctx.files, free_file_info);
+    for_each_vector_item(disks, free_disk);
+    free_vector(ctx.files);
+    free_vector(disks);
 
     if (ctx.do_link_files) {
         free(destdir);
