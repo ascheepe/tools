@@ -18,19 +18,18 @@
 #define VECTOR_H
 
 struct vector {
-    void **items;
-    size_t size;
-    size_t capacity;
+	void **items;
+	size_t size;
+	size_t cap;
 };
 
 #define INITIAL_VECTOR_CAPACITY 128
 
-struct vector *new_vector(void);
-void free_vector(struct vector *vector);
-void add_to_vector(struct vector *vector, void *data);
-void for_each_vector_item(const struct vector *vector,
-                          void (*function)(void *));
-void shuffle_vector(struct vector *vector);
+struct vector *vector_new(void);
+void vector_free(struct vector *);
+void vector_add(struct vector *, void *);
+void vector_foreach(const struct vector *, void (*)(void *));
+void vector_shuffle(struct vector *);
 
 #endif
 

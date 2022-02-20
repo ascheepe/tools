@@ -23,63 +23,69 @@
 #include "vector.h"
 #include "utils.h"
 
-struct vector *new_vector(void) {
-    struct vector *vector;
+struct vector *
+vector_new(void)
+{
+	struct vector *v;
 
-    vector = xmalloc(sizeof(*vector));
-    vector->items = xcalloc(INITIAL_VECTOR_CAPACITY,
-                            sizeof(vector->items[0]));
-    vector->capacity = INITIAL_VECTOR_CAPACITY;
-    vector->size = 0;
+	v = xmalloc(sizeof(*v));
+	v->items = xcalloc(INITIAL_VECTOR_CAPACITY, sizeof(v->items[0]));
+	v->cap = INITIAL_VECTOR_CAPACITY;
+	v->size = 0;
 
-    return vector;
+	return v;
 }
 
-void free_vector(struct vector *vector) {
-    free(vector->items);
-    free(vector);
+void
+vector_free(struct vector *v)
+{
+	free(v->items);
+	free(v);
 }
 
-void add_to_vector(struct vector *vector, void *data) {
-    if (vector->size == vector->capacity) {
-        size_t new_capacity;
+void
+vector_add(struct vector *v, void *data)
+{
+	if (v->size == v->cap) {
+		size_t newcap;
 
-        new_capacity = vector->capacity * 3 / 2;
-        vector->items = xrealloc(vector->items,
-                                 new_capacity * sizeof(vector->items[0]));
-        vector->capacity = new_capacity;
-    }
+		newcap = v->cap * 3 / 2;
+		v->items = xrealloc(v->items, newcap * sizeof(v->items[0]));
+		v->cap = newcap;
+	}
 
-    vector->items[vector->size++] = data;
+	v->items[v->size++] = data;
 }
 
-void for_each_vector_item(const struct vector *vector,
-                          void (*function)(void *)) {
-    size_t item_nr;
+void
+vector_foreach(const struct vector *v, void (*f)(void *))
+{
+	size_t i;
 
-    for (item_nr = 0; item_nr < vector->size; ++item_nr) {
-        function(vector->items[item_nr]);
-    }
+	for (i = 0; i < v->size; ++i)
+		f(v->items[i]);
 }
 
-void shuffle_vector(struct vector *vector) {
-    static int is_seeded = false;
-    size_t item_nr;
+void
+vector_shuffle(struct vector *v)
+{
+	static int seeded = false;
+	size_t i;
 
-    if (!is_seeded) {
-        srandom(time(NULL) ^ getpid());
-        is_seeded = true;
-    }
+	if (!seeded) {
+		srandom(time(NULL) ^ getpid());
+		seeded = true;
+	}
 
-    for (item_nr = vector->size - 1; item_nr > 0; --item_nr) {
-        size_t random_item_nr;
-        void *tmp;
+	for (i = v->size - 1; i > 0; --i) {
+		size_t j;
+		void *tmp;
 
-        random_item_nr = random() % (item_nr + 1);
+		j = random() % (i + 1);
 
-        tmp = vector->items[item_nr];
-        vector->items[item_nr] = vector->items[random_item_nr];
-        vector->items[random_item_nr] = tmp;
-    }
+		tmp = v->items[i];
+		v->items[i] = v->items[j];
+		v->items[j] = tmp;
+	}
 }
 
