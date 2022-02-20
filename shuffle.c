@@ -15,11 +15,11 @@
  */
 
 static const char *const usage_string = "\
-usage:  shuffle [-p starting path] -e ext | -m media-type command\n\
+usage:  shuffle [-p starting path] -e extension | -m media-type command\n\
 \n\
 options:\n\
   -p path        starts the search from this path.\n\
-  -e ext   search for files with this ext.\n\
+  -e extension   search for files with this extension.\n\
   -m media-type  search for files with this media type.\n\
   -v             show what's being done.\n\
   command        the command to execute for each file.\n\
@@ -48,16 +48,16 @@ options:\n\
 
 static struct {
 	magic_t mcookie;
-	char *mtype;
+	char *mediatype;
 	char *ext;
 	char **cmd;
-	int cmdarg;
+	int argpos;
 	int verbose;
 	struct vector *files;
 } ctx;
 
 static int
-collect(const char *filename, const struct stat *st, int ftype,
+collect(const char *filename, const struct stat *st, int filetype,
     struct FTW *ftwbuf)
 {
 	int playable = false;
@@ -67,21 +67,23 @@ collect(const char *filename, const struct stat *st, int ftype,
 	(void) ftwbuf;
 
 	/* skip non regular files */
-	if (ftype != FTW_F)
+	if (filetype != FTW_F)
 		return 0;
 
-	/* if both ext and media-type are set prefer ext search */
+	/* if both extension and media-type are set prefer extension search */
 	if (ctx.ext != NULL)
 		playable = strcasecmp(filename + strlen(filename) -
 		    strlen(ctx.ext), ctx.ext) == 0;
-	else if (ctx.mtype != NULL) {
-		const char *mtype;
+	else if (ctx.mediatype != NULL) {
+		const char *mediatype;
 
-		mtype = magic_file(ctx.mcookie, filename);
-		if (mtype == NULL)
+		mediatype = magic_file(ctx.mcookie, filename);
+		if (mediatype == NULL)
 			errx(1, "%s", magic_error(ctx.mcookie));
 
-		playable = strncmp(ctx.mtype, mtype, strlen(ctx.mtype)) == 0;
+		playable =
+		    strncmp(ctx.mediatype, mediatype,
+		    strlen(ctx.mediatype)) == 0;
 	} else
 		errx(1, "Extension or media type is not set.");
 
@@ -104,7 +106,7 @@ play_file(void *pfilename)
 		if (ctx.verbose)
 			printf("Playing \"%s\".\n", filename);
 
-		ctx.cmd[ctx.cmdarg] = filename;
+		ctx.cmd[ctx.argpos] = filename;
 		execvp(ctx.cmd[0], (char *const *) ctx.cmd);
 		err(1, "Can't execute player.");
 		break;
@@ -139,9 +141,9 @@ build_command(int argc, char **argv, int cmdstart)
 	for (i = cmdstart; i < argc; ++i)
 		ctx.cmd[i - cmdstart] = argv[i];
 
-	ctx.cmdarg = cmdlen;
-	ctx.cmd[ctx.cmdarg] = NULL;
-	ctx.cmd[ctx.cmdarg + 1] = NULL;
+	ctx.argpos = cmdlen;
+	ctx.cmd[ctx.argpos] = NULL;
+	ctx.cmd[ctx.argpos + 1] = NULL;
 }
 
 static void
@@ -174,7 +176,7 @@ main(int argc, char **argv)
 			break;
 		case 'm':
 			init_magic();
-			ctx.mtype = optarg;
+			ctx.mediatype = optarg;
 			break;
 		case 'p':
 			path = realpath(optarg, NULL);
@@ -190,8 +192,8 @@ main(int argc, char **argv)
 		}
 	}
 
-	/* ext or media-type must be set */
-	if (ctx.ext == NULL && ctx.mtype == NULL)
+	/* extension or media-type must be set */
+	if (ctx.ext == NULL && ctx.mediatype == NULL)
 		usage();
 
 	/* a command to run is mandatory */
@@ -212,7 +214,7 @@ main(int argc, char **argv)
 	else
 		nftw(".", collect, MAXFD, FTW_PHYS);
 
-	if (ctx.mtype)
+	if (ctx.mediatype)
 		magic_close(ctx.mcookie);
 
 	if (ctx.files->size == 0) {

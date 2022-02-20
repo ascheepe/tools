@@ -141,9 +141,7 @@ number_to_string(const double num)
 char *
 clean_path(char *path)
 {
-	char *buf;
-	char *bufpos;
-	char *ret;
+	char *buf, *bufpos, *ret;
 
 	buf = bufpos = xmalloc(strlen(path) + 1);
 
