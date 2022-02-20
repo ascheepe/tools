@@ -261,7 +261,7 @@ fit_files(struct vector *files, struct vector *disks)
 }
 
 int
-collect_files(const char *filename, const struct stat *sb, int file_type,
+collect_files(const char *filename, const struct stat *st, int file_type,
     struct FTW *ftwbuf)
 {
 
@@ -282,12 +282,12 @@ collect_files(const char *filename, const struct stat *sb, int file_type,
 	if (file_type == FTW_F) {
 		struct disk_entry *e;
 
-		if (sb->st_size > ctx.disk_size) {
+		if (st->st_size > ctx.disk_size) {
 			errx(1, "Can never fit '%s' (%s).", filename,
-			    number_to_string(sb->st_size));
+			    number_to_string(st->st_size));
 		}
 
-		e = disk_entry_new(filename, sb->st_size);
+		e = disk_entry_new(filename, st->st_size);
 		vector_add(ctx.files, e);
 	} else
 		err(1, "'%s' is not a regular file.", filename);
