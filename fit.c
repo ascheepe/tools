@@ -118,7 +118,7 @@ disk_free(void *diskptr)
 }
 
 static int
-disk_add(struct disk *disk, struct file *file)
+file_add(struct disk *disk, struct file *file)
 {
 	if (disk->free - file->size < 0)
 		return 0;
@@ -241,7 +241,7 @@ fit(struct vector *files, struct vector *disks)
 		for (j = 0; j < disks->size; ++j) {
 			struct disk *disk = disks->items[j];
 
-			if (disk_add(disk, file)) {
+			if (file_add(disk, file)) {
 				added = true;
 				break;
 			}
@@ -251,8 +251,8 @@ fit(struct vector *files, struct vector *disks)
 			struct disk *disk;
 
 			disk = disk_new(ctx.disk_size);
-			if (!disk_add(disk, file))
-				errx(1, "disk_add failed.");
+			if (!file_add(disk, file))
+				errx(1, "file_add failed.");
 
 			vector_add(disks, disk);
 		}
