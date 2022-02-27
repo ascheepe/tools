@@ -210,7 +210,7 @@ disk_link(struct disk *disk, char *destdir)
 }
 
 static int
-by_size_descending(const void *file_a, const void *file_b)
+by_revsize(const void *file_a, const void *file_b)
 {
 	struct file *a = *((struct file **) file_a);
 	struct file *b = *((struct file **) file_b);
@@ -230,8 +230,7 @@ fit(struct vector *files, struct vector *disks)
 {
 	size_t i;
 
-	qsort(files->items, files->size, sizeof(files->items[0]),
-	    by_size_descending);
+	qsort(files->items, files->size, sizeof(files->items[0]), by_revsize);
 
 	for (i = 0; i < files->size; ++i) {
 		struct file *file = files->items[i];
