@@ -81,8 +81,7 @@ collect(const char *filename, const struct stat *st, int filetype,
 		if (mediatype == NULL)
 			errx(1, "%s", magic_error(ctx.mcookie));
 
-		playable =
-		    strncmp(ctx.mediatype, mediatype,
+		playable = strncmp(ctx.mediatype, mediatype,
 		    strlen(ctx.mediatype)) == 0;
 	} else
 		errx(1, "Extension or media type is not set.");
