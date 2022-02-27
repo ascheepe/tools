@@ -18,7 +18,7 @@ static const char *const usage_string = "\
 usage:  fit -s size [-l destdir] [-nr] path [path ...]\n\
 \n\
 options:\n\
-  -s size disk  size in k, m, g, or t.\n\
+  -s size       disk size in k, m, g, or t.\n\
   -l destdir    directory to link files into,\n\
                 if omitted just print the disks.\n\
   -n            show the number of disks it takes.\n\
