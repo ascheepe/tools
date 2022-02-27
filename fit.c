@@ -92,13 +92,13 @@ struct disk {
 static struct disk *
 disk_new(off_t size)
 {
-	static size_t disk_id;
+	static size_t id;
 	struct disk *disk;
 
 	disk = xmalloc(sizeof(*disk));
 	disk->files = vector_new();
 	disk->free = size;
-	disk->id = ++disk_id;
+	disk->id = ++id;
 
 	return disk;
 }
