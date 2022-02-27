@@ -41,7 +41,7 @@ options:\n\
 #include "utils.h"
 
 static struct {
-	off_t disk_size;
+	off_t disksize;
 	struct vector *files;
 	int lflag;
 	int nflag;
@@ -151,7 +151,7 @@ disk_print(struct disk *disk)
 	/* print a nice header */
 	sizestr = number_to_string(disk->free);
 	sprintf(buf, "Disk #%lu, %d%% (%s) free:", (unsigned long) disk->id,
-	    (int) (disk->free * 100 / ctx.disk_size), sizestr);
+	    (int) (disk->free * 100 / ctx.disksize), sizestr);
 	free(sizestr);
 
 	hline(strlen(buf));
@@ -250,7 +250,7 @@ fit(struct vector *files, struct vector *disks)
 		if (!added) {
 			struct disk *disk;
 
-			disk = disk_new(ctx.disk_size);
+			disk = disk_new(ctx.disksize);
 			if (!file_add(disk, file))
 				errx(1, "file_add failed.");
 
@@ -280,7 +280,7 @@ collect(const char *filename, const struct stat *st, int filetype,
 	if (filetype == FTW_F) {
 		struct file *file;
 
-		if (st->st_size > ctx.disk_size) {
+		if (st->st_size > ctx.disksize) {
 			errx(1, "Can never fit '%s' (%s).", filename,
 			    number_to_string(st->st_size));
 		}
@@ -321,13 +321,13 @@ main(int argc, char **argv)
 			ctx.rflag = true;
 			break;
 		case 's':
-			ctx.disk_size = string_to_number(optarg);
+			ctx.disksize = string_to_number(optarg);
 			break;
 		}
 	}
 
 	/* A path argument and the size option is mandatory. */
-	if (optind >= argc || ctx.disk_size <= 0)
+	if (optind >= argc || ctx.disksize <= 0)
 		usage();
 
 	ctx.files = vector_new();
