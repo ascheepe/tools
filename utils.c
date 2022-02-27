@@ -33,7 +33,8 @@ xcalloc(size_t nmemb, size_t size)
 {
 	void *ret;
 
-	if ((ret = calloc(nmemb, size)) == NULL)
+	ret = calloc(nmemb, size);
+	if (ret == NULL)
 		err(1, NULL);
 
 	return ret;
@@ -44,7 +45,8 @@ xmalloc(size_t size)
 {
 	void *ret;
 
-	if ((ret = malloc(size)) == NULL)
+	ret = malloc(size);
+	if (ret == NULL)
 		errx(1, "Can't allocate memory.");
 
 	return ret;
@@ -55,7 +57,8 @@ xrealloc(void *ptr, size_t size)
 {
 	void *ret;
 
-	if ((ret = realloc(ptr, size)) == NULL)
+	ret = realloc(ptr, size);
+	if (ret == NULL)
 		errx(1, "Can't reallocate memory.");
 
 	return ret;
