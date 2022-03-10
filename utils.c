@@ -67,8 +67,8 @@ xrealloc(void *ptr, size_t size)
 char *
 xstrdup(const char *str)
 {
-	size_t size;
-	char *ret;
+	size_t	size;
+	char	*ret;
 
 	size = strlen(str) + 1;
 	ret = xmalloc(size);
@@ -86,8 +86,8 @@ xstrdup(const char *str)
 off_t
 string_to_number(const char *str)
 {
-	char *unit;
-	off_t num;
+	char	*unit;
+	off_t	num;
 
 	num = strtol(str, &unit, 10);
 

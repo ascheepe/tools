@@ -47,13 +47,13 @@ options:\n\
 #include "utils.h"
 
 static struct {
-	magic_t mcookie;
-	char *mediatype;
-	char *ext;
-	char **cmd;
-	int argpos;
-	int verbose;
-	struct vector *files;
+	magic_t	mcookie;
+	char	*mediatype;
+	char	*ext;
+	char	**cmd;
+	int	argpos;
+	int	verbose;
+	struct	vector *files;
 } ctx;
 
 static int
@@ -130,8 +130,8 @@ init_magic(void)
 static void
 build_command(int argc, char **argv, int cmdstart)
 {
-	int cmdlen;
-	int i;
+	int	cmdlen;
+	int	i;
 
 	/* reserve for command + filename + NULL */
 	cmdlen = argc - cmdstart;
@@ -155,8 +155,8 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char *path = NULL;
-	int opt;
+	char	*path = NULL;
+	int	opt;
 
 	/*
 	 * GNU libc is not posix compliant and needs a + to stop

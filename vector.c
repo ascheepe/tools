@@ -69,8 +69,8 @@ vector_foreach(const struct vector *v, void (*f)(void *))
 void
 vector_shuffle(struct vector *v)
 {
-	static int seeded = false;
-	size_t i;
+	static int	seeded = false;
+	size_t		i;
 
 	if (!seeded) {
 		srandom(time(NULL) ^ getpid());
