@@ -49,7 +49,7 @@ vector_add(struct vector *v, void *data)
 	if (v->size == v->cap) {
 		size_t newcap;
 
-		newcap = v->cap * 3 / 2;
+		newcap = v->cap + (v->cap >> 1);
 		v->items = xrealloc(v->items, newcap * sizeof(v->items[0]));
 		v->cap = newcap;
 	}
