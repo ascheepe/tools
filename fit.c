@@ -174,7 +174,7 @@ printdisk(struct disk *disk)
  * Link the contents of a disk to the given destination directory.
  */
 static void
-disk_link(struct disk *disk, char *destdir)
+linkdisk(struct disk *disk, char *destdir)
 {
 	char	*tmp, *path;
 	size_t	i;
@@ -358,7 +358,7 @@ main(int argc, char **argv)
 		struct disk *d = vector_nth(disks, i);
 
 		if (ctx.lflag)
-			disk_link(d, destdir);
+			linkdisk(d, destdir);
 		else
 			printdisk(d);
 	}
