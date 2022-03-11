@@ -93,7 +93,7 @@ collect(const char *filename, const struct stat *st, int filetype,
 }
 
 static void
-play_file(void *pfilename)
+playfile(void *pfilename)
 {
 	char *filename = pfilename;
 
@@ -116,7 +116,7 @@ play_file(void *pfilename)
 }
 
 static void
-init_magic(void)
+initmagic(void)
 {
 	ctx.mcookie = magic_open(MAGIC_MIME);
 
@@ -128,7 +128,7 @@ init_magic(void)
 }
 
 static void
-build_command(int argc, char **argv, int cmdstart)
+buildcmd(int argc, char **argv, int cmdstart)
 {
 	int	cmdlen;
 	int	i;
@@ -174,7 +174,7 @@ main(int argc, char **argv)
 			ctx.ext = optarg;
 			break;
 		case 'm':
-			init_magic();
+			initmagic();
 			ctx.mediatype = optarg;
 			break;
 		case 'p':
@@ -199,7 +199,7 @@ main(int argc, char **argv)
 	if (optind >= argc)
 		usage();
 
-	build_command(argc, argv, optind);
+	buildcmd(argc, argv, optind);
 
 	if (ctx.verbose) {
 		printf("Searching for files...");
@@ -227,7 +227,7 @@ main(int argc, char **argv)
 		printf("%lu files found.\n", (unsigned long) ctx.files->size);
 
 	vector_shuffle(ctx.files);
-	vector_foreach(ctx.files, play_file);
+	vector_foreach(ctx.files, playfile);
 
 	if (path != NULL)
 		free(path);

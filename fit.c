@@ -58,7 +58,7 @@ struct file {
 };
 
 static struct file *
-file_new(const char *name, off_t size)
+newfile(const char *name, off_t size)
 {
 	struct file *file;
 
@@ -70,7 +70,7 @@ file_new(const char *name, off_t size)
 }
 
 static void
-file_free(void *fileptr)
+freefile(void *fileptr)
 {
 	struct file *file = fileptr;
 
@@ -90,7 +90,7 @@ struct disk {
 };
 
 static struct disk *
-disk_new(off_t size)
+newdisk(off_t size)
 {
 	static size_t	id;
 	struct disk	*disk;
@@ -104,7 +104,7 @@ disk_new(off_t size)
 }
 
 static void
-disk_free(void *diskptr)
+freedisk(void *diskptr)
 {
 	struct disk *disk = diskptr;
 
@@ -118,7 +118,7 @@ disk_free(void *diskptr)
 }
 
 static int
-file_add(struct disk *disk, struct file *file)
+addfile(struct disk *disk, struct file *file)
 {
 	if (disk->free - file->size < 0)
 		return 0;
@@ -142,7 +142,7 @@ hline(int len)
  * Pretty print a disk and it's contents.
  */
 static void
-disk_print(struct disk *disk)
+printdisk(struct disk *disk)
 {
 	char	buf[BUFSIZE];
 	char	*sizestr;
@@ -184,7 +184,7 @@ disk_link(struct disk *disk, char *destdir)
 
 	tmp = xmalloc(strlen(destdir) + 6);
 	sprintf(tmp, "%s/%04lu", destdir, (unsigned long) disk->id);
-	path = clean_path(tmp);
+	path = cleanpath(tmp);
 	free(tmp);
 
 	for (i = 0; i < disk->files->size; ++i) {
@@ -196,7 +196,7 @@ disk_link(struct disk *disk, char *destdir)
 		sprintf(destfile, "%s/%s", path, file->name);
 		slashpos = strrchr(destfile, '/');
 		*slashpos = '\0';
-		make_dirs(destfile);
+		makedirs(destfile);
 		*slashpos = '/';
 
 		if (link(file->name, destfile) == -1)
@@ -211,7 +211,7 @@ disk_link(struct disk *disk, char *destdir)
 }
 
 static int
-by_revsize(const void *file_a, const void *file_b)
+byrevsize(const void *file_a, const void *file_b)
 {
 	struct file *a = *((struct file **) file_a);
 	struct file *b = *((struct file **) file_b);
@@ -231,7 +231,7 @@ fit(struct vector *files, struct vector *disks)
 {
 	size_t i;
 
-	qsort(files->items, files->size, sizeof(files->items[0]), by_revsize);
+	qsort(files->items, files->size, sizeof(files->items[0]), byrevsize);
 
 	for (i = 0; i < files->size; ++i) {
 		struct file	*file = files->items[i];
@@ -241,7 +241,7 @@ fit(struct vector *files, struct vector *disks)
 		for (j = 0; j < disks->size; ++j) {
 			struct disk *disk = disks->items[j];
 
-			if (file_add(disk, file)) {
+			if (addfile(disk, file)) {
 				added = true;
 				break;
 			}
@@ -250,9 +250,9 @@ fit(struct vector *files, struct vector *disks)
 		if (!added) {
 			struct disk *disk;
 
-			disk = disk_new(ctx.disksize);
-			if (!file_add(disk, file))
-				errx(1, "file_add failed.");
+			disk = newdisk(ctx.disksize);
+			if (!addfile(disk, file))
+				errx(1, "addfile failed.");
 
 			vector_add(disks, disk);
 		}
@@ -285,7 +285,7 @@ collect(const char *filename, const struct stat *st, int filetype,
 			    number_to_string(st->st_size));
 		}
 
-		file = file_new(filename, st->st_size);
+		file = newfile(filename, st->st_size);
 		vector_add(ctx.files, file);
 	} else
 		err(1, "'%s' is not a regular file.", filename);
@@ -311,7 +311,7 @@ main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
 		switch (opt) {
 		case 'l':
-			destdir = clean_path(optarg);
+			destdir = cleanpath(optarg);
 			ctx.lflag = true;
 			break;
 		case 'n':
@@ -360,11 +360,11 @@ main(int argc, char **argv)
 		if (ctx.lflag)
 			disk_link(d, destdir);
 		else
-			disk_print(d);
+			printdisk(d);
 	}
 
-	vector_foreach(ctx.files, file_free);
-	vector_foreach(disks, disk_free);
+	vector_foreach(ctx.files, freefile);
+	vector_foreach(disks, freedisk);
 	vector_free(ctx.files);
 	vector_free(disks);
 

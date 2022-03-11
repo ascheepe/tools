@@ -142,7 +142,7 @@ number_to_string(const double num)
 #undef TB
 
 char *
-clean_path(char *path)
+cleanpath(char *path)
 {
 	char *buf, *bufpos, *ret;
 
@@ -187,7 +187,7 @@ make_dir(char *path)
 }
 
 void
-make_dirs(char *path)
+makedirs(char *path)
 {
 	char *slashpos = path + 1;
 
