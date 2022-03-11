@@ -66,6 +66,12 @@ vector_foreach(const struct vector *v, void (*f)(void *))
 		f(v->items[i]);
 }
 
+void*
+vector_nth(const struct vector *v, size_t n)
+{
+	return v->items[n];
+}
+
 void
 vector_shuffle(struct vector *v)
 {

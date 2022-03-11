@@ -160,7 +160,7 @@ printdisk(struct disk *disk)
 
 	/* and the contents */
 	for (i = 0; i < disk->files->size; ++i) {
-		struct file *file = disk->files->items[i];
+		struct file *file = vector_nth(disk->files, i);
 
 		sizestr = number_to_string(file->size);
 		printf("%10s %s\n", sizestr, file->name);
@@ -191,7 +191,7 @@ disk_link(struct disk *disk, char *destdir)
 		char		*slashpos, *destfile;
 		struct file	*file;
 
-		file = disk->files->items[i];
+		file = vector_nth(disk->files, i);
 		destfile = xmalloc(strlen(path) + strlen(file->name) + 2);
 		sprintf(destfile, "%s/%s", path, file->name);
 		slashpos = strrchr(destfile, '/');
@@ -234,12 +234,12 @@ fit(struct vector *files, struct vector *disks)
 	qsort(files->items, files->size, sizeof(files->items[0]), byrevsize);
 
 	for (i = 0; i < files->size; ++i) {
-		struct file	*file = files->items[i];
+		struct file	*file = vector_nth(files, i);
 		int		added = false;
 		size_t		j;
 
 		for (j = 0; j < disks->size; ++j) {
-			struct disk *disk = disks->items[j];
+			struct disk *disk = vector_nth(disks, j);
 
 			if (addfile(disk, file)) {
 				added = true;
@@ -355,7 +355,7 @@ main(int argc, char **argv)
 	}
 
 	for (i = 0; i < disks->size; ++i) {
-		struct disk *d = disks->items[i];
+		struct disk *d = vector_nth(disks, i);
 
 		if (ctx.lflag)
 			disk_link(d, destdir);
