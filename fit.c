@@ -267,6 +267,8 @@ int
 collect(const char *filename, const struct stat *st, int filetype,
     struct FTW *ftwbuf)
 {
+	struct file *file;
+
 	/* skip subdirectories if not doing a recursive collect */
 	if (!ctx.rflag && ftwbuf->level > 1)
 		return 0;
@@ -279,19 +281,17 @@ collect(const char *filename, const struct stat *st, int filetype,
 	if (filetype == FTW_D)
 		return 0;
 
-	/* collect regular files which can fit on a disk */
-	if (filetype == FTW_F) {
-		struct file *file;
-
-		if (st->st_size > ctx.disksize) {
-			errx(1, "Can never fit '%s' (%s).", filename,
-			    number_to_string(st->st_size));
-		}
-
-		file = newfile(filename, st->st_size);
-		vector_add(ctx.files, file);
-	} else
+	/* we can only handle regular files */
+	if (filetype != FTW_F)
 		err(1, "'%s' is not a regular file.", filename);
+
+	/* which are not too big to fit */
+	if (st->st_size > ctx.disksize)
+		errx(1, "Can never fit '%s' (%s).", filename,
+		    number_to_string(st->st_size));
+
+	file = newfile(filename, st->st_size);
+	vector_add(ctx.files, file);
 
 	return 0;
 }
