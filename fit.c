@@ -70,9 +70,9 @@ newfile(const char *name, off_t size)
 }
 
 static void
-freefile(void *fileptr)
+freefile(void *pfile)
 {
-	struct file *file = fileptr;
+	struct file *file = pfile;
 
 	free(file->name);
 	free(file);
@@ -104,9 +104,9 @@ newdisk(off_t size)
 }
 
 static void
-freedisk(void *diskptr)
+freedisk(void *pdisk)
 {
-	struct disk *disk = diskptr;
+	struct disk *disk = pdisk;
 
 	/*
 	 * NOTE: Files are shared with the files vector so we don't use a
