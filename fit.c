@@ -267,6 +267,9 @@ int
 collect(const char *filename, const struct stat *st, int filetype,
     struct FTW *ftwbuf)
 {
+	/* skip subdirectories if not doing a recursive collect */
+	if (!ctx.rflag && ftwbuf->level > 1)
+		return 0;
 
 	/* there might be access errors */
 	if (filetype == FTW_NS || filetype == FTW_SLN || filetype == FTW_DNR)
@@ -274,10 +277,6 @@ collect(const char *filename, const struct stat *st, int filetype,
 
 	/* skip directories */
 	if (filetype == FTW_D)
-		return 0;
-
-	/* skip subdirectories if not doing a recursive collect */
-	if (!ctx.rflag && ftwbuf->level > 1)
 		return 0;
 
 	/* collect regular files which can fit on a disk */
