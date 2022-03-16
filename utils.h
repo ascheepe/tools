@@ -25,14 +25,14 @@
 
 enum { false, true };
 
-void	*xcalloc(size_t, size_t);
-void	*xmalloc(size_t);
-void	*xrealloc(void *, size_t);
-char	*xstrdup(const char *);
-off_t	string_to_number(const char *);
-char	*number_to_string(const double);
-char	*cleanpath(char *);
-void	makedirs(char *);
+void *xcalloc(size_t, size_t);
+void *xmalloc(size_t);
+void *xrealloc(void *, size_t);
+char *xstrdup(const char *);
+off_t string_to_number(const char *);
+char *number_to_string(const double);
+char *cleanpath(char *);
+void makedirs(char *);
 
 #endif
 

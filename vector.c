@@ -75,8 +75,8 @@ vector_nth(const struct vector *v, size_t n)
 void
 vector_shuffle(struct vector *v)
 {
-	static int	seeded = false;
-	size_t		i;
+	static int seeded = false;
+	size_t i;
 
 	if (!seeded) {
 		srandom(time(NULL) ^ getpid());

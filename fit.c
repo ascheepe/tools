@@ -41,11 +41,11 @@ options:\n\
 #include "utils.h"
 
 static struct {
-	off_t	disksize;
-	struct	vector *files;
-	int	lflag;
-	int	nflag;
-	int	rflag;
+	off_t disksize;
+	struct vector *files;
+	int lflag;
+	int nflag;
+	int rflag;
 } ctx;
 
 /*
@@ -53,8 +53,8 @@ static struct {
  * size and the name of a file.
  */
 struct file {
-	off_t	size;
-	char	*name;
+	off_t size;
+	char *name;
 };
 
 static struct file *
@@ -84,16 +84,16 @@ freefile(void *pfile)
  * disks made.
  */
 struct disk {
-	struct	vector *files;
-	off_t	free;
-	size_t	id;
+	struct vector *files;
+	off_t free;
+	size_t id;
 };
 
 static struct disk *
 newdisk(off_t size)
 {
-	static size_t	id;
-	struct disk	*disk;
+	static size_t id;
+	struct disk *disk;
 
 	disk = xmalloc(sizeof(*disk));
 	disk->files = vector_new();
@@ -144,9 +144,9 @@ hline(int len)
 static void
 printdisk(struct disk *disk)
 {
-	char	buf[BUFSIZE];
-	char	*sizestr;
-	size_t	i;
+	char buf[BUFSIZE];
+	char *sizestr;
+	size_t i;
 
 	/* print a nice header */
 	sizestr = number_to_string(disk->free);
@@ -177,8 +177,8 @@ printdisk(struct disk *disk)
 static void
 linkdisk(struct disk *disk, char *destdir)
 {
-	char	*tmp, *path;
-	size_t	i;
+	charn*tmp, *path;
+	size_t i;
 
 	if (disk->id > 9999)
 		errx(1, "Number too big for format string.");
@@ -189,8 +189,8 @@ linkdisk(struct disk *disk, char *destdir)
 	free(tmp);
 
 	for (i = 0; i < disk->files->size; ++i) {
-		char		*slashpos, *destfile;
-		struct file	*file;
+		char *slashpos, *destfile;
+		struct file *file;
 
 		file = vector_nth(disk->files, i);
 		destfile = xmalloc(strlen(path) + strlen(file->name) + 2);
@@ -235,9 +235,9 @@ fit(struct vector *files, struct vector *disks)
 	qsort(files->items, files->size, sizeof(files->items[0]), byrevsize);
 
 	for (i = 0; i < files->size; ++i) {
-		struct file	*file;
-		int		added;
-		size_t		j;
+		struct file *file;
+		int added;
+		size_t j;
 
 		file = vector_nth(files, i);
 		added = false;
@@ -306,10 +306,10 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char		*destdir = NULL;
-	struct vector	*disks;
-	int		arg, opt;
-	size_t		i;
+	char *destdir = NULL;
+	struct vector *disks;
+	int arg, opt;
+	size_t i;
 
 	while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
 		switch (opt) {
