@@ -33,4 +33,3 @@ void *vector_nth(const struct vector *, size_t);
 void vector_shuffle(struct vector *);
 
 #endif
-

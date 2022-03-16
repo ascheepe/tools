@@ -177,7 +177,7 @@ printdisk(struct disk *disk)
 static void
 linkdisk(struct disk *disk, char *destdir)
 {
-	charn*tmp, *path;
+	char *tmp, *path;
 	size_t i;
 
 	if (disk->id > 9999)
@@ -377,4 +377,3 @@ main(int argc, char **argv)
 
 	return EXIT_SUCCESS;
 }
-

@@ -237,4 +237,3 @@ main(int argc, char **argv)
 	vector_free(ctx.files);
 	return EXIT_SUCCESS;
 }
-
