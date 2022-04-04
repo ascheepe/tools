@@ -358,13 +358,13 @@ main(int argc, char **argv)
 	}
 
 	for (i = 0; i < disks->size; ++i) {
-		struct disk *d;
+		struct disk *disk;
 
-		d = vector_nth(disks, i);
+		disk = vector_nth(disks, i);
 		if (ctx.lflag)
-			linkdisk(d, destdir);
+			linkdisk(disk, destdir);
 		else
-			printdisk(d);
+			printdisk(disk);
 	}
 
 	vector_foreach(ctx.files, freefile);
