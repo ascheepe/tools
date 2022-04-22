@@ -170,7 +170,7 @@ cleanpath(char *path)
 }
 
 static void
-make_dir(char *path)
+makedir(char *path)
 {
 	struct stat st;
 
@@ -193,9 +193,9 @@ makedirs(char *path)
 
 	while ((slashpos = strchr(slashpos, '/')) != NULL) {
 		*slashpos = '\0';
-		make_dir(path);
+		makedir(path);
 		*slashpos++ = '/';
 	}
 
-	make_dir(path);
+	makedir(path);
 }
