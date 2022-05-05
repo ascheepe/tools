@@ -23,16 +23,16 @@
 /* maximum number of file descriptors ftw will use */
 #define MAXFD 32
 
-enum { false, true };
+enum { FALSE, TRUE };
 
-void *xcalloc(size_t, size_t);
-void *xmalloc(size_t);
-void *xrealloc(void *, size_t);
-char *xstrdup(const char *);
-off_t string_to_number(const char *);
-char *number_to_string(const double);
-char *clean_path(char *);
-void make_dirs(char *);
+void  *xcalloc(size_t, size_t);
+void  *xmalloc(size_t);
+void  *xrealloc(void *, size_t);
+char  *xstrdup(const char *);
+off_t  string_to_number(const char *);
+char  *number_to_string(const double);
+char  *clean_path(char *);
+void   make_dirs(char *);
 
 #endif
 
