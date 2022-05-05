@@ -28,54 +28,49 @@
 
 #include "utils.h"
 
-void *
-xcalloc(size_t nmemb, size_t size)
-{
-	void *ret;
+void *xcalloc(size_t nmemb, size_t size) {
+    void *result = NULL;
 
-	ret = calloc(nmemb, size);
-	if (ret == NULL)
-		err(1, NULL);
+    result = calloc(nmemb, size);
+    if (result == NULL) {
+        err(1, NULL);
+    }
 
-	return ret;
+    return result;
 }
 
-void *
-xmalloc(size_t size)
-{
-	void *ret;
+void *xmalloc(size_t size) {
+    void *result = NULL;
 
-	ret = malloc(size);
-	if (ret == NULL)
-		errx(1, "Can't allocate memory.");
+    result = malloc(size);
+    if (result == NULL) {
+        errx(1, "Can't allocate memory.");
+    }
 
-	return ret;
+    return result;
 }
 
-void *
-xrealloc(void *ptr, size_t size)
-{
-	void *ret;
+void *xrealloc(void *ptr, size_t size) {
+    void *result = NULL;
 
-	ret = realloc(ptr, size);
-	if (ret == NULL)
-		errx(1, "Can't reallocate memory.");
+    result = realloc(ptr, size);
+    if (result == NULL) {
+        errx(1, "Can't reallocate memory.");
+    }
 
-	return ret;
+    return result;
 }
 
-char *
-xstrdup(const char *str)
-{
-	size_t size;
-	char *ret;
+char *xstrdup(const char *string) {
+    char *result = NULL;
+    size_t size;
 
-	size = strlen(str) + 1;
-	ret = xmalloc(size);
+    size = strlen(string) + 1;
+    result = xmalloc(size);
 
-	memcpy(ret, str, size);
+    memcpy(result, string, size);
 
-	return ret;
+    return result;
 }
 
 #define KB 1000L
@@ -83,57 +78,51 @@ xstrdup(const char *str)
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t
-string_to_number(const char *str)
-{
-	char *unit;
-	off_t num;
+off_t string_to_number(const char *string) {
+    char *unit = NULL;
+    off_t number;
 
-	num = strtol(str, &unit, 10);
+    number = strtol(string, &unit, 10);
 
-	if (unit == str)
-		errx(1, "Can't convert string '%s' to a number.", str);
+    if (unit == string) {
+        errx(1, "Can't convert string '%s' to a number.", string);
+    }
 
-	if (*unit == '\0')
-		return num;
+    if (*unit == '\0') {
+        return number;
+    }
 
-	/* unit should be one char, not more */
-	if (unit[1] == '\0') {
-		switch (tolower(*unit)) {
-		case 't':
-			return num * TB;
-		case 'g':
-			return num * GB;
-		case 'm':
-			return num * MB;
-		case 'k':
-			return num * KB;
-		case 'b':
-			return num;
-		}
-	}
+    /* unit should be one char, not more */
+    if (unit[1] == '\0') {
+        switch (tolower(*unit)) {
+            case 't': return number * TB;
+            case 'g': return number * GB;
+            case 'm': return number * MB;
+            case 'k': return number * KB;
+            case 'b': return number;
+        }
+    }
 
-	errx(1, "Unknown unit: '%s'", unit);
-	return 0;
+    errx(1, "Unknown unit: '%s'", unit);
+    return 0;
 }
 
-char *
-number_to_string(const double num)
-{
-	char str[BUFSIZE];
+char *number_to_string(const double number) {
+    char string[BUFSIZE];
 
-	if (num >= TB)
-		sprintf(str, "%.2fT", num / TB);
-	else if (num >= GB)
-		sprintf(str, "%.2fG", num / GB);
-	else if (num >= MB)
-		sprintf(str, "%.2fM", num / MB);
-	else if (num >= KB)
-		sprintf(str, "%.2fK", num / KB);
-	else
-		sprintf(str, "%.0fB", num);
+    if (number >= TB) {
+        sprintf(string, "%.2fT", number / TB);
+    } else if (number >= GB) {
+        sprintf(string, "%.2fG", number / GB);
+    } else if (number >= MB) {
+        sprintf(string, "%.2fM", number / MB);
+    } else if (number >= KB) {
+        sprintf(string, "%.2fK", number / KB);
+    } else {
+        sprintf(string, "%.0fB", number);
+    }
 
-	return xstrdup(str);
+    return xstrdup(string);
 }
 
 #undef KB
@@ -141,61 +130,64 @@ number_to_string(const double num)
 #undef GB
 #undef TB
 
-char *
-cleanpath(char *path)
-{
-	char *buf, *bufpos, *ret;
+char *clean_path(char *path) {
+    char *buffer = NULL;
+    char *buffer_position = NULL;
+    char *result = NULL;
 
-	buf = bufpos = xmalloc(strlen(path) + 1);
+    buffer = xmalloc(strlen(path) + 1);
+    buffer_position = buffer;
 
-	while (*path != '\0') {
-		if (*path == '/') {
-			*bufpos++ = *path++;
+    while (*path != '\0') {
+        if (*path == '/') {
+            *buffer_position++ = *path++;
 
-			while (*path == '/')
-				++path;
-		} else
-			*bufpos++ = *path++;
-	}
+            while (*path == '/') {
+                ++path;
+            }
+        } else {
+            *buffer_position++ = *path++;
+        }
+    }
 
-	if (bufpos > (buf + 1) && bufpos[-1] == '/')
-		bufpos[-1] = '\0';
-	else
-		*bufpos = '\0';
+    if (buffer_position > (buffer + 1) && buffer_position[-1] == '/') {
+        buffer_position[-1] = '\0';
+    } else {
+        *buffer_position = '\0';
+    }
 
-	ret = xstrdup(buf);
-	free(buf);
+    result = xstrdup(buffer);
+    free(buffer);
 
-	return ret;
+    return result;
 }
 
-static void
-makedir(char *path)
-{
-	struct stat st;
+static void make_dir(char *path) {
+    struct stat st;
 
-	if (stat(path, &st) == 0) {
-		/* if path already exists it should be a directory */
-		if (!S_ISDIR(st.st_mode))
-			errx(1, "'%s' is not a directory.", path);
+    if (stat(path, &st) == 0) {
+        /* if path already exists it should be a directory */
+        if (!S_ISDIR(st.st_mode)) {
+            errx(1, "'%s' is not a directory.", path);
+        }
 
-		return;
-	}
+        return;
+    }
 
-	if (mkdir(path, 0700) == -1)
-		err(1, "Can't make directory '%s'.", path);
+    if (mkdir(path, 0700) == -1) {
+        err(1, "Can't make directory '%s'.", path);
+    }
 }
 
-void
-makedirs(char *path)
-{
-	char *slashpos = path + 1;
+void make_dirs(char *path) {
+    char *slashpos = path + 1;
 
-	while ((slashpos = strchr(slashpos, '/')) != NULL) {
-		*slashpos = '\0';
-		makedir(path);
-		*slashpos++ = '/';
-	}
+    while ((slashpos = strchr(slashpos, '/')) != NULL) {
+        *slashpos = '\0';
+        make_dir(path);
+        *slashpos++ = '/';
+    }
 
-	makedir(path);
+    make_dir(path);
 }
+
