@@ -46,21 +46,19 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-static struct program_context
-{
-    magic_t         magic_cookie;
-    char           *mediatype;
-    char           *extension;
-    char          **command;
-    int             filename_index;
-    int             verbose;
-    struct vector  *files;
-}
-context;
+static struct program_context {
+    magic_t magic_cookie;
+    char *mediatype;
+    char *extension;
+    char **command;
+    int filename_index;
+    int verbose;
+    struct vector *files;
+} context;
 
 static int collect(const char *filename, const struct stat *st, int filetype,
-                   struct FTW *ftw_buffer)
-{
+    struct FTW *ftw_buffer) {
+
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -68,57 +66,44 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     (void) ftw_buffer;
 
     /* skip non regular files */
-    if (filetype != FTW_F)
-    {
+    if (filetype != FTW_F) {
         return 0;
     }
 
     /* if both extension and media-type are set prefer extension search */
-    if (context.extension != NULL)
-    {
+    if (context.extension != NULL) {
         playable = strcasecmp(filename + strlen(filename)
-                                       - strlen(context.extension),
-                              context.extension) == 0;
-    }
-    else if (context.mediatype != NULL)
-    {
+            - strlen(context.extension), context.extension) == 0;
+    } else if (context.mediatype != NULL) {
         const char *mediatype = magic_file(context.magic_cookie, filename);
 
-        if (mediatype == NULL)
-        {
+        if (mediatype == NULL) {
             errx(1, "%s", magic_error(context.magic_cookie));
         }
 
         playable = strncmp(context.mediatype,
-                           mediatype,
-                           strlen(context.mediatype)) == 0;
-    }
-    else
-    {
+            mediatype, strlen(context.mediatype)) == 0;
+    } else {
         errx(1, "Extension or media type is not set.");
     }
 
-    if (playable)
-    {
+    if (playable) {
         vector_add(context.files, xstrdup(filename));
     }
 
     return 0;
 }
 
-static void playfile(void *filename_ptr)
-{
+static void playfile(void *filename_ptr) {
     char *filename = filename_ptr;
 
-    switch (fork())
-    {
+    switch (fork()) {
         case -1:
             err(1, "Can't fork.");
             return;
 
         case 0:
-            if (context.verbose)
-            {
+            if (context.verbose) {
                 printf("Playing \"%s\".\n", filename);
             }
 
@@ -133,39 +118,31 @@ static void playfile(void *filename_ptr)
     }
 }
 
-static void init_magic(void)
-{
+static void init_magic(void) {
     context.magic_cookie = magic_open(MAGIC_MIME);
 
-    if (context.magic_cookie == NULL)
-    {
+    if (context.magic_cookie == NULL) {
         err(1, "Can't open libmagic.");
     }
 
-    if (magic_load(context.magic_cookie, NULL) == -1)
-    {
+    if (magic_load(context.magic_cookie, NULL) == -1) {
         errx(1, "%s.", magic_error(context.magic_cookie));
     }
 }
 
-static void build_command(int argc,
-                          char **argv,
-                          int command_starting_position)
-{
+static void build_command(int argc, char **argv, int command_starting_position) {
 
     int command_length;
-    int argument_nr;
+    int argument_index;
 
     /* reserve for command + filename + NULL */
     command_length = argc - command_starting_position;
     context.command = xmalloc((command_length + 2) * sizeof(char *));
 
-    for (argument_nr = command_starting_position;
-         argument_nr < argc;
-         ++argument_nr)
-    {
-        context.command[argument_nr - command_starting_position] =
-            argv[argument_nr];
+    for (argument_index = command_starting_position;
+        argument_index < argc; ++argument_index) {
+        context.command[argument_index - command_starting_position] =
+            argv[argument_index];
     }
 
     context.filename_index = command_length;
@@ -173,16 +150,14 @@ static void build_command(int argc,
     context.command[context.filename_index + 1] = NULL;
 }
 
-static void usage(void)
-{
+static void usage(void) {
     fprintf(stderr, "%s", usage_string);
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     char *path = NULL;
-    int   option;
+    int option;
 
     /*
      * GNU libc is not posix compliant and needs a + to stop
@@ -191,13 +166,11 @@ int main(int argc, char **argv)
      * could stop that by prefixing the command with --).
      */
 #ifdef __GNU_LIBRARY__
-    while ((option = getopt(argc, argv, "+e:m:p:v")) != -1)
+    while ((option = getopt(argc, argv, "+e:m:p:v")) != -1) {
 #else
-    while ((option = getopt(argc, argv, "e:m:p:v")) != -1)
+    while ((option = getopt(argc, argv, "e:m:p:v")) != -1) {
 #endif
-    {
-        switch (option)
-        {
+        switch (option) {
             case 'e':
                 context.extension = optarg;
                 break;
@@ -210,8 +183,7 @@ int main(int argc, char **argv)
             case 'p':
                 path = realpath(optarg, NULL);
 
-                if (path == NULL)
-                {
+                if (path == NULL) {
                     errx(1, "Can't resolve starting path '%s'.", optarg);
                 }
 
@@ -224,61 +196,50 @@ int main(int argc, char **argv)
     }
 
     /* extension or media-type must be set */
-    if (context.extension == NULL && context.mediatype == NULL)
-    {
+    if (context.extension == NULL && context.mediatype == NULL) {
         usage();
     }
 
     /* a command to run is mandatory */
-    if (optind >= argc)
-    {
+    if (optind >= argc) {
         usage();
     }
 
     build_command(argc, argv, optind);
 
-    if (context.verbose)
-    {
+    if (context.verbose) {
         printf("Searching for files...");
         fflush(stdout);
     }
 
     context.files = vector_new();
 
-    if (path != NULL)
-    {
+    if (path != NULL) {
         nftw(path, collect, MAXFD, FTW_PHYS);
-    }
-    else
-    {
+    } else {
         nftw(".", collect, MAXFD, FTW_PHYS);
     }
 
-    if (context.mediatype)
-    {
+    if (context.mediatype) {
         magic_close(context.magic_cookie);
     }
 
-    if (context.files->size == 0)
-    {
-        if (context.verbose)
-        {
+    if (context.files->size == 0) {
+        if (context.verbose) {
             printf("no files found.\n");
         }
 
         exit(1);
     }
 
-    if (context.verbose)
-    {
+    if (context.verbose) {
         printf("%lu files found.\n", (unsigned long) context.files->size);
     }
 
     vector_shuffle(context.files);
     vector_for_each(context.files, playfile);
 
-    if (path != NULL)
-    {
+    if (path != NULL) {
         free(path);
     }
 
