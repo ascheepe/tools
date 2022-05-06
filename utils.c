@@ -28,50 +28,57 @@
 
 #include "utils.h"
 
-void *xcalloc(size_t nmemb, size_t size) {
-    void *result = calloc(nmemb, size);
+void *
+xcalloc(size_t nmemb, size_t size)
+{
+	void *ret;
 
-    if (result == NULL) {
-        err(1, NULL);
-    }
+	ret = calloc(nmemb, size);
+	if (ret == NULL)
+		err(1, NULL);
 
-    return result;
+	return ret;
 }
 
-void *xmalloc(size_t size) {
-    void *result = malloc(size);
+void *
+xmalloc(size_t size)
+{
+	void *ret;
 
-    if (result == NULL) {
-        errx(1, "Can't allocate memory.");
-    }
+	ret = malloc(size);
+	if (ret == NULL)
+		errx(1, "Can't allocate memory.");
 
-    return result;
+	return ret;
 }
 
-void *xrealloc(void *ptr, size_t size) {
-    void *result = realloc(ptr, size);
+void *
+xrealloc(void *ptr, size_t size)
+{
+	void *ret;
 
-    if (result == NULL) {
-        errx(1, "Can't reallocate memory.");
-    }
+	ret = realloc(ptr, size);
+	if (ret == NULL)
+		errx(1, "Can't reallocate memory.");
 
-    return result;
+	return ret;
 }
 
-char *xstrdup(const char *string) {
-    char *result = NULL;
-    size_t size;
+char *
+xstrdup(const char *str)
+{
+	char *ret;
+	size_t size;
 
-    if (string == NULL) {
-        return NULL;
-    }
+	if (str == NULL)
+		return NULL;
 
-    size = strlen(string) + 1;
-    result = xmalloc(size);
+	size = strlen(str) + 1;
+	ret = xmalloc(size);
 
-    memcpy(result, string, size);
+	memcpy(ret, str, size);
 
-    return result;
+	return ret;
 }
 
 #define KB 1000L
@@ -79,60 +86,61 @@ char *xstrdup(const char *string) {
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t string_to_number(const char *string) {
-    char *unit = NULL;
-    off_t number;
+off_t
+string_to_number(const char *str)
+{
+	char *unit = NULL;
+	off_t num;
 
-    number = strtol(string, &unit, 10);
+	num = strtol(str, &unit, 10);
 
-    if (unit == string) {
-        errx(1, "Can't convert string '%s' to a number.", string);
-    }
+	if (unit == str)
+		errx(1, "Can't convert string '%s' to a number.", str);
 
-    if (*unit == '\0') {
-        return number;
-    }
+	if (*unit == '\0')
+		return num;
 
-    /* unit should be one char, not more */
-    if (unit[1] == '\0') {
-        switch (tolower(*unit)) {
-            case 't':
-                return number * TB;
+	/* unit should be one char, not more */
+	if (unit[1] == '\0') {
+		switch (tolower(*unit)) {
+		case 't':
+			return num * TB;
 
-            case 'g':
-                return number * GB;
+		case 'g':
+			return num * GB;
 
-            case 'm':
-                return number * MB;
+		case 'm':
+			return num * MB;
 
-            case 'k':
-                return number * KB;
+		case 'k':
+			return num * KB;
 
-            case 'b':
-                return number;
-        }
-    }
+		case 'b':
+			return num;
+		}
+	}
 
-    errx(1, "Unknown unit: '%s'", unit);
-    return 0;
+	errx(1, "Unknown unit: '%s'", unit);
+	return 0;
 }
 
-char *number_to_string(const double number) {
-    char string[BUFSIZE];
+char *
+number_to_string(const double num)
+{
+	char str[BUFSIZE];
 
-    if (number >= TB) {
-        sprintf(string, "%.2fT", number / TB);
-    } else if (number >= GB) {
-        sprintf(string, "%.2fG", number / GB);
-    } else if (number >= MB) {
-        sprintf(string, "%.2fM", number / MB);
-    } else if (number >= KB) {
-        sprintf(string, "%.2fK", number / KB);
-    } else {
-        sprintf(string, "%.0fB", number);
-    }
+	if (num >= TB)
+		sprintf(str, "%.2fT", num / TB);
+	else if (num >= GB)
+		sprintf(str, "%.2fG", num / GB);
+	else if (num >= MB)
+		sprintf(str, "%.2fM", num / MB);
+	else if (num >= KB)
+		sprintf(str, "%.2fK", num / KB);
+	else
+		sprintf(str, "%.0fB", num);
 
-    return xstrdup(string);
+	return xstrdup(str);
 }
 
 #undef KB
@@ -140,63 +148,64 @@ char *number_to_string(const double number) {
 #undef GB
 #undef TB
 
-char *clean_path(char *path) {
-    char *buffer = NULL;
-    char *buffer_position = NULL;
-    char *result = NULL;
+char *
+clean_path(char *path)
+{
+	char *buf, *bufpos, *ret;
 
-    buffer = xmalloc(strlen(path) + 1);
-    buffer_position = buffer;
+	buf = bufpos = xmalloc(strlen(path) + 1);
 
-    while (*path != '\0') {
-        if (*path == '/') {
-            *buffer_position++ = *path++;
+	while (*path != '\0') {
+		if (*path == '/') {
+			*bufpos++ = *path++;
 
-            while (*path == '/') {
-                ++path;
-            }
-        } else {
-            *buffer_position++ = *path++;
-        }
-    }
+			while (*path == '/')
+				++path;
+		} else
+			*bufpos++ = *path++;
+	}
 
-    if (buffer_position > (buffer + 1) && buffer_position[-1] == '/') {
-        buffer_position[-1] = '\0';
-    } else {
-        *buffer_position = '\0';
-    }
+	if (bufpos > (buf + 1) && bufpos[-1] == '/')
+		bufpos[-1] = '\0';
+	else
+		*bufpos = '\0';
 
-    result = xstrdup(buffer);
-    free(buffer);
+	ret = xstrdup(buf);
+	free(buf);
 
-    return result;
+
+	return ret;
 }
 
-static void make_dir(char *path) {
-    struct stat st;
+static void
+make_dir(char *path)
+{
+	struct stat st;
 
-    if (stat(path, &st) == 0) {
-        /* if path already exists it should be a directory */
-        if (!S_ISDIR(st.st_mode)) {
-            errx(1, "'%s' is not a directory.", path);
-        }
+	if (stat(path, &st) == 0) {
 
-        return;
-    }
+		/* if path already exists it should be a directory */
+		if (!S_ISDIR(st.st_mode))
+			errx(1, "'%s' is not a directory.", path);
 
-    if (mkdir(path, 0700) == -1) {
-        err(1, "Can't make directory '%s'.", path);
-    }
+		return;
+	}
+
+	if (mkdir(path, 0700) == -1)
+		err(1, "Can't make directory '%s'.", path);
 }
 
-void make_dirs(char *path) {
-    char *slash_position = path + 1;
+void
+make_dirs(char *path)
+{
+	char *slashpos = path + 1;
 
-    while ((slash_position = strchr(slash_position, '/')) != NULL) {
-        *slash_position = '\0';
-        make_dir(path);
-        *slash_position++ = '/';
-    }
+	while ((slashpos = strchr(slashpos, '/')) != NULL) {
+		*slashpos = '\0';
+		make_dir(path);
+		*slashpos++ = '/';
+	}
 
-    make_dir(path);
+	make_dir(path);
 }
+
