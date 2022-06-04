@@ -58,18 +58,18 @@ void *xrealloc(void *ptr, size_t size) {
     return result;
 }
 
-char *xstrdup(const char *str) {
+char *xstrdup(const char *string) {
     char *result;
     size_t size;
 
-    if (str == NULL) {
+    if (string == NULL) {
         return NULL;
     }
 
-    size = strlen(str) + 1;
+    size = strlen(string) + 1;
     result = xmalloc(size);
 
-    memcpy(result, str, size);
+    memcpy(result, string, size);
 
     return result;
 }
@@ -79,12 +79,12 @@ char *xstrdup(const char *str) {
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t string_to_number(const char *str) {
+off_t string_to_number(const char *string) {
     char *unit = NULL;
-    off_t number = strtol(str, &unit, 10);
+    off_t number = strtol(string, &unit, 10);
 
-    if (unit == str) {
-        errx(1, "Can't convert string '%s' to a number.", str);
+    if (unit == string) {
+        errx(1, "Can't convert string '%s' to a number.", string);
     }
 
     if (*unit == '\0') {
@@ -116,21 +116,21 @@ off_t string_to_number(const char *str) {
 }
 
 char *number_to_string(const double number) {
-    char str[BUFSIZE];
+    char string[BUFSIZE];
 
     if (number >= TB) {
-        sprintf(str, "%.2fT", number / TB);
+        sprintf(string, "%.2fT", number / TB);
     } else if (number >= GB) {
-        sprintf(str, "%.2fG", number / GB);
+        sprintf(string, "%.2fG", number / GB);
     } else if (number >= MB) {
-        sprintf(str, "%.2fM", number / MB);
+        sprintf(string, "%.2fM", number / MB);
     } else if (number >= KB) {
-        sprintf(str, "%.2fK", number / KB);
+        sprintf(string, "%.2fK", number / KB);
     } else {
-        sprintf(str, "%.0fB", number);
+        sprintf(string, "%.0fB", number);
     }
 
-    return xstrdup(str);
+    return xstrdup(string);
 }
 
 #undef KB
