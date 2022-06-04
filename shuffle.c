@@ -72,23 +72,16 @@ static int collect(const char *filename, const struct stat *st, int filetype,
 
     /* if both extension and media-type are set prefer extension search */
     if (ctx.extension != NULL) {
-        playable = strcasecmp(
-                filename
-                + strlen(filename)
-                - strlen(ctx.extension),
-                ctx.extension
-        ) == 0;
+        playable = strcasecmp(filename + strlen(filename)
+                - strlen(ctx.extension), ctx.extension) == 0;
     } else if (ctx.mediatype != NULL) {
         const char *mediatype = magic_file(ctx.magic_cookie, filename);
         if (mediatype == NULL) {
             errx(1, "%s", magic_error(ctx.magic_cookie));
         }
 
-        playable = strncmp(
-                ctx.mediatype,
-                mediatype,
-                strlen(ctx.mediatype)
-        ) == 0;
+        playable = strncmp(ctx.mediatype, mediatype,
+                strlen(ctx.mediatype)) == 0;
     } else {
         errx(1, "Extension or media type is not set.");
     }
@@ -147,11 +140,8 @@ static void build_command(int argc, char **argv, int command_start) {
     /* reserve for command + filename + NULL */
     ctx.command = xmalloc((command_length + 2) * sizeof(char *));
 
-    for (
-            argument_index = command_start;
-            argument_index < argc;
-            ++argument_index
-    ) {
+    for (argument_index = command_start; argument_index < argc;
+            ++argument_index) {
         ctx.command[argument_index - command_start] = argv[argument_index];
     }
 

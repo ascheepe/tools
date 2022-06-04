@@ -175,11 +175,8 @@ static void disk_link(struct disk *disk, char *destdir) {
 
     for (file_index = 0; file_index < disk->files->size; ++file_index) {
         struct file *file = disk->files->items[file_index];
-        char *destination_file = xmalloc(
-                strlen(path)
-                + strlen(file->name)
-                + 2
-        );
+        char *destination_file = xmalloc(strlen(path) + strlen(file->name)
+                + 2);
         char *slash_position = NULL;
 
         sprintf(destination_file, "%s/%s", path, file->name);
@@ -273,11 +270,8 @@ int collect(const char *filename, const struct stat *st, int filetype,
 
     /* which are not too big to fit */
     if (st->st_size > ctx.disk_size) {
-        errx(
-                1,
-                "Can never fit '%s' (%s).", filename,
-                number_to_string(st->st_size)
-        );
+        errx(1, "Can never fit '%s' (%s).", filename,
+                number_to_string(st->st_size));
     }
 
     file = file_new(filename, st->st_size);
@@ -346,10 +340,8 @@ int main(int argc, char **argv) {
     }
 
     if (ctx.do_show_disk_count) {
-        printf(
-                "%lu disk%s.\n", (unsigned long) disks->size,
-                disks->size > 1 ? "s" : ""
-        );
+        printf("%lu disk%s.\n", (unsigned long) disks->size,
+                disks->size > 1 ? "s" : "");
         exit(EXIT_SUCCESS);
     }
 
