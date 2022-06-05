@@ -226,7 +226,7 @@ int main(int argc, char **argv) {
         nftw(".", collect, MAXFD, FTW_PHYS);
     }
 
-    if (cfg.mediatype) {
+    if (cfg.magic_cookie != NULL) {
         magic_close(cfg.magic_cookie);
     }
 
