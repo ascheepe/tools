@@ -143,8 +143,6 @@ char *clean_path(char *path) {
     char *bufpos = buf;
     char *result = NULL;
 
-    buf = bufpos = xmalloc(strlen(path) + 1);
-
     while (*path != '\0') {
         if (*path == '/') {
             *bufpos++ = *path++;
