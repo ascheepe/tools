@@ -15,14 +15,14 @@
  */
 
 static const char *const usage_string = "\
-usage:  fit -s size [-l destdir] [-nr] path [path ...]\n\
+usage:  fit -s size [-l destination] [-nr] path [path ...]\n\
 \n\
 options:\n\
-  -s size     disk size in k, m, g, or t.\n\
-  -l destdir  directory to link files into,\n\
-              if omitted just print the disks.\n\
-  -n          show the number of disks it takes.\n\
-  path        path to the files to fit.\n\
+  -s size        disk size in k, m, g, or t.\n\
+  -l destination directory to link files into,\n\
+                 if omitted just print the disks.\n\
+  -n             show the number of disks it takes.\n\
+  path           path to the files to fit.\n\
 \n";
 
 #include <sys/stat.h>
@@ -161,7 +161,7 @@ static void disk_print(struct disk *disk) {
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void disk_link(struct disk *disk, char *destdir) {
+static void disk_link(struct disk *disk, char *destination_directory) {
     char *path = NULL;
     char *dirty_path = NULL;
     size_t file_index;
@@ -170,8 +170,11 @@ static void disk_link(struct disk *disk, char *destdir) {
         errx(1, "Number too big for format string.");
     }
 
-    dirty_path = xmalloc(strlen(destdir) + 6);
-    sprintf(dirty_path, "%s/%04lu", destdir, (unsigned long) disk->id);
+    dirty_path = xmalloc(strlen(destination_directory) + 6);
+    sprintf(dirty_path,
+            "%s/%04lu",
+            destination_directory,
+            (unsigned long) disk->id);
     path = clean_path(dirty_path);
     free(dirty_path);
 
@@ -290,7 +293,7 @@ static void usage(void) {
 }
 
 int main(int argc, char **argv) {
-    char *destdir = NULL;
+    char *destination_directory = NULL;
     struct vector *disks = NULL;
     size_t disk_index;
     int argument_index;
@@ -299,7 +302,7 @@ int main(int argc, char **argv) {
     while ((option = getopt(argc, argv, "l:nrs:")) != -1) {
         switch (option) {
             case 'l':
-                destdir = clean_path(optarg);
+                destination_directory = clean_path(optarg);
                 cfg.do_link_disks = TRUE;
                 break;
 
@@ -354,7 +357,7 @@ int main(int argc, char **argv) {
         struct disk *disk = disks->items[disk_index];
 
         if (cfg.do_link_disks) {
-            disk_link(disk, destdir);
+            disk_link(disk, destination_directory);
         } else {
             disk_print(disk);
         }
@@ -366,7 +369,7 @@ int main(int argc, char **argv) {
     vector_free(disks);
 
     if (cfg.do_link_disks) {
-        free(destdir);
+        free(destination_directory);
     }
 
     return EXIT_SUCCESS;
