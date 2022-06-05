@@ -57,7 +57,7 @@ static struct program_config {
 } cfg;
 
 static int collect(const char *filename, const struct stat *st, int filetype,
-        struct FTW *ftwbuf) {
+                   struct FTW *ftwbuf) {
 
     int playable = FALSE;
 
@@ -72,16 +72,19 @@ static int collect(const char *filename, const struct stat *st, int filetype,
 
     /* if both extension and media-type are set prefer extension search */
     if (cfg.extension != NULL) {
-        playable = strcasecmp(filename + strlen(filename)
-                - strlen(cfg.extension), cfg.extension) == 0;
+        playable = strcasecmp(filename
+                              + strlen(filename)
+                              - strlen(cfg.extension),
+                              cfg.extension) == 0;
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
         if (mediatype == NULL) {
             errx(1, "%s", magic_error(cfg.magic_cookie));
         }
 
-        playable = strncmp(cfg.mediatype, mediatype,
-                strlen(cfg.mediatype)) == 0;
+        playable = strncmp(cfg.mediatype,
+                           mediatype,
+                           strlen(cfg.mediatype)) == 0;
     } else {
         errx(1, "Extension or media type is not set.");
     }
@@ -130,7 +133,7 @@ static void init_magic(void) {
 }
 
 /* build a command from the arguments. The command starts
- * after the normal arguments, so at arg end.
+ * after the normal arguments.
  */
 static void build_command(int argc, char **argv, int command_start) {
 
@@ -140,8 +143,10 @@ static void build_command(int argc, char **argv, int command_start) {
     /* reserve for command + filename + NULL */
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
-    for (argument_index = command_start; argument_index < argc;
-            ++argument_index) {
+    for (argument_index = command_start;
+         argument_index < argc;
+         ++argument_index) {
+
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
 
@@ -183,8 +188,9 @@ int main(int argc, char **argv) {
             case 'p':
                 path = realpath(optarg, NULL);
 
-                if (path == NULL)
+                if (path == NULL) {
                     errx(1, "Can't resolve starting path '%s'.", optarg);
+                }
 
                 break;
 

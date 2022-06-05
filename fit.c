@@ -136,8 +136,10 @@ static void disk_print(struct disk *disk) {
 
     /* print a nice header */
     size_string = number_to_string(disk->free);
-    sprintf(buf, "Disk #%lu, %d%% (%s) free:", (unsigned long) disk->id,
-            (int) (disk->free * 100 / cfg.disk_size), size_string);
+    sprintf(buf, "Disk #%lu, %d%% (%s) free:",
+            (unsigned long) disk->id,
+            (int) (disk->free * 100 / cfg.disk_size),
+            size_string);
     free(size_string);
 
     print_separator(strlen(buf));
@@ -175,8 +177,9 @@ static void disk_link(struct disk *disk, char *destdir) {
 
     for (file_index = 0; file_index < disk->files->size; ++file_index) {
         struct file *file = disk->files->items[file_index];
-        char *destination_file = xmalloc(strlen(path) + strlen(file->name)
-                + 2);
+        char *destination_file = xmalloc(strlen(path)
+                                         + strlen(file->name)
+                                         + 2);
         char *slash_position = NULL;
 
         sprintf(destination_file, "%s/%s", path, file->name);
@@ -215,7 +218,7 @@ static void fit(struct vector *files, struct vector *disks) {
     size_t file_index;
 
     qsort(files->items, files->size, sizeof(files->items[0]),
-            by_file_size_descending);
+          by_file_size_descending);
 
     for (file_index = 0; file_index < files->size; ++file_index) {
         struct file *file = files->items[file_index];
@@ -244,7 +247,7 @@ static void fit(struct vector *files, struct vector *disks) {
 }
 
 int collect(const char *filename, const struct stat *st, int filetype,
-        struct FTW *ftwbuf) {
+            struct FTW *ftwbuf) {
 
     struct file *file = NULL;
 
@@ -270,8 +273,9 @@ int collect(const char *filename, const struct stat *st, int filetype,
 
     /* which are not too big to fit */
     if (st->st_size > cfg.disk_size) {
-        errx(1, "Can never fit '%s' (%s).", filename,
-                number_to_string(st->st_size));
+        errx(1, "Can never fit '%s' (%s).",
+             filename,
+             number_to_string(st->st_size));
     }
 
     file = file_new(filename, st->st_size);
@@ -340,8 +344,9 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.do_show_disk_count) {
-        printf("%lu disk%s.\n", (unsigned long) disks->size,
-                disks->size > 1 ? "s" : "");
+        printf("%lu disk%s.\n",
+               (unsigned long) disks->size,
+               disks->size > 1 ? "s" : "");
         exit(EXIT_SUCCESS);
     }
 
