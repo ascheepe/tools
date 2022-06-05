@@ -78,6 +78,7 @@ static int collect(const char *filename, const struct stat *st, int filetype,
                               cfg.extension) == 0;
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
+
         if (mediatype == NULL) {
             errx(1, "%s", magic_error(cfg.magic_cookie));
         }
