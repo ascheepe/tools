@@ -192,7 +192,7 @@ static void disk_link(struct disk *disk, char *destination_directory) {
         *slash_position = '/';
 
         if (link(file->name, destination_file) == -1) {
-            err(1, "Can't link '%s' to '%s'.", file->name, destination_file);
+            err(1, "Can't link '%s' to '%s'", file->name, destination_file);
         }
 
         printf("%s -> %s\n", file->name, path);
@@ -259,7 +259,7 @@ int collect(const char *filename, const struct stat *st, int filetype,
 
     /* there might be access errors */
     if (filetype == FTW_NS || filetype == FTW_SLN || filetype == FTW_DNR) {
-        err(1, "Can't access '%s'.", filename);
+        errx(1, "Can't access '%s'.", filename);
     }
 
     /* skip directories */
@@ -269,7 +269,7 @@ int collect(const char *filename, const struct stat *st, int filetype,
 
     /* we can only handle regular files */
     if (filetype != FTW_F) {
-        err(1, "'%s' is not a regular file.", filename);
+        errx(1, "'%s' is not a regular file.", filename);
     }
 
     /* which are not too big to fit */

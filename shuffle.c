@@ -100,7 +100,7 @@ static void playfile(void *filename_ptr) {
 
     switch (fork()) {
         case -1:
-            err(1, "Can't fork.");
+            err(1, "Can't fork");
             return;
 
         case 0:
@@ -110,7 +110,7 @@ static void playfile(void *filename_ptr) {
 
             cfg.command[cfg.filename_index] = filename;
             execvp(cfg.command[0], (char *const *) cfg.command);
-            err(1, "Can't execute player.");
+            err(1, "Can't execute player");
             break;
 
         default:
@@ -123,7 +123,7 @@ static void init_magic(void) {
     cfg.magic_cookie = magic_open(MAGIC_MIME);
 
     if (cfg.magic_cookie == NULL) {
-        err(1, "Can't open libmagic.");
+        errx(1, "Can't open libmagic.");
     }
 
     if (magic_load(cfg.magic_cookie, NULL) == -1) {
