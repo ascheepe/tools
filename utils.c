@@ -130,30 +130,30 @@ char *number_to_string(const double number) {
 #undef TB
 
 char *clean_path(char *path) {
-    char *buf = xmalloc(strlen(path) + 1);
-    char *bufpos = buf;
+    char *buffer = xmalloc(strlen(path) + 1);
+    char *buffer_position = buffer;
     char *result = NULL;
 
     while (*path != '\0') {
         if (*path == '/') {
-            *bufpos++ = *path++;
+            *buffer_position++ = *path++;
 
             while (*path == '/') {
                 ++path;
             }
         } else {
-            *bufpos++ = *path++;
+            *buffer_position++ = *path++;
         }
     }
 
-    if (bufpos > (buf + 1) && bufpos[-1] == '/') {
-        bufpos[-1] = '\0';
+    if (buffer_position > (buffer + 1) && buffer_position[-1] == '/') {
+        buffer_position[-1] = '\0';
     } else {
-        *bufpos = '\0';
+        *buffer_position = '\0';
     }
 
-    result = xstrdup(buf);
-    free(buf);
+    result = xstrdup(buffer);
+    free(buffer);
 
     return result;
 }
