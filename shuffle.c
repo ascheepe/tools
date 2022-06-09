@@ -58,7 +58,6 @@ static struct program_config {
 
 static int collect(const char *filename, const struct stat *st, int filetype,
                    struct FTW *ftwbuf) {
-
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -137,7 +136,6 @@ static void init_magic(void) {
  * after the normal arguments.
  */
 static void build_command(int argc, char **argv, int command_start) {
-
     int command_length = argc - command_start;
     int argument_index;
 

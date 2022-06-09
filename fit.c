@@ -203,7 +203,6 @@ static void disk_link(struct disk *disk, char *destination_directory) {
 }
 
 static int by_file_size_descending(const void *file_a, const void *file_b) {
-
     struct file *a = *((struct file **) file_a);
     struct file *b = *((struct file **) file_b);
 
@@ -251,7 +250,6 @@ static void fit(struct vector *files, struct vector *disks) {
 
 int collect(const char *filename, const struct stat *st, int filetype,
             struct FTW *ftwbuf) {
-
     struct file *file = NULL;
 
     /* skip subdirectories if not doing a recursive collect */
