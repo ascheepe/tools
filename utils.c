@@ -162,7 +162,6 @@ static void make_dir(char *path) {
     struct stat st;
 
     if (stat(path, &st) == 0) {
-
         /* if path already exists it should be a directory */
         if (!S_ISDIR(st.st_mode)) {
             errx(1, "'%s' is not a directory.", path);
