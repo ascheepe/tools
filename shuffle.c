@@ -161,7 +161,6 @@ static void build_command(int argc, char **argv, int command_start)
          argument_index < argc;
          ++argument_index)
     {
-
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
 
