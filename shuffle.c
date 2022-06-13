@@ -158,7 +158,8 @@ static void build_command(int argc, char **argv, int command_start)
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
-         argument_index < argc; ++argument_index)
+         argument_index < argc;
+         ++argument_index)
     {
 
         cfg.command[argument_index - command_start] = argv[argument_index];
