@@ -46,18 +46,20 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-static struct program_config {
-    magic_t magic_cookie;
-    char *mediatype;
-    char *extension;
-    char **command;
-    int filename_index;
-    int verbose;
-    struct vector *files;
+static struct program_config
+{
+    magic_t         magic_cookie;
+    char           *mediatype;
+    char           *extension;
+    char          **command;
+    int             filename_index;
+    int             verbose;
+    struct vector  *files;
 } cfg;
 
 static int collect(const char *filename, const struct stat *st, int filetype,
-                   struct FTW *ftwbuf) {
+                   struct FTW *ftwbuf)
+{
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -65,46 +67,56 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     (void) ftwbuf;
 
     /* skip non regular files */
-    if (filetype != FTW_F) {
+    if (filetype != FTW_F)
+    {
         return 0;
     }
 
     /* if both extension and media-type are set prefer extension search */
-    if (cfg.extension != NULL) {
+    if (cfg.extension != NULL)
+    {
         playable = strcasecmp(filename + strlen(filename)
                                        - strlen(cfg.extension),
                               cfg.extension) == 0;
-    } else if (cfg.mediatype != NULL) {
+    }
+    else if (cfg.mediatype != NULL)
+    {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
 
-        if (mediatype == NULL) {
+        if (mediatype == NULL)
+        {
             errx(1, "%s", magic_error(cfg.magic_cookie));
         }
 
-        playable = strncmp(cfg.mediatype,
-                           mediatype,
+        playable = strncmp(cfg.mediatype, mediatype,
                            strlen(cfg.mediatype)) == 0;
-    } else {
+    }
+    else
+    {
         errx(1, "Extension or media type is not set.");
     }
 
-    if (playable) {
+    if (playable)
+    {
         vector_add(cfg.files, xstrdup(filename));
     }
 
     return 0;
 }
 
-static void playfile(void *filename_ptr) {
+static void playfile(void *filename_ptr)
+{
     char *filename = filename_ptr;
 
-    switch (fork()) {
+    switch (fork())
+    {
         case -1:
             err(1, "Can't fork");
             return;
 
         case 0:
-            if (cfg.verbose) {
+            if (cfg.verbose)
+            {
                 printf("Playing \"%s\".\n", filename);
             }
 
@@ -119,14 +131,17 @@ static void playfile(void *filename_ptr) {
     }
 }
 
-static void init_magic(void) {
+static void init_magic(void)
+{
     cfg.magic_cookie = magic_open(MAGIC_MIME);
 
-    if (cfg.magic_cookie == NULL) {
+    if (cfg.magic_cookie == NULL)
+    {
         errx(1, "Can't open libmagic.");
     }
 
-    if (magic_load(cfg.magic_cookie, NULL) == -1) {
+    if (magic_load(cfg.magic_cookie, NULL) == -1)
+    {
         errx(1, "%s.", magic_error(cfg.magic_cookie));
     }
 }
@@ -134,33 +149,37 @@ static void init_magic(void) {
 /* build a command from the arguments. The command starts
  * after the normal arguments.
  */
-static void build_command(int argc, char **argv, int command_start) {
-    int command_length = argc - command_start;
+static void build_command(int argc, char **argv, int command_start)
+{
+    int command_length  = argc - command_start;
     int argument_index;
 
     /* reserve for command + filename + NULL */
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
-         argument_index < argc;
-         ++argument_index) {
+         argument_index < argc; ++argument_index)
+    {
 
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
 
     cfg.filename_index = command_length;
-    cfg.command[cfg.filename_index] = NULL;
+
+    cfg.command[cfg.filename_index    ] = NULL;
     cfg.command[cfg.filename_index + 1] = NULL;
 }
 
-static void usage(void) {
+static void usage(void)
+{
     fprintf(stderr, "%s", usage_string);
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv) {
-    char *path = NULL;
-    int option;
+int main(int argc, char **argv)
+{
+    char *path   = NULL;
+    int   option;
 
     /*
      * GNU libc is not posix compliant and needs a + to stop
@@ -169,11 +188,13 @@ int main(int argc, char **argv) {
      * could stop that by prefixing the command with --).
      */
 #ifdef __GNU_LIBRARY__
-    while ((option = getopt(argc, argv, "+e:m:p:v")) != -1) {
+    while ((option = getopt(argc, argv, "+e:m:p:v")) != -1)
 #else
-    while ((option = getopt(argc, argv, "e:m:p:v")) != -1) {
+    while ((option = getopt(argc, argv, "e:m:p:v")) != -1)
 #endif
-        switch (option) {
+    {
+        switch (option)
+        {
             case 'e':
                 cfg.extension = optarg;
                 break;
@@ -186,7 +207,8 @@ int main(int argc, char **argv) {
             case 'p':
                 path = realpath(optarg, NULL);
 
-                if (path == NULL) {
+                if (path == NULL)
+                {
                     errx(1, "Can't resolve starting path '%s'.", optarg);
                 }
 
@@ -199,50 +221,61 @@ int main(int argc, char **argv) {
     }
 
     /* extension or media-type must be set */
-    if (cfg.extension == NULL && cfg.mediatype == NULL) {
+    if (cfg.extension == NULL && cfg.mediatype == NULL)
+    {
         usage();
     }
 
     /* a command to run is mandatory */
-    if (optind >= argc) {
+    if (optind >= argc)
+    {
         usage();
     }
 
     build_command(argc, argv, optind);
 
-    if (cfg.verbose) {
+    if (cfg.verbose)
+    {
         printf("Searching for files...");
         fflush(stdout);
     }
 
     cfg.files = vector_new();
 
-    if (path != NULL) {
+    if (path != NULL)
+    {
         nftw(path, collect, MAXFD, FTW_PHYS);
-    } else {
+    }
+    else
+    {
         nftw(".", collect, MAXFD, FTW_PHYS);
     }
 
-    if (cfg.magic_cookie != NULL) {
+    if (cfg.magic_cookie != NULL)
+    {
         magic_close(cfg.magic_cookie);
     }
 
-    if (cfg.files->size == 0) {
-        if (cfg.verbose) {
+    if (cfg.files->size == 0)
+    {
+        if (cfg.verbose)
+        {
             printf("no files found.\n");
         }
 
         exit(1);
     }
 
-    if (cfg.verbose) {
+    if (cfg.verbose)
+    {
         printf("%lu files found.\n", (unsigned long) cfg.files->size);
     }
 
     vector_shuffle(cfg.files);
     vector_for_each(cfg.files, playfile);
 
-    if (path != NULL) {
+    if (path != NULL)
+    {
         free(path);
     }
 
