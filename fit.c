@@ -247,6 +247,7 @@ static void fit(struct vector *files, struct vector *disks) {
 
 int collect(const char *filename, const struct stat *st, int filetype,
     struct FTW *ftwbuf) {
+
     struct file *file = NULL;
 
     /* skip subdirectories if not doing a recursive collect */
@@ -367,3 +368,4 @@ int main(int argc, char **argv) {
 
     return EXIT_SUCCESS;
 }
+

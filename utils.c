@@ -136,25 +136,25 @@ char *number_to_string(const double number) {
 
 char *clean_path(char *path) {
     char *buffer = xmalloc(strlen(path) + 1);
-    char *buffer_position = buffer;
+    char *destination = buffer;
     char *result = NULL;
 
     while (*path != '\0') {
         if (*path == '/') {
-            *buffer_position++ = *path++;
+            *destination++ = *path++;
 
             while (*path == '/') {
                 ++path;
             }
         } else {
-            *buffer_position++ = *path++;
+            *destination++ = *path++;
         }
     }
 
-    if (buffer_position > (buffer + 1) && buffer_position[-1] == '/') {
-        buffer_position[-1] = '\0';
+    if (destination > (buffer + 1) && destination[-1] == '/') {
+        destination[-1] = '\0';
     } else {
-        *buffer_position = '\0';
+        *destination = '\0';
     }
 
     result = xstrdup(buffer);
@@ -167,6 +167,7 @@ static void make_dir(char *path) {
     struct stat st;
 
     if (stat(path, &st) == 0) {
+
         /* if path already exists it should be a directory */
         if (!S_ISDIR(st.st_mode)) {
             errx(1, "'%s' is not a directory.", path);
