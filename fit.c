@@ -130,20 +130,20 @@ static void print_separator(int length) {
  * Pretty print a disk and it's contents.
  */
 static void disk_print(struct disk *disk) {
-    char buf[BUFSIZE];
+    char header[BUFSIZE];
     char *size_string = NULL;
     size_t file_index;
 
     /* print a nice header */
     size_string = number_to_string(disk->free);
-    sprintf(buf, "Disk #%lu, %d%% (%s) free:",
+    sprintf(header, "Disk #%lu, %d%% (%s) free:",
         (unsigned long) disk->id,
         (int) (disk->free * 100 / cfg.disk_size), size_string);
     free(size_string);
 
-    print_separator(strlen(buf));
-    printf("%s\n", buf);
-    print_separator(strlen(buf));
+    print_separator(strlen(header));
+    printf("%s\n", header);
+    print_separator(strlen(header));
 
     /* and the contents */
     for (file_index = 0; file_index < disk->files->size; ++file_index) {
