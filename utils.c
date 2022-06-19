@@ -136,25 +136,25 @@ char *number_to_string(const double number) {
 
 char *clean_path(char *path) {
     char *buffer = xmalloc(strlen(path) + 1);
-    char *destination = buffer;
+    char *buffer_ptr = buffer;
     char *result = NULL;
 
     while (*path != '\0') {
         if (*path == '/') {
-            *destination++ = *path++;
+            *buffer_ptr++ = *path++;
 
             while (*path == '/') {
                 ++path;
             }
         } else {
-            *destination++ = *path++;
+            *buffer_ptr++ = *path++;
         }
     }
 
-    if (destination > (buffer + 1) && destination[-1] == '/') {
-        destination[-1] = '\0';
+    if (buffer_ptr > (buffer + 1) && buffer_ptr[-1] == '/') {
+        buffer_ptr[-1] = '\0';
     } else {
-        *destination = '\0';
+        *buffer_ptr = '\0';
     }
 
     result = xstrdup(buffer);
