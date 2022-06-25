@@ -57,7 +57,8 @@ static struct program_config {
 } cfg;
 
 static int collect(const char *filename, const struct stat *st, int filetype,
-    struct FTW *ftwbuf) {
+    struct FTW *ftwbuf)
+{
 
     int playable = FALSE;
 
@@ -73,8 +74,7 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     /* if both extension and media-type are set prefer extension search */
     if (cfg.extension != NULL) {
         playable = strcasecmp(filename +
-            strlen(filename) - strlen(cfg.extension),
-            cfg.extension) == 0;
+            strlen(filename) - strlen(cfg.extension), cfg.extension) == 0;
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
 
@@ -95,31 +95,33 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     return 0;
 }
 
-static void playfile(void *filename_ptr) {
+static void playfile(void *filename_ptr)
+{
     char *filename = filename_ptr;
 
     switch (fork()) {
-        case -1:
-            err(1, "Can't fork");
-            return;
+    case -1:
+        err(1, "Can't fork");
+        return;
 
-        case 0:
-            if (cfg.verbose) {
-                printf("Playing \"%s\".\n", filename);
-            }
+    case 0:
+        if (cfg.verbose) {
+            printf("Playing \"%s\".\n", filename);
+        }
 
-            cfg.command[cfg.filename_index] = filename;
-            execvp(cfg.command[0], (char *const *) cfg.command);
-            err(1, "Can't execute player");
-            break;
+        cfg.command[cfg.filename_index] = filename;
+        execvp(cfg.command[0], (char *const *) cfg.command);
+        err(1, "Can't execute player");
+        break;
 
-        default:
-            wait(NULL);
-            break;
+    default:
+        wait(NULL);
+        break;
     }
 }
 
-static void init_magic(void) {
+static void init_magic(void)
+{
     cfg.magic_cookie = magic_open(MAGIC_MIME);
 
     if (cfg.magic_cookie == NULL) {
@@ -134,7 +136,8 @@ static void init_magic(void) {
 /* build a command from the arguments. The command starts
  * after the normal arguments.
  */
-static void build_command(int argc, char **argv, int command_start) {
+static void build_command(int argc, char **argv, int command_start)
+{
     int command_length = argc - command_start;
     int argument_index;
 
@@ -142,8 +145,7 @@ static void build_command(int argc, char **argv, int command_start) {
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
-        argument_index < argc;
-        ++argument_index) {
+        argument_index < argc; ++argument_index) {
 
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
@@ -154,12 +156,14 @@ static void build_command(int argc, char **argv, int command_start) {
     cfg.command[cfg.filename_index + 1] = NULL;
 }
 
-static void usage(void) {
+static void usage(void)
+{
     fprintf(stderr, "%s", usage_string);
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     char *path = NULL;
     int option;
 
@@ -176,27 +180,27 @@ int main(int argc, char **argv) {
 #endif
     {
         switch (option) {
-            case 'e':
-                cfg.extension = optarg;
-                break;
+        case 'e':
+            cfg.extension = optarg;
+            break;
 
-            case 'm':
-                init_magic();
-                cfg.mediatype = optarg;
-                break;
+        case 'm':
+            init_magic();
+            cfg.mediatype = optarg;
+            break;
 
-            case 'p':
-                path = realpath(optarg, NULL);
+        case 'p':
+            path = realpath(optarg, NULL);
 
-                if (path == NULL) {
-                    errx(1, "Can't resolve starting path '%s'.", optarg);
-                }
+            if (path == NULL) {
+                errx(1, "Can't resolve starting path '%s'.", optarg);
+            }
 
-                break;
+            break;
 
-            case 'v':
-                cfg.verbose = TRUE;
-                break;
+        case 'v':
+            cfg.verbose = TRUE;
+            break;
         }
     }
 

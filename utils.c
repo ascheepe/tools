@@ -28,7 +28,8 @@
 
 #include "utils.h"
 
-void *xcalloc(size_t nmemb, size_t size) {
+void *xcalloc(size_t nmemb, size_t size)
+{
     void *result = calloc(nmemb, size);
 
     if (result == NULL) {
@@ -38,7 +39,8 @@ void *xcalloc(size_t nmemb, size_t size) {
     return result;
 }
 
-void *xmalloc(size_t size) {
+void *xmalloc(size_t size)
+{
     void *result = malloc(size);
 
     if (result == NULL) {
@@ -48,7 +50,8 @@ void *xmalloc(size_t size) {
     return result;
 }
 
-void *xrealloc(void *ptr, size_t size) {
+void *xrealloc(void *ptr, size_t size)
+{
     void *result = realloc(ptr, size);
 
     if (result == NULL) {
@@ -58,7 +61,8 @@ void *xrealloc(void *ptr, size_t size) {
     return result;
 }
 
-char *xstrdup(const char *string) {
+char *xstrdup(const char *string)
+{
     char *result;
     size_t size;
 
@@ -79,7 +83,8 @@ char *xstrdup(const char *string) {
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t string_to_number(const char *string) {
+off_t string_to_number(const char *string)
+{
     char *unit = NULL;
     off_t number = strtol(string, &unit, 10);
 
@@ -94,16 +99,16 @@ off_t string_to_number(const char *string) {
     /* unit should be one char, not more */
     if (unit[1] == '\0') {
         switch (tolower(*unit)) {
-            case 't':
-                return number * TB;
-            case 'g':
-                return number * GB;
-            case 'm':
-                return number * MB;
-            case 'k':
-                return number * KB;
-            case 'b':
-                return number;
+        case 't':
+            return number * TB;
+        case 'g':
+            return number * GB;
+        case 'm':
+            return number * MB;
+        case 'k':
+            return number * KB;
+        case 'b':
+            return number;
         }
     }
 
@@ -111,7 +116,8 @@ off_t string_to_number(const char *string) {
     return 0;
 }
 
-char *number_to_string(const double number) {
+char *number_to_string(const double number)
+{
     char string[BUFSIZE];
 
     if (number >= TB) {
@@ -134,7 +140,8 @@ char *number_to_string(const double number) {
 #undef GB
 #undef TB
 
-char *clean_path(char *path) {
+char *clean_path(char *path)
+{
     char *buffer = xmalloc(strlen(path) + 1);
     char *buffer_ptr = buffer;
     char *result = NULL;
@@ -163,7 +170,8 @@ char *clean_path(char *path) {
     return result;
 }
 
-static void make_dir(char *path) {
+static void make_dir(char *path)
+{
     struct stat st;
 
     if (stat(path, &st) == 0) {
@@ -181,7 +189,8 @@ static void make_dir(char *path) {
     }
 }
 
-void make_dirs(char *path) {
+void make_dirs(char *path)
+{
     char *slash_position = path + 1;
 
     while ((slash_position = strchr(slash_position, '/')) != NULL) {
