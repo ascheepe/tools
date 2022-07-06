@@ -57,8 +57,7 @@ struct file {
     char *name;
 };
 
-static struct file *file_new(const char *name, off_t size)
-{
+static struct file *file_new(const char *name, off_t size) {
     struct file *file = xmalloc(sizeof(*file));
 
     file->name = xstrdup(name);
@@ -67,8 +66,7 @@ static struct file *file_new(const char *name, off_t size)
     return file;
 }
 
-static void file_free(void *file_ptr)
-{
+static void file_free(void *file_ptr) {
     struct file *file = file_ptr;
 
     free(file->name);
@@ -86,8 +84,7 @@ struct disk {
     size_t id;
 };
 
-static struct disk *disk_new(off_t size)
-{
+static struct disk *disk_new(off_t size) {
     static size_t id = 0;
     struct disk *disk = xmalloc(sizeof(*disk));
 
@@ -98,8 +95,7 @@ static struct disk *disk_new(off_t size)
     return disk;
 }
 
-static void disk_free(void *disk_ptr)
-{
+static void disk_free(void *disk_ptr) {
     struct disk *disk = disk_ptr;
 
     /*
@@ -111,20 +107,18 @@ static void disk_free(void *disk_ptr)
     free(disk);
 }
 
-static int add_file(struct disk *disk, struct file *file)
-{
+static int add_file(struct disk *disk, struct file *file) {
     if (disk->free - file->size < 0) {
-        return 0;
+        return FALSE;
     }
 
     vector_add(disk->files, file);
     disk->free -= file->size;
 
-    return 1;
+    return TRUE;
 }
 
-static void print_separator(int length)
-{
+static void print_separator(int length) {
     while (length-- > 0) {
         putchar('-');
     }
@@ -135,8 +129,7 @@ static void print_separator(int length)
 /*
  * Pretty print a disk and it's contents.
  */
-static void disk_print(struct disk *disk)
-{
+static void disk_print(struct disk *disk) {
     char header[BUFSIZE];
     char *size_string = NULL;
     size_t file_index;
@@ -144,8 +137,8 @@ static void disk_print(struct disk *disk)
     /* print a nice header */
     size_string = number_to_string(disk->free);
     sprintf(header, "Disk #%lu, %d%% (%s) free:",
-        (unsigned long) disk->id,
-        (int) (disk->free * 100 / cfg.disk_size), size_string);
+            (unsigned long) disk->id,
+            (int) (disk->free * 100 / cfg.disk_size), size_string);
     free(size_string);
 
     print_separator(strlen(header));
@@ -167,8 +160,7 @@ static void disk_print(struct disk *disk)
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void disk_link(struct disk *disk, char *destination_directory)
-{
+static void disk_link(struct disk *disk, char *destination_directory) {
     char *path = NULL;
     char *dirty_path = NULL;
     size_t file_index;
@@ -179,15 +171,15 @@ static void disk_link(struct disk *disk, char *destination_directory)
 
     dirty_path = xmalloc(strlen(destination_directory) + 6);
     sprintf(dirty_path, "%s/%04lu", destination_directory,
-        (unsigned long) disk->id);
+            (unsigned long) disk->id);
     path = clean_path(dirty_path);
     free(dirty_path);
 
     for (file_index = 0; file_index < disk->files->size; ++file_index) {
         struct file *file = disk->files->items[file_index];
         char *destination_file = xmalloc(strlen(path)
-            + strlen(file->name)
-            + 2);
+                                         + strlen(file->name)
+                                         + 2);
         char *slash_position = NULL;
 
         sprintf(destination_file, "%s/%s", path, file->name);
@@ -207,8 +199,7 @@ static void disk_link(struct disk *disk, char *destination_directory)
     free(path);
 }
 
-static int by_file_size_descending(const void *a, const void *b)
-{
+static int by_file_size_descending(const void *a, const void *b) {
     struct file *file_a = *((struct file **) a);
     struct file *file_b = *((struct file **) b);
 
@@ -222,12 +213,11 @@ static int by_file_size_descending(const void *a, const void *b)
  * rapidly fill disks while the smaller remaining files will usually
  * make a good final fit.
  */
-static void fit(struct vector *files, struct vector *disks)
-{
+static void fit(struct vector *files, struct vector *disks) {
     size_t file_index;
 
     qsort(files->items, files->size, sizeof(files->items[0]),
-        by_file_size_descending);
+          by_file_size_descending);
 
     for (file_index = 0; file_index < files->size; ++file_index) {
         struct file *file = files->items[file_index];
@@ -256,8 +246,7 @@ static void fit(struct vector *files, struct vector *disks)
 }
 
 int collect(const char *filename, const struct stat *st, int filetype,
-    struct FTW *ftwbuf)
-{
+            struct FTW *ftwbuf) {
 
     struct file *file = NULL;
 
@@ -284,7 +273,7 @@ int collect(const char *filename, const struct stat *st, int filetype,
     /* which are not too big to fit */
     if (st->st_size > cfg.disk_size) {
         errx(1, "Can never fit '%s' (%s).",
-            filename, number_to_string(st->st_size));
+             filename, number_to_string(st->st_size));
     }
 
     file = file_new(filename, st->st_size);
@@ -293,14 +282,12 @@ int collect(const char *filename, const struct stat *st, int filetype,
     return 0;
 }
 
-static void usage(void)
-{
+static void usage(void) {
     fprintf(stderr, "%s", usage_string);
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     char *destination_directory = NULL;
     struct vector *disks = NULL;
     size_t disk_index;
@@ -309,22 +296,22 @@ int main(int argc, char **argv)
 
     while ((option = getopt(argc, argv, "l:nrs:")) != -1) {
         switch (option) {
-        case 'l':
-            destination_directory = clean_path(optarg);
-            cfg.do_link_disks = TRUE;
-            break;
+            case 'l':
+                destination_directory = clean_path(optarg);
+                cfg.do_link_disks = TRUE;
+                break;
 
-        case 'n':
-            cfg.do_show_disk_count = TRUE;
-            break;
+            case 'n':
+                cfg.do_show_disk_count = TRUE;
+                break;
 
-        case 'r':
-            cfg.do_recursive_collect = TRUE;
-            break;
+            case 'r':
+                cfg.do_recursive_collect = TRUE;
+                break;
 
-        case 's':
-            cfg.disk_size = string_to_number(optarg);
-            break;
+            case 's':
+                cfg.disk_size = string_to_number(optarg);
+                break;
         }
     }
 
@@ -356,7 +343,7 @@ int main(int argc, char **argv)
 
     if (cfg.do_show_disk_count) {
         printf("%lu disk%s.\n",
-            (unsigned long) disks->size, disks->size > 1 ? "s" : "");
+               (unsigned long) disks->size, disks->size > 1 ? "s" : "");
         exit(EXIT_SUCCESS);
     }
 

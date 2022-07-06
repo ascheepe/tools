@@ -1,7 +1,7 @@
 CFLAGS=	-std=c89 -O2 -pipe -Wall -Wextra -Werror -pedantic
-CFLAGS+= -fstack-protector-strong -fPIE -D_FORTIFY_SOURCE=2
-CFLAGS+= -D_XOPEN_SOURCE=600
-#CFLAGS+= -Og -g -fsanitize=address,leak
+CFLAGS+= -D_XOPEN_SOURCE=500
+#CFLAGS+= -Og -g -fsanitize=address,leak -fstack-protector-strong
+#CFLAGS+= -D_FORTIFY_SOURCE=2
 
 COMMON_OBJS= utils.o vector.o
 
