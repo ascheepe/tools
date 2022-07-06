@@ -78,8 +78,8 @@ static int collect(const char *filename, const struct stat *st, int filetype,
         if (filename_length < extension_length) {
             playable = FALSE;
         } else {
-            playable = strcasecmp(filename + strlen(filename)
-                                           - strlen(cfg.extension),
+            playable = strcasecmp(filename + filename_length
+                                           - extension_length,
                                   cfg.extension) == 0;
         }
     } else if (cfg.mediatype != NULL) {
