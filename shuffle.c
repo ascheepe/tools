@@ -71,9 +71,17 @@ static int collect(const char *filename, const struct stat *st, int filetype,
 
     /* if both extension and media-type are set prefer extension search */
     if (cfg.extension != NULL) {
-        playable = strcasecmp(filename + strlen(filename)
-                              - strlen(cfg.extension),
-                                cfg.extension) == 0;
+        size_t filename_length = strlen(filename);
+        size_t extension_length = strlen(cfg.extension);
+
+        /* avoid out of bounds access */
+        if (filename_length < extension_length) {
+            playable = FALSE;
+        } else {
+            playable = strcasecmp(filename + strlen(filename)
+                                  - strlen(cfg.extension),
+                                    cfg.extension) == 0;
+        }
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
 
