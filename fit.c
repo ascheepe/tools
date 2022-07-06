@@ -199,11 +199,11 @@ static void disk_link(struct disk *disk, char *destination_directory) {
     free(path);
 }
 
-static int by_file_size_descending(const void *a, const void *b) {
-    struct file *file_a = *((struct file **) a);
-    struct file *file_b = *((struct file **) b);
+static int by_file_size_descending(const void *file_a, const void *file_b) {
+    struct file *a = *((struct file **) file_a);
+    struct file *b = *((struct file **) file_b);
 
-    return file_b->size - file_a->size;
+    return b->size - a->size;
 }
 
 /*
@@ -247,7 +247,6 @@ static void fit(struct vector *files, struct vector *disks) {
 
 int collect(const char *filename, const struct stat *st, int filetype,
             struct FTW *ftwbuf) {
-
     struct file *file = NULL;
 
     /* skip subdirectories if not doing a recursive collect */
@@ -323,7 +322,9 @@ int main(int argc, char **argv) {
     cfg.files = vector_new();
 
     for (argument_index = optind; argument_index < argc; ++argument_index) {
-        nftw(argv[argument_index], collect, MAXFD, 0);
+        if (nftw(argv[argument_index], collect, MAXFD, 0) == -1) {
+            err(1, "nftw");
+        }
     }
 
     if (cfg.files->size == 0) {

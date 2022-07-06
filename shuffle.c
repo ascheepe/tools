@@ -58,7 +58,6 @@ static struct program_config {
 
 static int collect(const char *filename, const struct stat *st, int filetype,
                    struct FTW *ftwbuf) {
-
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -72,9 +71,9 @@ static int collect(const char *filename, const struct stat *st, int filetype,
 
     /* if both extension and media-type are set prefer extension search */
     if (cfg.extension != NULL) {
-        playable = strcasecmp(filename +
-                              strlen(filename) - strlen(cfg.extension),
-                              cfg.extension) == 0;
+        playable = strcasecmp(filename + strlen(filename)
+                              - strlen(cfg.extension),
+                                cfg.extension) == 0;
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
 
@@ -142,8 +141,8 @@ static void build_command(int argc, char **argv, int command_start) {
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
-         argument_index < argc; ++argument_index) {
-
+         argument_index < argc;
+         ++argument_index) {
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
 
@@ -218,10 +217,12 @@ int main(int argc, char **argv) {
 
     cfg.files = vector_new();
 
-    if (path != NULL) {
-        nftw(path, collect, MAXFD, FTW_PHYS);
-    } else {
-        nftw(".", collect, MAXFD, FTW_PHYS);
+    if (path == NULL) {
+        path = ".";
+    }
+
+    if (nftw(path, collect, MAXFD, FTW_PHYS) == -1) {
+        err(1, "nftw");
     }
 
     if (cfg.magic_cookie != NULL) {
