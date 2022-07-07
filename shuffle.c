@@ -57,7 +57,8 @@ static struct program_config {
 } cfg;
 
 static int collect(const char *filename, const struct stat *st, int filetype,
-                   struct FTW *ftwbuf) {
+    struct FTW *ftwbuf) {
+
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -78,9 +79,8 @@ static int collect(const char *filename, const struct stat *st, int filetype,
         if (filename_length < extension_length) {
             playable = FALSE;
         } else {
-            playable = strcasecmp(filename + filename_length
-                                           - extension_length,
-                                  cfg.extension) == 0;
+            playable = strcasecmp(filename + filename_length -
+                extension_length, cfg.extension) == 0;
         }
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
@@ -90,7 +90,7 @@ static int collect(const char *filename, const struct stat *st, int filetype,
         }
 
         playable = strncmp(cfg.mediatype, mediatype,
-                           strlen(cfg.mediatype)) == 0;
+            strlen(cfg.mediatype)) == 0;
     } else {
         errx(1, "Extension or media type is not set.");
     }
@@ -149,8 +149,9 @@ static void build_command(int argc, char **argv, int command_start) {
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
-         argument_index < argc;
-         ++argument_index) {
+        argument_index < argc;
+        ++argument_index) {
+
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
 
