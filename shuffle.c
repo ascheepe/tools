@@ -71,16 +71,12 @@ static int collect(const char *filename, const struct stat *st, int filetype,
 
     /* if both extension and media-type are set prefer extension search */
     if (cfg.extension != NULL) {
-        size_t filename_length = strlen(filename);
-        size_t extension_length = strlen(cfg.extension);
+        const char *extension = filename + strlen(filename)
+                                         - strlen(cfg.extension);
 
-        /* avoid out of bounds access */
-        if (filename_length < extension_length) {
-            playable = FALSE;
-        } else {
-            playable = strcasecmp(filename + filename_length -
-                                  extension_length, cfg.extension) == 0;
-        }
+        playable = extension >= filename
+                   && strcasecmp(extension, cfg.extension) == 0;
+
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
 
@@ -148,8 +144,9 @@ static void build_command(int argc, char **argv, int command_start) {
     cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
-            argument_index < argc;
-            ++argument_index) {
+         argument_index < argc;
+         ++argument_index) {
+
         cfg.command[argument_index - command_start] = argv[argument_index];
     }
 
