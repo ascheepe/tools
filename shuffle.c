@@ -74,8 +74,8 @@ static int collect(const char *filename, const struct stat *st, int filetype,
         const char *extension = filename + strlen(filename)
                                          - strlen(cfg.extension);
 
-        playable = extension >= filename
-                   && strcasecmp(extension, cfg.extension) == 0;
+        playable = (extension >= filename
+                    && strcasecmp(extension, cfg.extension) == 0);
 
     } else if (cfg.mediatype != NULL) {
         const char *mediatype = magic_file(cfg.magic_cookie, filename);
