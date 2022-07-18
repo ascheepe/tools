@@ -176,10 +176,10 @@ static void disk_link(struct disk *disk, char *destination_directory) {
 
     for (file_index = 0; file_index < disk->files->size; ++file_index) {
         struct file *file = disk->files->items[file_index];
+        char *slash_position = NULL;
         char *destination_file = xmalloc(strlen(path)
                                          + strlen(file->name)
                                          + 2);
-        char *slash_position = NULL;
 
         sprintf(destination_file, "%s/%s", path, file->name);
         slash_position = strrchr(destination_file, '/');
