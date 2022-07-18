@@ -162,6 +162,7 @@ static void disk_print(struct disk *disk) {
 static void disk_link(struct disk *disk, char *destination_directory) {
     char *path = NULL;
     char *dirty_path = NULL;
+    size_t path_length;
     size_t file_index;
 
     if (disk->id > 9999) {
@@ -173,16 +174,17 @@ static void disk_link(struct disk *disk, char *destination_directory) {
             (unsigned long) disk->id);
     path = clean_path(dirty_path);
     free(dirty_path);
+    path_length = strlen(path);
 
     for (file_index = 0; file_index < disk->files->size; ++file_index) {
         struct file *file = disk->files->items[file_index];
         char *slash_position = NULL;
-        char *destination_file = xmalloc(strlen(path)
+        char *destination_file = xmalloc(path_length
                                          + strlen(file->name)
                                          + 2);
 
         sprintf(destination_file, "%s/%s", path, file->name);
-        slash_position = strrchr(destination_file, '/');
+        slash_position = destination_file + path_length;
         *slash_position = '\0';
         make_dirs(destination_file);
         *slash_position = '/';
