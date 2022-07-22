@@ -32,7 +32,7 @@ char *xstrdup(const char *);
 off_t string_to_number(const char *);
 char *number_to_string(const double);
 char *clean_path(char *);
-void make_dirs(char *);
+void makedirs(char *);
 
 #endif
 
