@@ -40,13 +40,13 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-static struct program_config {
+static struct program_context {
     off_t disk_size;
     struct vector *files;
     int do_link_disks;
     int do_show_disk_count;
     int do_recursive_collect;
-} cfg;
+} context;
 
 /*
  * To be able to fit files and present a disklist file stores the
@@ -137,7 +137,7 @@ static void disk_print(struct disk *disk) {
     /* print a nice header */
     sprintf(header, "Disk #%lu, %d%% (%s) free:",
             (unsigned long) disk->id,
-            (int) (disk->free * 100 / cfg.disk_size), size_string);
+            (int) (disk->free * 100 / context.disk_size), size_string);
     free(size_string);
 
     print_separator(strlen(header));
@@ -235,7 +235,7 @@ static void fit(struct vector *files, struct vector *disks) {
         }
 
         if (!added) {
-            struct disk *disk = disk_new(cfg.disk_size);
+            struct disk *disk = disk_new(context.disk_size);
 
             if (!add_file(disk, file)) {
                 errx(1, "add_file failed.");
@@ -251,7 +251,7 @@ int collect(const char *filename, const struct stat *st, int filetype,
     struct file *file = NULL;
 
     /* skip subdirectories if not doing a recursive collect */
-    if (!cfg.do_recursive_collect && ftwbuf->level > 1) {
+    if (!context.do_recursive_collect && ftwbuf->level > 1) {
         return 0;
     }
 
@@ -271,13 +271,13 @@ int collect(const char *filename, const struct stat *st, int filetype,
     }
 
     /* which are not too big to fit */
-    if (st->st_size > cfg.disk_size) {
+    if (st->st_size > context.disk_size) {
         errx(1, "Can never fit '%s' (%s).",
              filename, number_to_string(st->st_size));
     }
 
     file = file_new(filename, st->st_size);
-    vector_add(cfg.files, file);
+    vector_add(context.files, file);
 
     return 0;
 }
@@ -298,29 +298,29 @@ int main(int argc, char **argv) {
         switch (option) {
             case 'l':
                 destination_directory = clean_path(optarg);
-                cfg.do_link_disks = TRUE;
+                context.do_link_disks = TRUE;
                 break;
 
             case 'n':
-                cfg.do_show_disk_count = TRUE;
+                context.do_show_disk_count = TRUE;
                 break;
 
             case 'r':
-                cfg.do_recursive_collect = TRUE;
+                context.do_recursive_collect = TRUE;
                 break;
 
             case 's':
-                cfg.disk_size = string_to_number(optarg);
+                context.disk_size = string_to_number(optarg);
                 break;
         }
     }
 
     /* A path argument and the size option is mandatory. */
-    if (optind >= argc || cfg.disk_size <= 0) {
+    if (optind >= argc || context.disk_size <= 0) {
         usage();
     }
 
-    cfg.files = vector_new();
+    context.files = vector_new();
 
     for (argument_index = optind; argument_index < argc; ++argument_index) {
         if (nftw(argv[argument_index], collect, MAXFD, 0) == -1) {
@@ -328,12 +328,12 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (cfg.files->size == 0) {
+    if (context.files->size == 0) {
         errx(1, "no files found.");
     }
 
     disks = vector_new();
-    fit(cfg.files, disks);
+    fit(context.files, disks);
 
     /*
      * Be realistic about the number of disks to support, the helper
@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
         errx(1, "Fitting takes too many (%lu) disks.", disks->size);
     }
 
-    if (cfg.do_show_disk_count) {
+    if (context.do_show_disk_count) {
         printf("%lu disk%s.\n",
                (unsigned long) disks->size, disks->size > 1 ? "s" : "");
         exit(EXIT_SUCCESS);
@@ -352,19 +352,19 @@ int main(int argc, char **argv) {
     for (disk_index = 0; disk_index < disks->size; ++disk_index) {
         struct disk *disk = disks->items[disk_index];
 
-        if (cfg.do_link_disks) {
+        if (context.do_link_disks) {
             disk_link(disk, destination_directory);
         } else {
             disk_print(disk);
         }
     }
 
-    vector_for_each(cfg.files, file_free);
+    vector_for_each(context.files, file_free);
     vector_for_each(disks, disk_free);
-    vector_free(cfg.files);
+    vector_free(context.files);
     vector_free(disks);
 
-    if (cfg.do_link_disks) {
+    if (context.do_link_disks) {
         free(destination_directory);
     }
 

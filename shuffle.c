@@ -46,7 +46,7 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-static struct program_config {
+static struct program_context {
     magic_t magic_cookie;
     char *mediatype;
     char *extension;
@@ -54,7 +54,7 @@ static struct program_config {
     int filename_index;
     int verbose;
     struct vector *files;
-} cfg;
+} context;
 
 static int collect(const char *filename, const struct stat *st, int filetype,
                    struct FTW *ftwbuf) {
@@ -70,28 +70,28 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     }
 
     /* if both extension and media-type are set prefer extension search */
-    if (cfg.extension != NULL) {
+    if (context.extension != NULL) {
         const char *extension = filename + strlen(filename)
-                                         - strlen(cfg.extension);
+                                         - strlen(context.extension);
 
         playable = (extension >= filename
-                    && strcasecmp(extension, cfg.extension) == 0);
+                    && strcasecmp(extension, context.extension) == 0);
 
-    } else if (cfg.mediatype != NULL) {
-        const char *mediatype = magic_file(cfg.magic_cookie, filename);
+    } else if (context.mediatype != NULL) {
+        const char *mediatype = magic_file(context.magic_cookie, filename);
 
         if (mediatype == NULL) {
-            errx(1, "%s", magic_error(cfg.magic_cookie));
+            errx(1, "%s", magic_error(context.magic_cookie));
         }
 
-        playable = strncmp(cfg.mediatype, mediatype,
-                           strlen(cfg.mediatype)) == 0;
+        playable = strncmp(context.mediatype, mediatype,
+                           strlen(context.mediatype)) == 0;
     } else {
         errx(1, "Extension or media type is not set.");
     }
 
     if (playable) {
-        vector_add(cfg.files, xstrdup(filename));
+        vector_add(context.files, xstrdup(filename));
     }
 
     return 0;
@@ -106,12 +106,12 @@ static void playfile(void *filename_ptr) {
             return;
 
         case 0:
-            if (cfg.verbose) {
+            if (context.verbose) {
                 printf("Playing \"%s\".\n", filename);
             }
 
-            cfg.command[cfg.filename_index] = filename;
-            execvp(cfg.command[0], (char *const *) cfg.command);
+            context.command[context.filename_index] = filename;
+            execvp(context.command[0], (char *const *) context.command);
             err(1, "Can't execute player");
             break;
 
@@ -122,14 +122,14 @@ static void playfile(void *filename_ptr) {
 }
 
 static void init_magic(void) {
-    cfg.magic_cookie = magic_open(MAGIC_MIME);
+    context.magic_cookie = magic_open(MAGIC_MIME);
 
-    if (cfg.magic_cookie == NULL) {
+    if (context.magic_cookie == NULL) {
         errx(1, "Can't open libmagic.");
     }
 
-    if (magic_load(cfg.magic_cookie, NULL) == -1) {
-        errx(1, "%s.", magic_error(cfg.magic_cookie));
+    if (magic_load(context.magic_cookie, NULL) == -1) {
+        errx(1, "%s.", magic_error(context.magic_cookie));
     }
 }
 
@@ -141,19 +141,19 @@ static void build_command(int argc, char **argv, int command_start) {
     int argument_index;
 
     /* reserve for command + filename + NULL */
-    cfg.command = xmalloc((command_length + 2) * sizeof(char *));
+    context.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (argument_index = command_start;
          argument_index < argc;
          ++argument_index) {
 
-        cfg.command[argument_index - command_start] = argv[argument_index];
+        context.command[argument_index - command_start] = argv[argument_index];
     }
 
-    cfg.filename_index = command_length;
+    context.filename_index = command_length;
 
-    cfg.command[cfg.filename_index] = NULL;
-    cfg.command[cfg.filename_index + 1] = NULL;
+    context.command[context.filename_index] = NULL;
+    context.command[context.filename_index + 1] = NULL;
 }
 
 static void usage(void) {
@@ -178,12 +178,12 @@ int main(int argc, char **argv) {
 #endif
         switch (option) {
             case 'e':
-                cfg.extension = optarg;
+                context.extension = optarg;
                 break;
 
             case 'm':
                 init_magic();
-                cfg.mediatype = optarg;
+                context.mediatype = optarg;
                 break;
 
             case 'p':
@@ -196,13 +196,13 @@ int main(int argc, char **argv) {
                 break;
 
             case 'v':
-                cfg.verbose = TRUE;
+                context.verbose = TRUE;
                 break;
         }
     }
 
     /* extension or media-type must be set */
-    if (cfg.extension == NULL && cfg.mediatype == NULL) {
+    if (context.extension == NULL && context.mediatype == NULL) {
         usage();
     }
 
@@ -213,12 +213,12 @@ int main(int argc, char **argv) {
 
     build_command(argc, argv, optind);
 
-    if (cfg.verbose) {
+    if (context.verbose) {
         printf("Searching for files...");
         fflush(stdout);
     }
 
-    cfg.files = vector_new();
+    context.files = vector_new();
 
     if (path == NULL) {
         path = ".";
@@ -228,32 +228,32 @@ int main(int argc, char **argv) {
         err(1, "nftw");
     }
 
-    if (cfg.magic_cookie != NULL) {
-        magic_close(cfg.magic_cookie);
+    if (context.magic_cookie != NULL) {
+        magic_close(context.magic_cookie);
     }
 
-    if (cfg.files->size == 0) {
-        if (cfg.verbose) {
+    if (context.files->size == 0) {
+        if (context.verbose) {
             printf("no files found.\n");
         }
 
         exit(1);
     }
 
-    if (cfg.verbose) {
-        printf("%lu files found.\n", (unsigned long) cfg.files->size);
+    if (context.verbose) {
+        printf("%lu files found.\n", (unsigned long) context.files->size);
     }
 
-    vector_shuffle(cfg.files);
-    vector_for_each(cfg.files, playfile);
+    vector_shuffle(context.files);
+    vector_for_each(context.files, playfile);
 
     if (path != NULL) {
         free(path);
     }
 
-    free(cfg.command);
-    vector_for_each(cfg.files, free);
-    vector_free(cfg.files);
+    free(context.command);
+    vector_for_each(context.files, free);
+    vector_free(context.files);
     return EXIT_SUCCESS;
 }
 
