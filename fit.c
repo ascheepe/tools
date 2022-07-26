@@ -246,8 +246,8 @@ static void fit(struct vector *files, struct vector *disks) {
     }
 }
 
-int collect(const char *filename, const struct stat *st, int filetype,
-            struct FTW *ftwbuf) {
+static int collect_files(const char *filename, const struct stat *st,
+                         int filetype, struct FTW *ftwbuf) {
     struct file *file = NULL;
 
     /* skip subdirectories if not doing a recursive collect */
@@ -323,7 +323,7 @@ int main(int argc, char **argv) {
     context.files = vector_new();
 
     for (argument_index = optind; argument_index < argc; ++argument_index) {
-        if (nftw(argv[argument_index], collect, MAXFD, 0) == -1) {
+        if (nftw(argv[argument_index], collect_files, MAXFD, 0) == -1) {
             err(1, "nftw");
         }
     }

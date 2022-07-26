@@ -56,8 +56,8 @@ static struct program_context {
     struct vector *files;
 } context;
 
-static int collect(const char *filename, const struct stat *st, int filetype,
-                   struct FTW *ftwbuf) {
+static int collect_files(const char *filename, const struct stat *st,
+                         int filetype, struct FTW *ftwbuf) {
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -97,7 +97,7 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     return 0;
 }
 
-static void playfile(void *filename_ptr) {
+static void play_file(void *filename_ptr) {
     char *filename = filename_ptr;
 
     switch (fork()) {
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
         path = ".";
     }
 
-    if (nftw(path, collect, MAXFD, FTW_PHYS) == -1) {
+    if (nftw(path, collect_files, MAXFD, FTW_PHYS) == -1) {
         err(1, "nftw");
     }
 
@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
     }
 
     vector_shuffle(context.files);
-    vector_for_each(context.files, playfile);
+    vector_for_each(context.files, play_file);
 
     if (path != NULL) {
         free(path);
