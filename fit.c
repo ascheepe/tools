@@ -252,7 +252,7 @@ fit(struct vector *files, struct vector *disks)
 	}
 }
 
-int
+static int
 collect(const char *filename, const struct stat *st, int filetype,
     struct FTW *ftwbuf)
 {
