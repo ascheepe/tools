@@ -71,12 +71,12 @@ vector_foreach(const struct vector *v, void (*fn)(void *))
 void
 vector_shuffle(struct vector *v)
 {
-	static int seeded = FALSE;
+	static unsigned int seed;
 	size_t i;
 
-	if (!seeded) {
-		srandom(time(NULL) ^ getpid());
-		seeded = TRUE;
+	if (seed == 0) {
+		seed = time(NULL) ^ getpid();
+		srandom(seed);
 	}
 
 	for (i = v->size - 1; i > 0; --i) {
