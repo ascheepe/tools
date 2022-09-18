@@ -35,4 +35,3 @@ char *clean_path(char *);
 void makedirs(char *);
 
 #endif
-

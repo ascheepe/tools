@@ -18,9 +18,9 @@
 #define VECTOR_H
 
 struct vector {
-	void **items;
-	size_t size;
-	size_t cap;
+    void **items;
+    size_t size;
+    size_t capacity;
 };
 
 #define INITIAL_VECTOR_CAPACITY 128
@@ -32,4 +32,3 @@ void vector_foreach(const struct vector *, void (*)(void *));
 void vector_shuffle(struct vector *);
 
 #endif
-
