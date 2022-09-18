@@ -97,7 +97,7 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     return 0;
 }
 
-static void playfile(void *filename_ptr) {
+static void play_file(void *filename_ptr) {
     char *filename = filename_ptr;
 
     switch (fork()) {
@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
     }
 
     vector_shuffle(ctx.files);
-    vector_foreach(ctx.files, playfile);
+    vector_foreach(ctx.files, play_file);
 
     free(ctx.command);
     vector_foreach(ctx.files, free);
