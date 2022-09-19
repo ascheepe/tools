@@ -63,8 +63,8 @@ static struct file *file_new(const char *name, off_t size) {
     return file;
 }
 
-static void file_free(void *pfile) {
-    struct file *file = pfile;
+static void file_free(void *file_ptr) {
+    struct file *file = file_ptr;
 
     free(file->name);
     free(file);
