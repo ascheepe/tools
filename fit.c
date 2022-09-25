@@ -48,26 +48,26 @@ static struct program_context {
     int do_recursive_collect;
 } ctx;
 
-struct file {
+struct file_info {
     off_t size;
     char *name;
 };
 
-static struct file *file_new(const char *name, off_t size) {
-    struct file *file;
+static struct file_info *file_info_new(const char *name, off_t size) {
+    struct file_info *file_info;
 
-    file = xmalloc(sizeof(*file));
-    file->name = xstrdup(name);
-    file->size = size;
+    file_info = xmalloc(sizeof(*file_info));
+    file_info->name = xstrdup(name);
+    file_info->size = size;
 
-    return file;
+    return file_info;
 }
 
-static void file_free(void *file_ptr) {
-    struct file *file = file_ptr;
+static void file_info_free(void *file_info_ptr) {
+    struct file_info *file_info = file_info_ptr;
 
-    free(file->name);
-    free(file);
+    free(file_info->name);
+    free(file_info);
 }
 
 struct disk {
@@ -100,13 +100,13 @@ static void disk_free(void *disk_ptr) {
     free(disk);
 }
 
-static int add_file(struct disk *disk, struct file *file) {
-    if (disk->free - file->size < 0) {
+static int add_file(struct disk *disk, struct file_info *file_info) {
+    if (disk->free - file_info->size < 0) {
         return FALSE;
     }
 
-    vector_add(disk->files, file);
-    disk->free -= file->size;
+    vector_add(disk->files, file_info);
+    disk->free -= file_info->size;
 
     return TRUE;
 }
@@ -140,10 +140,10 @@ static void disk_print(struct disk *disk) {
 
     /* and the contents */
     for (i = 0; i < disk->files->size; ++i) {
-        struct file *file = disk->files->items[i];
+        struct file_info *file_info = disk->files->items[i];
 
-        size_string = number_to_string(file->size);
-        printf("%10s %s\n", size_string, file->name);
+        size_string = number_to_string(file_info->size);
+        printf("%10s %s\n", size_string, file_info->name);
         free(size_string);
     }
 
@@ -170,22 +170,22 @@ static void disk_link(struct disk *disk, char *destdir) {
     path_length = strlen(path);
 
     for (i = 0; i < disk->files->size; ++i) {
-        struct file *file = disk->files->items[i];
+        struct file_info *file_info = disk->files->items[i];
         char *slashpos;
         char *destfile;
 
-        destfile = xmalloc(path_length + strlen(file->name) + 2);
-        sprintf(destfile, "%s/%s", path, file->name);
+        destfile = xmalloc(path_length + strlen(file_info->name) + 2);
+        sprintf(destfile, "%s/%s", path, file_info->name);
         slashpos = destfile + path_length;
         *slashpos = '\0';
         makedirs(destfile);
         *slashpos = '/';
 
-        if (link(file->name, destfile) == -1) {
-            err(1, "Can't link '%s' to '%s'", file->name, destfile);
+        if (link(file_info->name, destfile) == -1) {
+            err(1, "Can't link '%s' to '%s'", file_info->name, destfile);
         }
 
-        printf("%s -> %s\n", file->name, path);
+        printf("%s -> %s\n", file_info->name, path);
         free(destfile);
     }
 
@@ -193,8 +193,8 @@ static void disk_link(struct disk *disk, char *destdir) {
 }
 
 static int byrevsize(const void *file_a, const void *file_b) {
-    struct file *a = *((struct file **) file_a);
-    struct file *b = *((struct file **) file_b);
+    struct file_info *a = *((struct file_info **) file_a);
+    struct file_info *b = *((struct file_info **) file_b);
 
     return b->size - a->size;
 }
@@ -212,14 +212,14 @@ static void fit(struct vector *files, struct vector *disks) {
     qsort(files->items, files->size, sizeof(files->items[0]), byrevsize);
 
     for (i = 0; i < files->size; ++i) {
-        struct file *file = files->items[i];
+        struct file_info *file_info = files->items[i];
         int added = FALSE;
         size_t j;
 
         for (j = 0; j < disks->size; ++j) {
             struct disk *disk = disks->items[j];
 
-            if (add_file(disk, file)) {
+            if (add_file(disk, file_info)) {
                 added = TRUE;
                 break;
             }
@@ -229,7 +229,7 @@ static void fit(struct vector *files, struct vector *disks) {
             struct disk *disk;
 
             disk = disk_new(ctx.disk_size);
-            if (!add_file(disk, file)) {
+            if (!add_file(disk, file_info)) {
                 errx(1, "add_file failed.");
             }
 
@@ -240,7 +240,7 @@ static void fit(struct vector *files, struct vector *disks) {
 
 static int collect(const char *filename, const struct stat *st, int filetype,
                    struct FTW *ftwbuf) {
-    struct file *file;
+    struct file_info *file_info;
 
     /* skip subdirectories if not doing a recursive collect */
     if (!ctx.do_recursive_collect && ftwbuf->level > 1) {
@@ -268,8 +268,8 @@ static int collect(const char *filename, const struct stat *st, int filetype,
              filename, number_to_string(st->st_size));
     }
 
-    file = file_new(filename, st->st_size);
-    vector_add(ctx.files, file);
+    file_info = file_info_new(filename, st->st_size);
+    vector_add(ctx.files, file_info);
 
     return 0;
 }
@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    vector_foreach(ctx.files, file_free);
+    vector_foreach(ctx.files, file_info_free);
     vector_foreach(disks, disk_free);
     vector_free(ctx.files);
     vector_free(disks);
