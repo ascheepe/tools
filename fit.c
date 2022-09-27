@@ -192,7 +192,7 @@ static void disk_link(struct disk *disk, char *destdir) {
     free(path);
 }
 
-static int byrevsize(const void *file_a, const void *file_b) {
+static int by_size_descending(const void *file_a, const void *file_b) {
     struct file_info *a = *((struct file_info **) file_a);
     struct file_info *b = *((struct file_info **) file_b);
 
@@ -209,7 +209,8 @@ static int byrevsize(const void *file_a, const void *file_b) {
 static void fit(struct vector *files, struct vector *disks) {
     size_t i;
 
-    qsort(files->items, files->size, sizeof(files->items[0]), byrevsize);
+    qsort(files->items, files->size, sizeof(files->items[0]),
+          by_size_descending);
 
     for (i = 0; i < files->size; ++i) {
         struct file_info *file_info = files->items[i];
