@@ -192,9 +192,9 @@ static void disk_link(struct disk *disk, char *destdir) {
     free(path);
 }
 
-static int by_size_descending(const void *file_a, const void *file_b) {
-    struct file_info *a = *((struct file_info **) file_a);
-    struct file_info *b = *((struct file_info **) file_b);
+static int by_size_descending(const void *file_info_a, const void *file_info_b) {
+    struct file_info *a = *((struct file_info **) file_info_a);
+    struct file_info *b = *((struct file_info **) file_info_b);
 
     return b->size - a->size;
 }
