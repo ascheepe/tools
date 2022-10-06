@@ -56,8 +56,9 @@ static struct program_context {
     struct vector *files;
 } ctx;
 
-static int collect(const char *filename, const struct stat *st, int filetype,
-                   struct FTW *ftwbuf) {
+static int collect(const char *filename, const struct stat *st,
+                   int filetype, struct FTW *ftwbuf)
+{
     int playable = FALSE;
 
     /* these parameters are unused */
@@ -97,7 +98,8 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     return 0;
 }
 
-static void play_file(void *filename_ptr) {
+static void play_file(void *filename_ptr)
+{
     char *filename = filename_ptr;
 
     switch (fork()) {
@@ -121,7 +123,8 @@ static void play_file(void *filename_ptr) {
     }
 }
 
-static void init_magic(void) {
+static void init_magic(void)
+{
     ctx.magic_cookie = magic_open(MAGIC_MIME);
 
     if (ctx.magic_cookie == NULL) {
@@ -136,7 +139,8 @@ static void init_magic(void) {
 /* build a command from the arguments. The command starts
  * after the normal arguments.
  */
-static void build_command(int argc, char **argv, int argend) {
+static void build_command(int argc, char **argv, int argend)
+{
     int command_length = argc - argend;
     int i;
 
@@ -153,12 +157,14 @@ static void build_command(int argc, char **argv, int argend) {
     ctx.command[ctx.filename_index + 1] = NULL;
 }
 
-static void usage(void) {
+static void usage(void)
+{
     fprintf(stderr, "%s", usage_string);
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     char *path = NULL;
     int opt;
 
@@ -186,8 +192,9 @@ int main(int argc, char **argv) {
             case 'p':
                 path = realpath(optarg, NULL);
 
-                if (path == NULL)
+                if (path == NULL) {
                     errx(1, "Can't resolve starting path '%s'.", optarg);
+                }
 
                 break;
 

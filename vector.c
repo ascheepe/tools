@@ -23,7 +23,8 @@
 #include "vector.h"
 #include "utils.h"
 
-struct vector *vector_new(void) {
+struct vector *vector_new(void)
+{
     struct vector *v;
 
     v = xmalloc(sizeof(*v));
@@ -34,14 +35,16 @@ struct vector *vector_new(void) {
     return v;
 }
 
-void vector_free(struct vector *v) {
+void vector_free(struct vector *v)
+{
     free(v->items);
     v->items = NULL;
     free(v);
     v = NULL;
 }
 
-void vector_add(struct vector *v, void *data) {
+void vector_add(struct vector *v, void *data)
+{
     if (v->size == v->capacity) {
         size_t new_capacity = v->capacity + (v->capacity >> 1);
         size_t new_size = new_capacity * sizeof(v->items[0]);
@@ -53,7 +56,8 @@ void vector_add(struct vector *v, void *data) {
     v->items[v->size++] = data;
 }
 
-void vector_foreach(const struct vector *v, void (*fn)(void *)) {
+void vector_foreach(const struct vector *v, void (*fn)(void *))
+{
     size_t i;
 
     for (i = 0; i < v->size; ++i) {
@@ -61,7 +65,8 @@ void vector_foreach(const struct vector *v, void (*fn)(void *)) {
     }
 }
 
-void vector_shuffle(struct vector *v) {
+void vector_shuffle(struct vector *v)
+{
     static unsigned int seed;
     size_t i;
 

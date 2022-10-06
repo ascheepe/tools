@@ -53,7 +53,8 @@ struct file_info {
     char *name;
 };
 
-static struct file_info *file_info_new(const char *name, off_t size) {
+static struct file_info *file_info_new(const char *name, off_t size)
+{
     struct file_info *file_info;
 
     file_info = xmalloc(sizeof(*file_info));
@@ -63,7 +64,8 @@ static struct file_info *file_info_new(const char *name, off_t size) {
     return file_info;
 }
 
-static void file_info_free(void *file_info_ptr) {
+static void file_info_free(void *file_info_ptr)
+{
     struct file_info *file_info = file_info_ptr;
 
     free(file_info->name);
@@ -76,7 +78,8 @@ struct disk {
     size_t id;
 };
 
-static struct disk *disk_new(off_t size) {
+static struct disk *disk_new(off_t size)
+{
     struct disk *disk;
     static size_t id;
 
@@ -88,7 +91,8 @@ static struct disk *disk_new(off_t size) {
     return disk;
 }
 
-static void disk_free(void *disk_ptr) {
+static void disk_free(void *disk_ptr)
+{
     struct disk *disk = disk_ptr;
 
     /*
@@ -100,7 +104,8 @@ static void disk_free(void *disk_ptr) {
     free(disk);
 }
 
-static int add_file(struct disk *disk, struct file_info *file_info) {
+static int add_file(struct disk *disk, struct file_info *file_info)
+{
     if (disk->free - file_info->size < 0) {
         return FALSE;
     }
@@ -111,7 +116,8 @@ static int add_file(struct disk *disk, struct file_info *file_info) {
     return TRUE;
 }
 
-static void separator(int length) {
+static void separator(int length)
+{
     while (length-- > 0) {
         putchar('-');
     }
@@ -122,7 +128,8 @@ static void separator(int length) {
 /*
  * Pretty print a disk and it's contents.
  */
-static void disk_print(struct disk *disk) {
+static void disk_print(struct disk *disk)
+{
     char header[BUFSIZE];
     char *size_string;
     size_t i;
@@ -153,7 +160,8 @@ static void disk_print(struct disk *disk) {
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void disk_link(struct disk *disk, char *destdir) {
+static void disk_link(struct disk *disk, char *destdir)
+{
     char *tmp;
     char *path;
     size_t path_length;
@@ -192,7 +200,9 @@ static void disk_link(struct disk *disk, char *destdir) {
     free(path);
 }
 
-static int by_size_descending(const void *file_info_a, const void *file_info_b) {
+static int by_size_descending(const void *file_info_a,
+                              const void *file_info_b)
+{
     struct file_info *a = *((struct file_info **) file_info_a);
     struct file_info *b = *((struct file_info **) file_info_b);
 
@@ -206,7 +216,8 @@ static int by_size_descending(const void *file_info_a, const void *file_info_b) 
  * rapidly fill disks while the smaller remaining files will usually
  * make a good final fit.
  */
-static void fit(struct vector *files, struct vector *disks) {
+static void fit(struct vector *files, struct vector *disks)
+{
     size_t i;
 
     qsort(files->items, files->size, sizeof(files->items[0]),
@@ -239,8 +250,9 @@ static void fit(struct vector *files, struct vector *disks) {
     }
 }
 
-static int collect(const char *filename, const struct stat *st, int filetype,
-                   struct FTW *ftwbuf) {
+static int collect(const char *filename, const struct stat *st,
+                   int filetype, struct FTW *ftwbuf)
+{
     struct file_info *file_info;
 
     /* skip subdirectories if not doing a recursive collect */
@@ -275,12 +287,14 @@ static int collect(const char *filename, const struct stat *st, int filetype,
     return 0;
 }
 
-static void usage(void) {
+static void usage(void)
+{
     fprintf(stderr, "%s", usage_string);
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     char *destdir = NULL;
     struct vector *disks;
     size_t i;

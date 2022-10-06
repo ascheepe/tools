@@ -28,7 +28,8 @@
 
 #include "utils.h"
 
-void *xcalloc(size_t nmemb, size_t size) {
+void *xcalloc(size_t nmemb, size_t size)
+{
     void *result;
 
     result = calloc(nmemb, size);
@@ -39,7 +40,8 @@ void *xcalloc(size_t nmemb, size_t size) {
     return result;
 }
 
-void *xmalloc(size_t size) {
+void *xmalloc(size_t size)
+{
     void *result;
 
     result = malloc(size);
@@ -50,7 +52,8 @@ void *xmalloc(size_t size) {
     return result;
 }
 
-void *xrealloc(void *ptr, size_t size) {
+void *xrealloc(void *ptr, size_t size)
+{
     void *result;
 
     result = realloc(ptr, size);
@@ -61,7 +64,8 @@ void *xrealloc(void *ptr, size_t size) {
     return result;
 }
 
-char *xstrdup(const char *str) {
+char *xstrdup(const char *str)
+{
     char *result;
     size_t size;
 
@@ -82,7 +86,8 @@ char *xstrdup(const char *str) {
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t string_to_number(const char *str) {
+off_t string_to_number(const char *str)
+{
     char *unit;
     off_t num = strtol(str, &unit, 10);
 
@@ -114,7 +119,8 @@ off_t string_to_number(const char *str) {
     return 0;
 }
 
-char *number_to_string(const double num) {
+char *number_to_string(const double num)
+{
     char str[BUFSIZE];
 
     if (num >= TB) {
@@ -137,7 +143,8 @@ char *number_to_string(const double num) {
 #undef GB
 #undef TB
 
-char *clean_path(char *path) {
+char *clean_path(char *path)
+{
     char *buffer;
     char *buffer_ptr;
     char *result;
@@ -167,7 +174,8 @@ char *clean_path(char *path) {
     return result;
 }
 
-static void makedir(char *path) {
+static void makedir(char *path)
+{
     struct stat st;
 
     if (stat(path, &st) == 0) {
@@ -185,7 +193,8 @@ static void makedir(char *path) {
     }
 }
 
-void makedirs(char *path) {
+void makedirs(char *path)
+{
     char *slashpos = path + 1;
 
     while ((slashpos = strchr(slashpos, '/')) != NULL) {
