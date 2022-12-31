@@ -32,8 +32,6 @@ options:\n\
 #include <ftw.h>
 #include <unistd.h>
 
-#include <err.h>
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,13 +80,13 @@ static int collect(const char *filename, const struct stat *st,
 
         mediatype = magic_file(ctx.magic_cookie, filename);
         if (mediatype == NULL) {
-            errx(1, "%s", magic_error(ctx.magic_cookie));
+            die("collect: %s", magic_error(ctx.magic_cookie));
         }
 
         playable = (strncmp(ctx.mediatype, mediatype,
                             strlen(ctx.mediatype)) == 0);
     } else {
-        errx(1, "Extension or media type is not set.");
+        die("Extension or media type is not set.");
     }
 
     if (playable) {
@@ -104,7 +102,7 @@ static void play_file(void *filename_ptr)
 
     switch (fork()) {
         case -1:
-            err(1, "Can't fork");
+            die("Can't fork:");
             return;
 
         case 0:
@@ -114,7 +112,7 @@ static void play_file(void *filename_ptr)
 
             ctx.command[ctx.filename_index] = filename;
             execvp(ctx.command[0], (char *const *) ctx.command);
-            err(1, "Can't execute player");
+            die("Can't execute player:");
             break;
 
         default:
@@ -128,11 +126,11 @@ static void init_magic(void)
     ctx.magic_cookie = magic_open(MAGIC_MIME);
 
     if (ctx.magic_cookie == NULL) {
-        errx(1, "Can't open libmagic.");
+        die("Can't open libmagic.");
     }
 
     if (magic_load(ctx.magic_cookie, NULL) == -1) {
-        errx(1, "%s.", magic_error(ctx.magic_cookie));
+        die("%s.", magic_error(ctx.magic_cookie));
     }
 }
 
@@ -193,7 +191,7 @@ int main(int argc, char **argv)
                 path = realpath(optarg, NULL);
 
                 if (path == NULL) {
-                    errx(1, "Can't resolve starting path '%s'.", optarg);
+                    die("Can't resolve starting path '%s'.", optarg);
                 }
 
                 break;
@@ -228,7 +226,7 @@ int main(int argc, char **argv)
     }
 
     if (nftw(path, collect, MAXFD, FTW_PHYS) == -1) {
-        err(1, "nftw");
+        die("nftw:");
     }
 
     free(path);

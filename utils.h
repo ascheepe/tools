@@ -17,6 +17,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdarg.h>
+#include <stdlib.h>
+
 /* buffer big enough for storing the header string */
 #define BUFSIZE 1024
 
@@ -25,6 +28,7 @@
 
 enum { FALSE, TRUE };
 
+void die(const char *, ...);
 void *xcalloc(size_t, size_t);
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);

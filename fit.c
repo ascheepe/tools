@@ -28,7 +28,6 @@ options:\n\
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include <err.h>
 #include <ftw.h>
 #include <unistd.h>
 
@@ -168,7 +167,7 @@ static void disk_link(struct disk *disk, char *destdir)
     size_t i;
 
     if (disk->id > 9999) {
-        errx(1, "Number too big for format string.");
+        die("Number too big for format string.");
     }
 
     tmp = xmalloc(strlen(destdir) + 6);
@@ -190,7 +189,7 @@ static void disk_link(struct disk *disk, char *destdir)
         *slashpos = '/';
 
         if (link(file_info->name, destfile) == -1) {
-            err(1, "Can't link '%s' to '%s'", file_info->name, destfile);
+            die("Can't link '%s' to '%s':", file_info->name, destfile);
         }
 
         printf("%s -> %s\n", file_info->name, path);
@@ -242,7 +241,7 @@ static void fit(struct vector *files, struct vector *disks)
 
             disk = disk_new(ctx.disk_size);
             if (!add_file(disk, file_info)) {
-                errx(1, "add_file failed.");
+                die("add_file failed.");
             }
 
             vector_add(disks, disk);
@@ -262,7 +261,7 @@ static int collect(const char *filename, const struct stat *st,
 
     /* there might be access errors */
     if (filetype == FTW_NS || filetype == FTW_SLN || filetype == FTW_DNR) {
-        errx(1, "Can't access '%s'.", filename);
+        die("Can't access '%s':", filename);
     }
 
     /* skip directories */
@@ -272,13 +271,13 @@ static int collect(const char *filename, const struct stat *st,
 
     /* we can only handle regular files */
     if (filetype != FTW_F) {
-        errx(1, "'%s' is not a regular file.", filename);
+        die("'%s' is not a regular file.", filename);
     }
 
     /* which are not too big to fit */
     if (st->st_size > ctx.disk_size) {
-        errx(1, "Can never fit '%s' (%s).",
-             filename, number_to_string(st->st_size));
+        die("Can never fit '%s' (%s).",
+            filename, number_to_string(st->st_size));
     }
 
     file_info = file_info_new(filename, st->st_size);
@@ -330,12 +329,12 @@ int main(int argc, char **argv)
 
     for (i = optind; (int) i < argc; ++i) {
         if (nftw(argv[i], collect, MAXFD, 0) == -1) {
-            err(1, "nftw");
+            die("nftw:");
         }
     }
 
     if (ctx.files->size == 0) {
-        errx(1, "no files found.");
+        die("no files found.");
     }
 
     disks = vector_new();
@@ -346,7 +345,7 @@ int main(int argc, char **argv)
      * functions above assume a format string which will fit 4 digits.
      */
     if (disks->size > 9999) {
-        errx(1, "Fitting takes too many (%lu) disks.", disks->size);
+        die("Fitting takes too many (%lu) disks.", disks->size);
     }
 
     if (ctx.do_show_disk_count) {

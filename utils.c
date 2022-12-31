@@ -22,11 +22,30 @@
 #include <unistd.h>
 
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "utils.h"
+
+void die(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+
+    if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
+        fputc(' ', stderr);
+        perror(NULL);
+    } else {
+        fputc('\n', stderr);
+    }
+
+    exit(EXIT_FAILURE);
+}
 
 void *xcalloc(size_t nmemb, size_t size)
 {
@@ -34,7 +53,7 @@ void *xcalloc(size_t nmemb, size_t size)
 
     result = calloc(nmemb, size);
     if (result == NULL) {
-        errx(1, "calloc: out of memory.");
+        die("calloc:");
     }
 
     return result;
@@ -46,7 +65,7 @@ void *xmalloc(size_t size)
 
     result = malloc(size);
     if (result == NULL) {
-        errx(1, "malloc: out of memory.");
+        die("malloc:");
     }
 
     return result;
@@ -58,7 +77,7 @@ void *xrealloc(void *ptr, size_t size)
 
     result = realloc(ptr, size);
     if (result == NULL) {
-        errx(1, "realloc: out of memory.");
+        die("realloc:");
     }
 
     return result;
@@ -92,7 +111,7 @@ off_t string_to_number(const char *str)
     off_t num = strtol(str, &unit, 10);
 
     if (unit == str) {
-        errx(1, "Can't convert string '%s' to a number.", str);
+        die("Can't convert string '%s' to a number.", str);
     }
 
     if (*unit == '\0') {
@@ -115,7 +134,7 @@ off_t string_to_number(const char *str)
         }
     }
 
-    errx(1, "Unknown unit: '%s'", unit);
+    die("Unknown unit: '%s'", unit);
     return 0;
 }
 
@@ -182,14 +201,14 @@ static void makedir(char *path)
 
         /* if path already exists it should be a directory */
         if (!S_ISDIR(st.st_mode)) {
-            errx(1, "'%s' is not a directory.", path);
+            die("'%s' is not a directory.", path);
         }
 
         return;
     }
 
     if (mkdir(path, 0700) == -1) {
-        err(1, "Can't make directory '%s'.", path);
+        die("Can't make directory '%s':", path);
     }
 }
 
@@ -205,3 +224,4 @@ void makedirs(char *path)
 
     makedir(path);
 }
+
