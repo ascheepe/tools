@@ -67,8 +67,8 @@ static void file_info_free(void *file_info_ptr)
 {
     struct file_info *file_info = file_info_ptr;
 
-    free(file_info->name);
-    free(file_info);
+    xfree(file_info->name);
+    xfree(file_info);
 }
 
 struct disk {
@@ -100,7 +100,7 @@ static void disk_free(void *disk_ptr)
      * would double free otherwise.
      */
     vector_free(disk->files);
-    free(disk);
+    xfree(disk);
 }
 
 static int add_file(struct disk *disk, struct file_info *file_info)
@@ -138,7 +138,7 @@ static void disk_print(struct disk *disk)
     sprintf(header, "Disk #%lu, %d%% (%s) free:",
             (unsigned long) disk->id,
             (int) (disk->free * 100 / ctx.disk_size), size_string);
-    free(size_string);
+    xfree(size_string);
 
     separator(strlen(header));
     printf("%s\n", header);
@@ -150,7 +150,7 @@ static void disk_print(struct disk *disk)
 
         size_string = number_to_string(file_info->size);
         printf("%10s %s\n", size_string, file_info->name);
-        free(size_string);
+        xfree(size_string);
     }
 
     putchar('\n');
@@ -173,7 +173,7 @@ static void disk_link(struct disk *disk, char *destdir)
     tmp = xmalloc(strlen(destdir) + 6);
     sprintf(tmp, "%s/%04lu", destdir, (unsigned long) disk->id);
     path = clean_path(tmp);
-    free(tmp);
+    xfree(tmp);
     path_length = strlen(path);
 
     for (i = 0; i < disk->files->size; ++i) {
@@ -193,10 +193,10 @@ static void disk_link(struct disk *disk, char *destdir)
         }
 
         printf("%s -> %s\n", file_info->name, path);
-        free(destfile);
+        xfree(destfile);
     }
 
-    free(path);
+    xfree(path);
 }
 
 static int by_size_descending(const void *file_info_a,
@@ -370,7 +370,7 @@ int main(int argc, char **argv)
     vector_free(disks);
 
     if (ctx.do_link_disks) {
-        free(destdir);
+        xfree(destdir);
     }
 
     return EXIT_SUCCESS;

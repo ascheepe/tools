@@ -26,6 +26,8 @@
 /* maximum number of file descriptors ftw will use */
 #define MAXFD 32
 
+#define xfree(p) do { if ((p) != NULL) { free(p); (p) = NULL; } } while (0)
+
 enum { FALSE, TRUE };
 
 void die(const char *, ...);

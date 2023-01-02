@@ -250,7 +250,7 @@ int main(int argc, char **argv)
     vector_shuffle(ctx.files);
     vector_foreach(ctx.files, play_file);
 
-    free(ctx.command);
+    xfree(ctx.command);
     vector_foreach(ctx.files, free);
     vector_free(ctx.files);
     return EXIT_SUCCESS;

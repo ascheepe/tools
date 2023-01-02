@@ -188,7 +188,7 @@ char *clean_path(char *path)
     }
 
     result = xstrdup(buffer);
-    free(buffer);
+    xfree(buffer);
 
     return result;
 }

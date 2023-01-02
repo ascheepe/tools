@@ -37,9 +37,9 @@ struct vector *vector_new(void)
 
 void vector_free(struct vector *v)
 {
-    free(v->items);
+    xfree(v->items);
     v->items = NULL;
-    free(v);
+    xfree(v);
     v = NULL;
 }
 
