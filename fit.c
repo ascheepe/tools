@@ -25,6 +25,7 @@ options:\n\
   path           path to the files to fit.\n\
 \n";
 
+#define _XOPEN_SOURCE 600
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>

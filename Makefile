@@ -1,5 +1,4 @@
 CFLAGS=	-std=c89 -O2 -pipe -Wall -Wextra -Werror -pedantic
-CFLAGS+= -D_XOPEN_SOURCE=600
 #CFLAGS+= -Og -g -fsanitize=address,leak -fstack-protector-strong
 #CFLAGS+= -D_FORTIFY_SOURCE=2
 

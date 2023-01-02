@@ -25,6 +25,7 @@ options:\n\
   command        the command to execute for each file.\n\
 \n";
 
+#define _XOPEN_SOURCE 600
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
