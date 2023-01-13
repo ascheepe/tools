@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define _XOPEN_SOURCE 600
 #include <sys/types.h>
 #include <unistd.h>
 
