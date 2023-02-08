@@ -36,7 +36,7 @@ void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
 char *xstrdup(const char *);
 off_t string_to_number(const char *);
-char *number_to_string(const double);
+char *number_to_string(double);
 char *clean_path(char *);
 void makedirs(char *);
 
