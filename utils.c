@@ -121,16 +121,11 @@ off_t string_to_number(const char *str)
     /* unit should be one char, not more */
     if (unit[1] == '\0') {
         switch (tolower(*unit)) {
-            case 't':
-                return num * TB;
-            case 'g':
-                return num * GB;
-            case 'm':
-                return num * MB;
-            case 'k':
-                return num * KB;
-            case 'b':
-                return num;
+            case 't': return num * TB;
+            case 'g': return num * GB;
+            case 'm': return num * MB;
+            case 'k': return num * KB;
+            case 'b': return num;
         }
     }
 
@@ -138,22 +133,17 @@ off_t string_to_number(const char *str)
     return 0;
 }
 
-char *number_to_string(const double num)
+char *number_to_string(double num)
 {
+    char units[] = { 'B', 'K', 'M', 'G', 'T' };
     char str[BUFSIZE];
+    int i;
 
-    if (num >= TB) {
-        sprintf(str, "%.2fT", num / TB);
-    } else if (num >= GB) {
-        sprintf(str, "%.2fG", num / GB);
-    } else if (num >= MB) {
-        sprintf(str, "%.2fM", num / MB);
-    } else if (num >= KB) {
-        sprintf(str, "%.2fK", num / KB);
-    } else {
-        sprintf(str, "%.0fB", num);
+    for (i = 0; num > KB && i < (int)sizeof(units); ++i) {
+        num /= KB;
     }
 
+    sprintf(str, "%.*f%c", i == 0 ? 0 : 2, num, units[i]);
     return xstrdup(str);
 }
 
