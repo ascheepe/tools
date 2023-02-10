@@ -49,43 +49,43 @@ void die(const char *fmt, ...)
 
 void *xcalloc(size_t nmemb, size_t size)
 {
-    void *result;
+    void *ptr;
 
-    result = calloc(nmemb, size);
-    if (result == NULL) {
+    ptr = calloc(nmemb, size);
+    if (ptr == NULL) {
         die("calloc:");
     }
 
-    return result;
+    return ptr;
 }
 
 void *xmalloc(size_t size)
 {
-    void *result;
+    void *ptr;
 
-    result = malloc(size);
-    if (result == NULL) {
+    ptr = malloc(size);
+    if (ptr == NULL) {
         die("malloc:");
     }
 
-    return result;
+    return ptr;
 }
 
 void *xrealloc(void *ptr, size_t size)
 {
-    void *result;
+    void *new_ptr;
 
-    result = realloc(ptr, size);
-    if (result == NULL) {
+    new_ptr = realloc(ptr, size);
+    if (new_ptr == NULL) {
         die("realloc:");
     }
 
-    return result;
+    return new_ptr;
 }
 
 char *xstrdup(const char *str)
 {
-    char *result;
+    char *str_copy;
     size_t size;
 
     if (str == NULL) {
@@ -93,11 +93,11 @@ char *xstrdup(const char *str)
     }
 
     size = strlen(str) + 1;
-    result = xmalloc(size);
+    str_copy = xmalloc(size);
 
-    memcpy(result, str, size);
+    memcpy(str_copy, str, size);
 
-    return result;
+    return str_copy;
 }
 
 #define KB 1000L
@@ -135,8 +135,8 @@ off_t string_to_number(const char *str)
 
 char *number_to_string(double num)
 {
-    char units[] = { 'B', 'K', 'M', 'G', 'T' };
     char str[BUFSIZE];
+    char units[] = { 'B', 'K', 'M', 'G', 'T' };
     int i;
 
     for (i = 0; num > KB && i < (int)sizeof(units); ++i) {
