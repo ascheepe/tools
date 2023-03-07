@@ -45,7 +45,7 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-static struct program_context {
+static struct configuration {
     magic_t magic_cookie;
     char *mediatype;
     char *extension;
@@ -53,7 +53,7 @@ static struct program_context {
     int filename_index;
     int verbose;
     struct vector *files;
-} ctx;
+} cfg;
 
 static int collect(const char *filename, const struct stat *st,
                    int filetype, struct FTW *ftwbuf)
@@ -70,28 +70,28 @@ static int collect(const char *filename, const struct stat *st,
     }
 
     /* if both extension and media-type are set prefer extension search */
-    if (ctx.extension != NULL) {
+    if (cfg.extension != NULL) {
         const char *extension;
 
-        extension = filename + strlen(filename) - strlen(ctx.extension);
+        extension = filename + strlen(filename) - strlen(cfg.extension);
         playable = (extension >= filename
-                    && strcasecmp(extension, ctx.extension) == 0);
-    } else if (ctx.mediatype != NULL) {
+                    && strcasecmp(extension, cfg.extension) == 0);
+    } else if (cfg.mediatype != NULL) {
         const char *mediatype;
 
-        mediatype = magic_file(ctx.magic_cookie, filename);
+        mediatype = magic_file(cfg.magic_cookie, filename);
         if (mediatype == NULL) {
-            die("collect: %s", magic_error(ctx.magic_cookie));
+            die("collect: %s", magic_error(cfg.magic_cookie));
         }
 
-        playable = (strncmp(ctx.mediatype, mediatype,
-                            strlen(ctx.mediatype)) == 0);
+        playable = (strncmp(cfg.mediatype, mediatype,
+                            strlen(cfg.mediatype)) == 0);
     } else {
         die("Extension or media type is not set.");
     }
 
     if (playable) {
-        vector_add(ctx.files, xstrdup(filename));
+        vector_add(cfg.files, xstrdup(filename));
     }
 
     return 0;
@@ -107,12 +107,12 @@ static void play_file(void *filename_ptr)
             return;
 
         case 0:
-            if (ctx.verbose) {
+            if (cfg.verbose) {
                 printf("Playing \"%s\".\n", filename);
             }
 
-            ctx.command[ctx.filename_index] = filename;
-            execvp(ctx.command[0], (char *const *) ctx.command);
+            cfg.command[cfg.filename_index] = filename;
+            execvp(cfg.command[0], (char *const *) cfg.command);
             die("Can't execute player:");
             break;
 
@@ -124,14 +124,14 @@ static void play_file(void *filename_ptr)
 
 static void init_magic(void)
 {
-    ctx.magic_cookie = magic_open(MAGIC_MIME);
+    cfg.magic_cookie = magic_open(MAGIC_MIME);
 
-    if (ctx.magic_cookie == NULL) {
+    if (cfg.magic_cookie == NULL) {
         die("Can't open libmagic.");
     }
 
-    if (magic_load(ctx.magic_cookie, NULL) == -1) {
-        die("%s.", magic_error(ctx.magic_cookie));
+    if (magic_load(cfg.magic_cookie, NULL) == -1) {
+        die("%s.", magic_error(cfg.magic_cookie));
     }
 }
 
@@ -144,16 +144,16 @@ static void build_command(int argc, char **argv, int argend)
     int i;
 
     /* reserve for command + filename + NULL */
-    ctx.command = xmalloc((command_length + 2) * sizeof(char *));
+    cfg.command = xmalloc((command_length + 2) * sizeof(char *));
 
     for (i = argend; i < argc; ++i) {
-        ctx.command[i - argend] = argv[i];
+        cfg.command[i - argend] = argv[i];
     }
 
-    ctx.filename_index = command_length;
+    cfg.filename_index = command_length;
 
-    ctx.command[ctx.filename_index] = NULL;
-    ctx.command[ctx.filename_index + 1] = NULL;
+    cfg.command[cfg.filename_index] = NULL;
+    cfg.command[cfg.filename_index + 1] = NULL;
 }
 
 static void usage(void)
@@ -180,12 +180,12 @@ int main(int argc, char **argv)
 #endif
         switch (opt) {
             case 'e':
-                ctx.extension = optarg;
+                cfg.extension = optarg;
                 break;
 
             case 'm':
                 init_magic();
-                ctx.mediatype = optarg;
+                cfg.mediatype = optarg;
                 break;
 
             case 'p':
@@ -198,13 +198,13 @@ int main(int argc, char **argv)
                 break;
 
             case 'v':
-                ctx.verbose = TRUE;
+                cfg.verbose = TRUE;
                 break;
         }
     }
 
     /* extension or media-type must be set */
-    if (ctx.extension == NULL && ctx.mediatype == NULL) {
+    if (cfg.extension == NULL && cfg.mediatype == NULL) {
         usage();
     }
 
@@ -215,12 +215,12 @@ int main(int argc, char **argv)
 
     build_command(argc, argv, optind);
 
-    if (ctx.verbose) {
+    if (cfg.verbose) {
         printf("Searching for files...");
         fflush(stdout);
     }
 
-    ctx.files = vector_new();
+    cfg.files = vector_new();
 
     if (path == NULL) {
         path = xstrdup(".");
@@ -232,27 +232,27 @@ int main(int argc, char **argv)
 
     free(path);
 
-    if (ctx.magic_cookie != NULL) {
-        magic_close(ctx.magic_cookie);
+    if (cfg.magic_cookie != NULL) {
+        magic_close(cfg.magic_cookie);
     }
 
-    if (ctx.files->size == 0) {
-        if (ctx.verbose) {
+    if (cfg.files->size == 0) {
+        if (cfg.verbose) {
             printf("no files found.\n");
         }
 
         exit(1);
     }
 
-    if (ctx.verbose) {
-        printf("%lu files found.\n", (unsigned long) ctx.files->size);
+    if (cfg.verbose) {
+        printf("%lu files found.\n", (unsigned long) cfg.files->size);
     }
 
-    vector_shuffle(ctx.files);
-    vector_foreach(ctx.files, play_file);
+    vector_shuffle(cfg.files);
+    vector_foreach(cfg.files, play_file);
 
-    xfree(ctx.command);
-    vector_foreach(ctx.files, free);
-    vector_free(ctx.files);
+    xfree(cfg.command);
+    vector_foreach(cfg.files, free);
+    vector_free(cfg.files);
     return EXIT_SUCCESS;
 }
