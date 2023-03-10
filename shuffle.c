@@ -58,7 +58,7 @@ static struct configuration {
 static int collect(const char *filename, const struct stat *st,
                    int filetype, struct FTW *ftwbuf)
 {
-    int playable = FALSE;
+    int is_playable = FALSE;
 
     /* these parameters are unused */
     (void) st;
@@ -71,11 +71,11 @@ static int collect(const char *filename, const struct stat *st,
 
     /* if both extension and media-type are set prefer extension search */
     if (cfg.extension != NULL) {
-        const char *extension;
+        const char *extension = NULL;
 
         extension = filename + strlen(filename) - strlen(cfg.extension);
-        playable = (extension >= filename
-                    && strcasecmp(extension, cfg.extension) == 0);
+        is_playable = (extension >= filename
+                       && strcasecmp(extension, cfg.extension) == 0);
     } else if (cfg.mediatype != NULL) {
         const char *mediatype;
 
@@ -84,13 +84,13 @@ static int collect(const char *filename, const struct stat *st,
             die("collect: %s", magic_error(cfg.magic_cookie));
         }
 
-        playable = (strncmp(cfg.mediatype, mediatype,
+        is_playable = (strncmp(cfg.mediatype, mediatype,
                             strlen(cfg.mediatype)) == 0);
     } else {
         die("Extension or media type is not set.");
     }
 
-    if (playable) {
+    if (is_playable) {
         vector_add(cfg.files, xstrdup(filename));
     }
 
