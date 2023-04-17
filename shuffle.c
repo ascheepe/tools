@@ -74,8 +74,8 @@ static int collect(const char *filename, const struct stat *st,
         const char *extension = NULL;
 
         extension = filename + strlen(filename) - strlen(cfg.extension);
-        is_playable = (extension >= filename
-                       && strcasecmp(extension, cfg.extension) == 0);
+        is_playable = (extension >= filename &&
+                       strcasecmp(extension, cfg.extension) == 0);
     } else if (cfg.mediatype != NULL) {
         const char *mediatype;
 
@@ -84,8 +84,8 @@ static int collect(const char *filename, const struct stat *st,
             die("collect: %s", magic_error(cfg.magic_cookie));
         }
 
-        is_playable = (strncmp(cfg.mediatype, mediatype,
-                            strlen(cfg.mediatype)) == 0);
+        is_playable =
+            (strncmp(cfg.mediatype, mediatype, strlen(cfg.mediatype)) == 0);
     } else {
         die("Extension or media type is not set.");
     }
