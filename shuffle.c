@@ -46,213 +46,201 @@ options:\n\
 #include "utils.h"
 
 static struct configuration {
-    magic_t magic_cookie;
-    char *mediatype;
-    char *extension;
-    char **command;
-    int filename_index;
-    int verbose;
-    struct vector *files;
+	magic_t magic_cookie;
+	char *mediatype;
+	char *extension;
+	char **command;
+	int filename_index;
+	int verbose;
+	struct vector *files;
 } cfg;
 
-static int collect(const char *filename, const struct stat *st,
-                   int filetype, struct FTW *ftwbuf)
+static int
+collect(const char *filename, const struct stat *st,
+    int filetype, struct FTW *ftwbuf)
 {
-    int is_playable = FALSE;
+	int is_playable = FALSE;
 
-    /* these parameters are unused */
-    (void) st;
-    (void) ftwbuf;
+	/* these parameters are unused */
+	(void)st;
+	(void)ftwbuf;
 
-    /* skip non regular files */
-    if (filetype != FTW_F) {
-        return 0;
-    }
+	/* skip non regular files */
+	if (filetype != FTW_F)
+		return 0;
 
-    /* if both extension and media-type are set prefer extension search */
-    if (cfg.extension != NULL) {
-        const char *extension = NULL;
+	/* if both extension and media-type are set prefer extension search */
+	if (cfg.extension != NULL) {
+		const char *extension = NULL;
 
-        extension = filename + strlen(filename) - strlen(cfg.extension);
-        is_playable = (extension >= filename &&
-                       strcasecmp(extension, cfg.extension) == 0);
-    } else if (cfg.mediatype != NULL) {
-        const char *mediatype;
+		extension = filename + strlen(filename) -
+		    strlen(cfg.extension);
+		is_playable = (extension >= filename &&
+		    strcasecmp(extension, cfg.extension) == 0);
+	} else if (cfg.mediatype != NULL) {
+		const char *mediatype;
 
-        mediatype = magic_file(cfg.magic_cookie, filename);
-        if (mediatype == NULL) {
-            die("collect: %s", magic_error(cfg.magic_cookie));
-        }
+		mediatype = magic_file(cfg.magic_cookie, filename);
+		if (mediatype == NULL)
+			die("collect: %s", magic_error(cfg.magic_cookie));
 
-        is_playable =
-            (strncmp(cfg.mediatype, mediatype, strlen(cfg.mediatype)) == 0);
-    } else {
-        die("Extension or media type is not set.");
-    }
+		is_playable = (strncmp(cfg.mediatype, mediatype,
+		    strlen(cfg.mediatype)) == 0);
+	} else
+		die("Extension or media type is not set.");
 
-    if (is_playable) {
-        vector_add(cfg.files, xstrdup(filename));
-    }
+	if (is_playable)
+		vector_add(cfg.files, xstrdup(filename));
 
-    return 0;
+	return 0;
 }
 
-static void play_file(void *filename_ptr)
+static void
+play_file(void *filename_ptr)
 {
-    char *filename = filename_ptr;
+	char *filename = filename_ptr;
 
-    switch (fork()) {
-        case -1:
-            die("Can't fork:");
-            return;
+	switch (fork()) {
+	case -1:
+		die("Can't fork:");
+		return;
 
-        case 0:
-            if (cfg.verbose) {
-                printf("Playing \"%s\".\n", filename);
-            }
+	case 0:
+		if (cfg.verbose)
+			printf("Playing \"%s\".\n", filename);
 
-            cfg.command[cfg.filename_index] = filename;
-            execvp(cfg.command[0], (char *const *) cfg.command);
-            die("Can't execute player:");
-            break;
+		cfg.command[cfg.filename_index] = filename;
+		execvp(cfg.command[0], (char *const *)cfg.command);
+		die("Can't execute player:");
+		break;
 
-        default:
-            wait(NULL);
-            break;
-    }
+	default:
+		wait(NULL);
+		break;
+	}
 }
 
-static void init_magic(void)
+static void
+init_magic(void)
 {
-    cfg.magic_cookie = magic_open(MAGIC_MIME);
+	cfg.magic_cookie = magic_open(MAGIC_MIME);
 
-    if (cfg.magic_cookie == NULL) {
-        die("Can't open libmagic.");
-    }
+	if (cfg.magic_cookie == NULL)
+		die("Can't open libmagic.");
 
-    if (magic_load(cfg.magic_cookie, NULL) == -1) {
-        die("%s.", magic_error(cfg.magic_cookie));
-    }
+	if (magic_load(cfg.magic_cookie, NULL) == -1)
+		die("%s.", magic_error(cfg.magic_cookie));
 }
 
 /* build a command from the arguments. The command starts
  * after the normal arguments.
  */
-static void build_command(int argc, char **argv, int argend)
+static void
+build_command(int argc, char **argv, int argend)
 {
-    int command_length = argc - argend;
-    int i;
+	int len = argc - argend;
+	int i;
 
-    /* reserve for command + filename + NULL */
-    cfg.command = xmalloc((command_length + 2) * sizeof(char *));
+	/* reserve for command + filename + NULL */
+	cfg.command = xmalloc((len + 2) * sizeof(char *));
 
-    for (i = argend; i < argc; ++i) {
-        cfg.command[i - argend] = argv[i];
-    }
+	for (i = argend; i < argc; ++i)
+		cfg.command[i - argend] = argv[i];
 
-    cfg.filename_index = command_length;
+	cfg.filename_index = len;
 
-    cfg.command[cfg.filename_index] = NULL;
-    cfg.command[cfg.filename_index + 1] = NULL;
+	cfg.command[cfg.filename_index] = NULL;
+	cfg.command[cfg.filename_index + 1] = NULL;
 }
 
-static void usage(void)
+static void
+usage(void)
 {
-    fprintf(stderr, "%s", usage_string);
-    exit(EXIT_FAILURE);
+	fprintf(stderr, "%s", usage_string);
+	exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-    char *path = NULL;
-    int opt;
+	char *path = NULL;
+	int opt;
 
-    /*
-     * GNU libc is not posix compliant and needs a + to stop
-     * getopt from parsing options after the last one otherwise
-     * it will parse the command's options as flags. (but you
-     * could stop that by prefixing the command with --).
-     */
+	/*
+	 * GNU libc is not posix compliant and needs a + to stop
+	 * getopt from parsing options after the last one otherwise
+	 * it will parse the command's options as flags. (but you
+	 * could stop that by prefixing the command with --).
+	 */
 #ifdef __GNU_LIBRARY__
-    while ((opt = getopt(argc, argv, "+e:m:p:v")) != -1) {
+	while ((opt = getopt(argc, argv, "+e:m:p:v")) != -1) {
 #else
-    while ((opt = getopt(argc, argv, "e:m:p:v")) != -1) {
+	while ((opt = getopt(argc, argv, "e:m:p:v")) != -1) {
 #endif
-        switch (opt) {
-            case 'e':
-                cfg.extension = optarg;
-                break;
+		switch (opt) {
+		case 'e':
+			cfg.extension = optarg;
+			break;
+		case 'm':
+			init_magic();
+			cfg.mediatype = optarg;
+			break;
+		case 'p':
+			path = realpath(optarg, NULL);
 
-            case 'm':
-                init_magic();
-                cfg.mediatype = optarg;
-                break;
+			if (path == NULL)
+				die("Can't resolve starting path '%s'.",
+				    optarg);
+			break;
+		case 'v':
+			cfg.verbose = TRUE;
+			break;
+		}
+	}
 
-            case 'p':
-                path = realpath(optarg, NULL);
+	/* extension or media-type must be set */
+	if (cfg.extension == NULL && cfg.mediatype == NULL)
+		usage();
 
-                if (path == NULL) {
-                    die("Can't resolve starting path '%s'.", optarg);
-                }
+	/* a command to run is mandatory */
+	if (optind >= argc)
+		usage();
 
-                break;
+	build_command(argc, argv, optind);
 
-            case 'v':
-                cfg.verbose = TRUE;
-                break;
-        }
-    }
+	if (cfg.verbose) {
+		printf("Searching for files...");
+		fflush(stdout);
+	}
 
-    /* extension or media-type must be set */
-    if (cfg.extension == NULL && cfg.mediatype == NULL) {
-        usage();
-    }
+	cfg.files = vector_new();
 
-    /* a command to run is mandatory */
-    if (optind >= argc) {
-        usage();
-    }
+	if (path == NULL)
+		path = xstrdup(".");
 
-    build_command(argc, argv, optind);
+	if (nftw(path, collect, MAXFD, FTW_PHYS) == -1)
+		die("nftw:");
 
-    if (cfg.verbose) {
-        printf("Searching for files...");
-        fflush(stdout);
-    }
+	free(path);
 
-    cfg.files = vector_new();
+	if (cfg.magic_cookie != NULL)
+		magic_close(cfg.magic_cookie);
 
-    if (path == NULL) {
-        path = xstrdup(".");
-    }
+	if (cfg.files->size == 0) {
+		if (cfg.verbose)
+			printf("no files found.\n");
 
-    if (nftw(path, collect, MAXFD, FTW_PHYS) == -1) {
-        die("nftw:");
-    }
+		exit(1);
+	}
 
-    free(path);
+	if (cfg.verbose)
+		printf("%lu files found.\n", (unsigned long)cfg.files->size);
 
-    if (cfg.magic_cookie != NULL) {
-        magic_close(cfg.magic_cookie);
-    }
+	vector_shuffle(cfg.files);
+	vector_foreach(cfg.files, play_file);
 
-    if (cfg.files->size == 0) {
-        if (cfg.verbose) {
-            printf("no files found.\n");
-        }
-
-        exit(1);
-    }
-
-    if (cfg.verbose) {
-        printf("%lu files found.\n", (unsigned long) cfg.files->size);
-    }
-
-    vector_shuffle(cfg.files);
-    vector_foreach(cfg.files, play_file);
-
-    xfree(cfg.command);
-    vector_foreach(cfg.files, free);
-    vector_free(cfg.files);
-    return EXIT_SUCCESS;
+	xfree(cfg.command);
+	vector_foreach(cfg.files, free);
+	vector_free(cfg.files);
+	return EXIT_SUCCESS;
 }

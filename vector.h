@@ -20,7 +20,7 @@
 struct vector {
     void **items;
     size_t size;
-    size_t capacity;
+    size_t cap;
 };
 
 #define INITIAL_VECTOR_CAPACITY 128

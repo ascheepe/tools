@@ -24,66 +24,70 @@
 #include "vector.h"
 #include "utils.h"
 
-struct vector *vector_new(void)
+struct vector *
+vector_new(void)
 {
-    struct vector *v;
+	struct vector *v;
 
-    v = xmalloc(sizeof(*v));
-    v->items = xcalloc(INITIAL_VECTOR_CAPACITY, sizeof(v->items[0]));
-    v->capacity = INITIAL_VECTOR_CAPACITY;
-    v->size = 0;
+	v = xmalloc(sizeof(*v));
+	v->items = xcalloc(INITIAL_VECTOR_CAPACITY, sizeof(v->items[0]));
+	v->cap = INITIAL_VECTOR_CAPACITY;
+	v->size = 0;
 
-    return v;
+	return v;
 }
 
-void vector_free(struct vector *v)
+void
+vector_free(struct vector *v)
 {
-    xfree(v->items);
-    v->items = NULL;
-    xfree(v);
-    v = NULL;
+	xfree(v->items);
+	v->items = NULL;
+	xfree(v);
+	v = NULL;
 }
 
-void vector_add(struct vector *v, void *data)
+void
+vector_add(struct vector *v, void *data)
 {
-    if (v->size == v->capacity) {
-        size_t new_capacity = v->capacity + (v->capacity >> 1);
-        size_t new_size = new_capacity * sizeof(v->items[0]);
+	if (v->size == v->cap) {
+		size_t newcap = v->cap + (v->cap >> 1);
+		size_t newsize = newcap * sizeof(v->items[0]);
 
-        v->items = xrealloc(v->items, new_size);
-        v->capacity = new_capacity;
-    }
+		v->items = xrealloc(v->items, newsize);
+		v->cap = newcap;
+	}
 
-    v->items[v->size++] = data;
+	v->items[v->size++] = data;
 }
 
-void vector_foreach(const struct vector *v, void (*fn)(void *))
+void
+vector_foreach(const struct vector *v, void (*fn)(void *))
 {
-    size_t i;
+	size_t i;
 
-    for (i = 0; i < v->size; ++i) {
-        fn(v->items[i]);
-    }
+	for (i = 0; i < v->size; ++i)
+		fn(v->items[i]);
 }
 
-void vector_shuffle(struct vector *v)
+void
+vector_shuffle(struct vector *v)
 {
-    static unsigned int seed;
-    size_t i;
+	static unsigned int seed;
+	size_t i;
 
-    if (seed == 0) {
-        seed = time(NULL) ^ getpid();
-        srandom(seed);
-    }
+	if (seed == 0) {
+		seed = time(NULL) ^ getpid();
+		srandom(seed);
+	}
 
-    for (i = v->size - 1; i > 0; --i) {
-        size_t j;
-        void *tmp;
+	for (i = v->size - 1; i > 0; --i) {
+		size_t j;
+		void *tmp;
 
-        j = random() % (i + 1);
+		j = random() % (i + 1);
 
-        tmp = v->items[i];
-        v->items[i] = v->items[j];
-        v->items[j] = tmp;
-    }
+		tmp = v->items[i];
+		v->items[i] = v->items[j];
+		v->items[j] = tmp;
+	}
 }
