@@ -166,9 +166,7 @@ disk_link(struct disk *disk, char *dstdir)
 	char *tmp;
 	size_t i, len;
 
-	if (disk->id > 9999)
-		die("Number too big for format string.");
-
+	/* Make a numbered subdirectory. */
 	tmp = xmalloc(strlen(dstdir) + 6);
 	sprintf(tmp, "%s/%04lu", dstdir, (unsigned long)disk->id);
 	dstdir = clean_path(tmp);
@@ -176,6 +174,7 @@ disk_link(struct disk *disk, char *dstdir)
 	makedirs(dstdir);
 	len = strlen(dstdir);
 
+	/* And link the files into it. */
 	for (i = 0; i < disk->files->size; ++i) {
 		struct afile *afile = disk->files->items[i];
 		char *dst;
