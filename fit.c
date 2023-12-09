@@ -48,30 +48,30 @@ static struct configuration {
 	int do_recursive_collect;
 } cfg;
 
-struct file_info {
+struct afile {
 	off_t size;
 	char *name;
 };
 
-static struct file_info *
-file_info_new(const char *name, off_t size)
+static struct afile *
+afile_new(const char *name, off_t size)
 {
-	struct file_info *file_info;
+	struct afile *afile;
 
-	file_info = xmalloc(sizeof(*file_info));
-	file_info->name = xstrdup(name);
-	file_info->size = size;
+	afile = xmalloc(sizeof(*afile));
+	afile->name = xstrdup(name);
+	afile->size = size;
 
-	return file_info;
+	return afile;
 }
 
 static void
-file_info_free(void *file_info_ptr)
+afile_free(void *afilep)
 {
-	struct file_info *file_info = file_info_ptr;
+	struct afile *afile = afilep;
 
-	xfree(file_info->name);
-	xfree(file_info);
+	xfree(afile->name);
+	xfree(afile);
 }
 
 struct disk {
@@ -95,9 +95,9 @@ disk_new(off_t size)
 }
 
 static void
-disk_free(void *disk_ptr)
+disk_free(void *diskp)
 {
-	struct disk *disk = disk_ptr;
+	struct disk *disk = diskp;
 
 	/*
 	 * NOTE: Files are shared with the files vector so we don't use a
@@ -140,10 +140,10 @@ disk_print(struct disk *disk)
 
 	/* and the contents */
 	for (i = 0; i < disk->files->size; ++i) {
-		struct file_info *file_info = disk->files->items[i];
+		struct afile *afile = disk->files->items[i];
 
-		sizestr = number_to_string(file_info->size);
-		printf("%10s %s\n", sizestr, file_info->name);
+		sizestr = number_to_string(afile->size);
+		printf("%10s %s\n", sizestr, afile->name);
 		xfree(sizestr);
 	}
 
@@ -177,13 +177,13 @@ disk_link(struct disk *disk, char *dstdir)
 	len = strlen(dstdir);
 
 	for (i = 0; i < disk->files->size; ++i) {
-		struct file_info *file_info = disk->files->items[i];
+		struct afile *afile = disk->files->items[i];
 		char *dst;
 
-		dst = xmalloc(len + strlen(file_info->name) + 2);
-		sprintf(dst, "%s/%s", dstdir, file_info->name);
-		xlink(file_info->name, dst);
-		printf("%s -> %s\n", file_info->name, dstdir);
+		dst = xmalloc(len + strlen(afile->name) + 2);
+		sprintf(dst, "%s/%s", dstdir, afile->name);
+		xlink(afile->name, dst);
+		printf("%s -> %s\n", afile->name, dstdir);
 		xfree(dst);
 	}
 
@@ -191,22 +191,22 @@ disk_link(struct disk *disk, char *dstdir)
 }
 
 static int
-by_size_descending(const void *file_info_a, const void *file_info_b)
+by_size_descending(const void *afile_a, const void *afile_b)
 {
-	struct file_info *a = *((struct file_info **)file_info_a);
-	struct file_info *b = *((struct file_info **)file_info_b);
+	struct afile *a = *((struct afile **)afile_a);
+	struct afile *b = *((struct afile **)afile_b);
 
 	return b->size - a->size;
 }
 
 static int
-add_file(struct disk *disk, struct file_info *file_info)
+add_file(struct disk *disk, struct afile *afile)
 {
-	if (disk->free - file_info->size < 0)
+	if (disk->free - afile->size < 0)
 		return FALSE;
 
-	vector_add(disk->files, file_info);
-	disk->free -= file_info->size;
+	vector_add(disk->files, afile);
+	disk->free -= afile->size;
 
 	return TRUE;
 }
@@ -227,14 +227,14 @@ fit(struct vector *files, struct vector *disks)
 	    by_size_descending);
 
 	for (i = 0; i < files->size; ++i) {
-		struct file_info *file_info = files->items[i];
+		struct afile *afile = files->items[i];
 		int added = FALSE;
 		size_t j;
 
 		for (j = 0; j < disks->size; ++j) {
 			struct disk *disk = disks->items[j];
 
-			if (add_file(disk, file_info)) {
+			if (add_file(disk, afile)) {
 				added = TRUE;
 				break;
 			}
@@ -244,7 +244,7 @@ fit(struct vector *files, struct vector *disks)
 			struct disk *disk;
 
 			disk = disk_new(cfg.disk_size);
-			if (!add_file(disk, file_info))
+			if (!add_file(disk, afile))
 				die("add_file failed.");
 
 			vector_add(disks, disk);
@@ -256,7 +256,7 @@ static int
 collect(const char *filename, const struct stat *st,
     int filetype, struct FTW *ftwbuf)
 {
-	struct file_info *file_info;
+	struct afile *afile;
 
 	/* skip subdirectories if not doing a recursive collect */
 	if (!cfg.do_recursive_collect && ftwbuf->level > 1)
@@ -279,8 +279,8 @@ collect(const char *filename, const struct stat *st,
 		die("Can never fit '%s' (%s).",
 		    filename, number_to_string(st->st_size));
 
-	file_info = file_info_new(filename, st->st_size);
-	vector_add(cfg.files, file_info);
+	afile = afile_new(filename, st->st_size);
+	vector_add(cfg.files, afile);
 
 	return 0;
 }
@@ -356,7 +356,7 @@ main(int argc, char **argv)
 			disk_print(disk);
 	}
 
-	vector_foreach(cfg.files, file_info_free);
+	vector_foreach(cfg.files, afile_free);
 	vector_foreach(disks, disk_free);
 	vector_free(cfg.files);
 	vector_free(disks);

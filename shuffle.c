@@ -95,9 +95,9 @@ collect(const char *filename, const struct stat *st,
 }
 
 static void
-play_file(void *filename_ptr)
+play_file(void *filenamep)
 {
-	char *filename = filename_ptr;
+	char *filename = filenamep;
 
 	switch (fork()) {
 	case -1:
