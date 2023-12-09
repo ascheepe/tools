@@ -162,11 +162,18 @@ disk_print(struct disk *disk)
 	putchar('\n');
 }
 
+static void
+xlink(const char *src, const char *dst)
+{
+	if (link(src, dst) == -1)
+		die("Can't link '%s' to '%s':", src, dst);
+}
+
 /*
  * Link the contents of a disk to the given destination directory.
  */
 static void
-disk_link(struct disk *disk, char *destdir)
+disk_link(struct disk *disk, char *dstdir)
 {
 	char *tmp;
 	size_t i, len;
@@ -174,29 +181,25 @@ disk_link(struct disk *disk, char *destdir)
 	if (disk->id > 9999)
 		die("Number too big for format string.");
 
-	tmp = xmalloc(strlen(destdir) + 6);
-	sprintf(tmp, "%s/%04lu", destdir, (unsigned long)disk->id);
-	destdir = clean_path(tmp);
+	tmp = xmalloc(strlen(dstdir) + 6);
+	sprintf(tmp, "%s/%04lu", dstdir, (unsigned long)disk->id);
+	dstdir = clean_path(tmp);
 	xfree(tmp);
-	makedirs(destdir);
-	len = strlen(destdir);
+	makedirs(dstdir);
+	len = strlen(dstdir);
 
 	for (i = 0; i < disk->files->size; ++i) {
 		struct file_info *file_info = disk->files->items[i];
-		char *dest;
+		char *dst;
 
-		dest = xmalloc(len + strlen(file_info->name) + 2);
-		sprintf(dest, "%s/%s", destdir, file_info->name);
-
-		if (link(file_info->name, dest) == -1)
-			die("Can't link '%s' to '%s':", file_info->name,
-			    dest);
-
-		printf("%s -> %s\n", file_info->name, destdir);
-		xfree(dest);
+		dst = xmalloc(len + strlen(file_info->name) + 2);
+		sprintf(dst, "%s/%s", dstdir, file_info->name);
+		xlink(file_info->name, dst);
+		printf("%s -> %s\n", file_info->name, dstdir);
+		xfree(dst);
 	}
 
-	xfree(destdir);
+	xfree(dstdir);
 }
 
 static int
@@ -292,7 +295,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char *destdir = NULL;
+	char *dstdir = NULL;
 	struct vector *disks = NULL;
 	size_t i;
 	int opt;
@@ -300,7 +303,7 @@ main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
 		switch (opt) {
 		case 'l':
-			destdir = clean_path(optarg);
+			dstdir = clean_path(optarg);
 			cfg.do_link_disks = TRUE;
 			break;
 		case 'n':
@@ -348,7 +351,7 @@ main(int argc, char **argv)
 		struct disk *disk = disks->items[i];
 
 		if (cfg.do_link_disks)
-			disk_link(disk, destdir);
+			disk_link(disk, dstdir);
 		else
 			disk_print(disk);
 	}
@@ -359,7 +362,7 @@ main(int argc, char **argv)
 	vector_free(disks);
 
 	if (cfg.do_link_disks)
-		xfree(destdir);
+		xfree(dstdir);
 
 	return EXIT_SUCCESS;
 }
