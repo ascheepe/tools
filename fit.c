@@ -108,18 +108,6 @@ disk_free(void *disk_ptr)
 	xfree(disk);
 }
 
-static int
-add_file(struct disk *disk, struct file_info *file_info)
-{
-	if (disk->free - file_info->size < 0)
-		return FALSE;
-
-	vector_add(disk->files, file_info);
-	disk->free -= file_info->size;
-
-	return TRUE;
-}
-
 static void
 hline(int len)
 {
@@ -209,6 +197,18 @@ by_size_descending(const void *file_info_a, const void *file_info_b)
 	struct file_info *b = *((struct file_info **)file_info_b);
 
 	return b->size - a->size;
+}
+
+static int
+add_file(struct disk *disk, struct file_info *file_info)
+{
+	if (disk->free - file_info->size < 0)
+		return FALSE;
+
+	vector_add(disk->files, file_info);
+	disk->free -= file_info->size;
+
+	return TRUE;
 }
 
 /*
