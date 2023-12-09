@@ -71,12 +71,11 @@ collect(const char *filename, const struct stat *st,
 
 	/* if both extension and media-type are set prefer extension search */
 	if (cfg.extension != NULL) {
-		const char *extension = NULL;
+		const char *ext = NULL;
 
-		extension = filename + strlen(filename) -
-		    strlen(cfg.extension);
-		is_playable = (extension >= filename &&
-		    strcasecmp(extension, cfg.extension) == 0);
+		ext = filename + strlen(filename) - strlen(cfg.extension);
+		is_playable = (ext >= filename &&
+		    strcasecmp(ext, cfg.extension) == 0);
 	} else if (cfg.mediatype != NULL) {
 		const char *mediatype;
 
