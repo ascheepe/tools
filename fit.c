@@ -156,18 +156,9 @@ disk_print(struct disk *disk)
 static void
 disk_link(struct disk *disk, char *dstdir)
 {
-	char *tmp;
 	size_t i, len;
 
-	/* Make a numbered subdirectory. */
-	tmp = xmalloc(strlen(dstdir) + 6);
-	sprintf(tmp, "%s/%04lu", dstdir, (unsigned long)disk->id);
-	dstdir = clean_path(tmp);
-	xfree(tmp);
-	makedirs(dstdir);
 	len = strlen(dstdir);
-
-	/* And link the files into it. */
 	for (i = 0; i < disk->files->size; ++i) {
 		struct afile *afile = disk->files->items[i];
 		char *dst;
@@ -178,8 +169,6 @@ disk_link(struct disk *disk, char *dstdir)
 		printf("%s -> %s\n", afile->name, dstdir);
 		xfree(dst);
 	}
-
-	xfree(dstdir);
 }
 
 static int
@@ -342,9 +331,15 @@ main(int argc, char **argv)
 	for (i = 0; i < disks->size; ++i) {
 		struct disk *disk = disks->items[i];
 
-		if (cfg.do_link_disks)
-			disk_link(disk, dstdir);
-		else
+		if (cfg.do_link_disks) {
+			char *dst;
+
+			dst = xmalloc(strlen(dstdir) + 6);
+			sprintf(dst, "%s/%04lu", dstdir, (unsigned long)disk->id);
+			makedirs(dst);
+			disk_link(disk, dst);
+			free(dst);
+		} else
 			disk_print(disk);
 	}
 
