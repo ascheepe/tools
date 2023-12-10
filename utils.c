@@ -59,6 +59,13 @@ xcalloc(size_t nmemb, size_t size)
 	return ptr;
 }
 
+void
+xlink(const char *src, const char *dst)
+{
+	if (link(src, dst) == -1)
+		die("Can't link '%s' to '%s':", src, dst);
+}
+
 void *
 xmalloc(size_t size)
 {

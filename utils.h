@@ -32,6 +32,7 @@ enum { FALSE, TRUE };
 
 void die(const char *, ...);
 void *xcalloc(size_t, size_t);
+void xlink(const char *, const char *);
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
 char *xstrdup(const char *);

@@ -150,13 +150,6 @@ disk_print(struct disk *disk)
 	putchar('\n');
 }
 
-static void
-xlink(const char *src, const char *dst)
-{
-	if (link(src, dst) == -1)
-		die("Can't link '%s' to '%s':", src, dst);
-}
-
 /*
  * Link the contents of a disk to the given destination directory.
  */
