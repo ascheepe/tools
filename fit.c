@@ -127,7 +127,7 @@ disk_print(struct disk *disk)
 	/* print a nice header */
 	sizestr = number_to_string(disk->free);
 	sprintf(header, "Disk #%lu, %d%% (%s) free:",
-	    (unsigned long)disk->id,
+	    (ulong)disk->id,
 	    (int)(disk->free * 100 / cfg.disk_size), sizestr);
 	xfree(sizestr);
 
@@ -316,8 +316,9 @@ main(int argc, char **argv)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
 	if (cfg.print) {
-		printf("%lu disk%s.\n", (unsigned long)disks->size,
-		    disks->size > 1 ? "s" : "");
+		char *plural = disks->size < 1 ? "disk" : "disks";
+
+		printf("%lu %s.\n", (ulong)disks->size, plural);
 		exit(EXIT_SUCCESS);
 	}
 

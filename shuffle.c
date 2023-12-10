@@ -233,7 +233,7 @@ main(int argc, char **argv)
 	}
 
 	if (cfg.verbose)
-		printf("%lu files found.\n", (unsigned long)cfg.files->size);
+		printf("%lu files found.\n", (ulong)cfg.files->size);
 
 	vector_shuffle(cfg.files);
 	vector_foreach(cfg.files, play_file);
