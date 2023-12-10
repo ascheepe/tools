@@ -30,6 +30,11 @@
 
 enum { FALSE, TRUE };
 
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+
 void die(const char *, ...);
 void *xcalloc(size_t, size_t);
 void xlink(const char *, const char *);

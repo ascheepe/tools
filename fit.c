@@ -44,9 +44,9 @@ options:\n\
 static struct configuration {
 	off_t disk_size;
 	struct vector *files;
-	int do_link_disks;
-	int do_show_disk_count;
-	int do_recursive_collect;
+	int link;
+	int print;
+	int recurse;
 } cfg;
 
 struct afile {
@@ -237,7 +237,7 @@ collect(const char *filename, const struct stat *st,
 	struct afile *afile;
 
 	/* skip subdirectories if not doing a recursive collect */
-	if (!cfg.do_recursive_collect && ftwbuf->level > 1)
+	if (!cfg.recurse && ftwbuf->level > 1)
 		return 0;
 
 	/* there might be access errors */
@@ -282,13 +282,13 @@ main(int argc, char **argv)
 		switch (opt) {
 		case 'l':
 			basedir = clean_path(optarg);
-			cfg.do_link_disks = TRUE;
+			cfg.link = TRUE;
 			break;
 		case 'n':
-			cfg.do_show_disk_count = TRUE;
+			cfg.print = TRUE;
 			break;
 		case 'r':
-			cfg.do_recursive_collect = TRUE;
+			cfg.recurse = TRUE;
 			break;
 		case 's':
 			cfg.disk_size = string_to_number(optarg);
@@ -316,7 +316,7 @@ main(int argc, char **argv)
 	if (disks->size > 9999)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
-	if (cfg.do_show_disk_count) {
+	if (cfg.print) {
 		printf("%lu disk%s.\n", (unsigned long)disks->size,
 		    disks->size > 1 ? "s" : "");
 		exit(EXIT_SUCCESS);
@@ -325,12 +325,11 @@ main(int argc, char **argv)
 	for (i = 0; i < disks->size; ++i) {
 		struct disk *disk = disks->items[i];
 
-		if (cfg.do_link_disks) {
+		if (cfg.link) {
 			char *dstdir;
 
 			dstdir = xmalloc(strlen(basedir) + 6);
-			sprintf(dstdir, "%s/%04lu", basedir,
-			    (unsigned long)disk->id);
+			sprintf(dstdir, "%s/%04lu", basedir, (ulong)disk->id);
 			makedirs(dstdir);
 			disk_link(disk, dstdir);
 			free(dstdir);
@@ -342,7 +341,7 @@ main(int argc, char **argv)
 	vector_free(cfg.files);
 	vector_free(disks);
 
-	if (cfg.do_link_disks)
+	if (cfg.link)
 		xfree(basedir);
 
 	return EXIT_SUCCESS;
