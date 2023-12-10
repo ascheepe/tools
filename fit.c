@@ -301,7 +301,6 @@ main(int argc, char **argv)
 		usage();
 
 	cfg.files = vector_new();
-
 	for (i = optind; (int)i < argc; ++i)
 		if (nftw(argv[i], collect, MAXFD, 0) == -1)
 			die("nftw:");
