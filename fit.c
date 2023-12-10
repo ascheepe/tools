@@ -21,7 +21,7 @@ options:\n\
   -s size        disk size in k, m, g, or t.\n\
   -l destination directory to link files into,\n\
                  if omitted just print the disks.\n\
-  -n             show the number of disks it takes.\n\
+  -n             just show the number of disks it takes.\n\
   path           path to the files to fit.\n\
 \n";
 
@@ -272,7 +272,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char *dstdir = NULL;
+	char *basedir = NULL;
 	struct vector *disks = NULL;
 	size_t i;
 	int opt;
@@ -280,7 +280,7 @@ main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
 		switch (opt) {
 		case 'l':
-			dstdir = clean_path(optarg);
+			basedir = clean_path(optarg);
 			cfg.do_link_disks = TRUE;
 			break;
 		case 'n':
@@ -311,10 +311,7 @@ main(int argc, char **argv)
 	disks = vector_new();
 	fit(cfg.files, disks);
 
-	/*
-	 * Be realistic about the number of disks to support, the helper
-	 * functions above assume a format string which will fit 4 digits.
-	 */
+	/* There is room for 4 digits in the format string(s). */
 	if (disks->size > 9999)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
@@ -328,13 +325,14 @@ main(int argc, char **argv)
 		struct disk *disk = disks->items[i];
 
 		if (cfg.do_link_disks) {
-			char *dst;
+			char *dstdir;
 
-			dst = xmalloc(strlen(dstdir) + 6);
-			sprintf(dst, "%s/%04lu", dstdir, (unsigned long)disk->id);
-			makedirs(dst);
-			disk_link(disk, dst);
-			free(dst);
+			dstdir = xmalloc(strlen(basedir) + 6);
+			sprintf(dstdir, "%s/%04lu", basedir,
+			    (unsigned long)disk->id);
+			makedirs(dstdir);
+			disk_link(disk, dstdir);
+			free(dstdir);
 		} else
 			disk_print(disk);
 	}
@@ -344,7 +342,7 @@ main(int argc, char **argv)
 	vector_free(disks);
 
 	if (cfg.do_link_disks)
-		xfree(dstdir);
+		xfree(basedir);
 
 	return EXIT_SUCCESS;
 }
