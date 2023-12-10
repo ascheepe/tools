@@ -149,7 +149,7 @@ char *
 number_to_string(double num)
 {
 	char str[BUFSIZE];
-	char units[] = { 'B', 'K', 'M', 'G', 'T' };
+	char units[] = { 'b', 'K', 'M', 'G', 'T' };
 	int i;
 
 	for (i = 0; num > KB && i < (int)sizeof(units); ++i)
