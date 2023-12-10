@@ -18,11 +18,12 @@ static const char *const usage_string = "\
 usage:  fit -s size [-l destination] [-nr] path [path ...]\n\
 \n\
 options:\n\
-  -s size        disk size in k, m, g, or t.\n\
-  -l destination directory to link files into,\n\
+  -s size        Disk size in k, m, g, or t.\n\
+  -l destination Directory to link files into,\n\
                  if omitted just print the disks.\n\
-  -n             just show the number of disks it takes.\n\
-  path           path to the files to fit.\n\
+  -n             Just show the number of disks it takes.\n\
+  -r             Do a recursive search.\n\
+  path           Path to the files to fit.\n\
 \n";
 
 #define _XOPEN_SOURCE 600
