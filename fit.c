@@ -332,7 +332,7 @@ main(int argc, char **argv)
 			sprintf(dstdir, "%s/%04lu", basedir, (ulong)disk->id);
 			makedirs(dstdir);
 			disk_link(disk, dstdir);
-			free(dstdir);
+			xfree(dstdir);
 		} else
 			disk_print(disk);
 	}
