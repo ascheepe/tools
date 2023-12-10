@@ -99,11 +99,7 @@ disk_free(void *diskp)
 {
 	struct disk *disk = diskp;
 
-	/*
-	 * NOTE: Files are shared with the files vector so we don't use a
-	 * free function to clean them up here; we
-	 * would double free otherwise.
-	 */
+	vector_foreach(disk->files, afile_free);
 	vector_free(disk->files);
 	xfree(disk);
 }
@@ -343,7 +339,6 @@ main(int argc, char **argv)
 			disk_print(disk);
 	}
 
-	vector_foreach(cfg.files, afile_free);
 	vector_foreach(disks, disk_free);
 	vector_free(cfg.files);
 	vector_free(disks);
