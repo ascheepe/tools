@@ -103,7 +103,6 @@ play_file(void *filenamep)
 	case -1:
 		die("Can't fork:");
 		return;
-
 	case 0:
 		if (cfg.verbose)
 			printf("Playing \"%s\".\n", filename);
@@ -112,7 +111,6 @@ play_file(void *filenamep)
 		execvp(cfg.command[0], (char *const *)cfg.command);
 		die("Can't execute player:");
 		break;
-
 	default:
 		wait(NULL);
 		break;
