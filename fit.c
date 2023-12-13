@@ -321,9 +321,9 @@ main(int argc, char **argv)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
 	if (cfg.print) {
-		char *plural = disks->size == 1 ? "disk" : "disks";
+		char *s = (disks->size == 1 ? "disk" : "disks");
 
-		printf("%lu %s.\n", (ulong)disks->size, plural);
+		printf("%lu %s.\n", (ulong)disks->size, s);
 		exit(EXIT_SUCCESS);
 	}
 
