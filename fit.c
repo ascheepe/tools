@@ -117,17 +117,17 @@ hline(int len)
 static void
 print_header(struct disk *disk)
 {
-	char hdr[BUFSIZE], *s;
+	char buf[BUFSIZE], *s;
 
 	s = number_to_string(disk->free);
-	sprintf(hdr, "Disk #%lu, %d%% (%s) free:",
+	sprintf(buf, "Disk #%lu, %d%% (%s) free:",
 	    (ulong)disk->id,
 	    (int)(disk->free * 100 / cfg.disk_size), s);
 	xfree(s);
 
-	hline(strlen(hdr));
-	printf("%s\n", hdr);
-	hline(strlen(hdr));
+	hline(strlen(buf));
+	printf("%s\n", buf);
+	hline(strlen(buf));
 }
 
 /*
