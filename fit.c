@@ -114,34 +114,38 @@ hline(int len)
 	putchar('\n');
 }
 
+static void
+print_header(struct disk *disk)
+{
+	char hdr[BUFSIZE], *s;
+
+	s = number_to_string(disk->free);
+	sprintf(hdr, "Disk #%lu, %d%% (%s) free:",
+	    (ulong)disk->id,
+	    (int)(disk->free * 100 / cfg.disk_size), s);
+	xfree(s);
+
+	hline(strlen(hdr));
+	printf("%s\n", hdr);
+	hline(strlen(hdr));
+}
+
 /*
  * Pretty print a disk and it's contents.
  */
 static void
 disk_print(struct disk *disk)
 {
-	char header[BUFSIZE];
-	char *sizestr;
 	size_t i;
 
-	/* print a nice header */
-	sizestr = number_to_string(disk->free);
-	sprintf(header, "Disk #%lu, %d%% (%s) free:",
-	    (ulong)disk->id,
-	    (int)(disk->free * 100 / cfg.disk_size), sizestr);
-	xfree(sizestr);
-
-	hline(strlen(header));
-	printf("%s\n", header);
-	hline(strlen(header));
-
-	/* and the contents */
+	print_header(disk);
 	for (i = 0; i < disk->files->size; ++i) {
 		struct afile *afile = disk->files->items[i];
+		char *s;
 
-		sizestr = number_to_string(afile->size);
-		printf("%10s %s\n", sizestr, afile->name);
-		xfree(sizestr);
+		s = number_to_string(afile->size);
+		printf("%10s %s\n", s, afile->name);
+		xfree(s);
 	}
 
 	putchar('\n');
