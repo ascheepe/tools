@@ -118,16 +118,17 @@ static void
 print_header(struct disk *disk)
 {
 	char buf[BUFSIZE], *s;
+	size_t len;
 
 	s = number_to_string(disk->free);
-	sprintf(buf, "Disk #%lu, %d%% (%s) free:",
+	len = sprintf(buf, "Disk #%lu, %d%% (%s) free:",
 	    (ulong)disk->id,
 	    (int)(disk->free * 100 / cfg.disk_size), s);
 	xfree(s);
 
-	hline(strlen(buf));
+	hline(len);
 	printf("%s\n", buf);
-	hline(strlen(buf));
+	hline(len);
 }
 
 /*
