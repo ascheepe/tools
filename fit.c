@@ -174,15 +174,6 @@ disk_link(struct disk *disk, char *dstdir)
 }
 
 static int
-by_size_descending(const void *afile_a, const void *afile_b)
-{
-	struct afile *a = *((struct afile **)afile_a);
-	struct afile *b = *((struct afile **)afile_b);
-
-	return b->size - a->size;
-}
-
-static int
 add_file(struct disk *disk, struct afile *afile)
 {
 	if (disk->free - afile->size < 0)
@@ -192,6 +183,15 @@ add_file(struct disk *disk, struct afile *afile)
 	disk->free -= afile->size;
 
 	return TRUE;
+}
+
+static int
+by_size_descending(const void *afile_a, const void *afile_b)
+{
+	struct afile *a = *((struct afile **)afile_a);
+	struct afile *b = *((struct afile **)afile_b);
+
+	return b->size - a->size;
 }
 
 /*
