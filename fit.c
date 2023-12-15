@@ -41,13 +41,13 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-static struct configuration {
+static struct context {
 	off_t disk_size;
 	struct vector *files;
-	int link;
-	int print;
-	int recurse;
-} cfg;
+	int lflag;
+	int nflag;
+	int rflag;
+} ctx;
 
 struct afile {
 	off_t size;
@@ -123,7 +123,7 @@ print_header(struct disk *disk)
 	s = number_to_string(disk->free);
 	len = sprintf(buf, "Disk #%lu, %d%% (%s) free:",
 	    (ulong)disk->id,
-	    (int)(disk->free * 100 / cfg.disk_size), s);
+	    (int)(disk->free * 100 / ctx.disk_size), s);
 	xfree(s);
 
 	hline(len);
@@ -226,7 +226,7 @@ fit(struct vector *files, struct vector *disks)
 		if (!added) {
 			struct disk *disk;
 
-			disk = disk_new(cfg.disk_size);
+			disk = disk_new(ctx.disk_size);
 			if (!add_file(disk, afile))
 				die("add_file failed.");
 
@@ -242,7 +242,7 @@ collect(const char *filename, const struct stat *st,
 	struct afile *afile;
 
 	/* skip subdirectories if not doing a recursive collect */
-	if (!cfg.recurse && ftwbuf->level > 1)
+	if (!ctx.rflag && ftwbuf->level > 1)
 		return 0;
 
 	/* there might be access errors */
@@ -258,12 +258,12 @@ collect(const char *filename, const struct stat *st,
 		die("'%s' is not a regular file.", filename);
 
 	/* which are not too big to fit */
-	if (st->st_size > cfg.disk_size)
+	if (st->st_size > ctx.disk_size)
 		die("Can never fit '%s' (%s).",
 		    filename, number_to_string(st->st_size));
 
 	afile = afile_new(filename, st->st_size);
-	vector_add(cfg.files, afile);
+	vector_add(ctx.files, afile);
 
 	return 0;
 }
@@ -287,40 +287,40 @@ main(int argc, char **argv)
 		switch (opt) {
 		case 'l':
 			basedir = clean_path(optarg);
-			cfg.link = TRUE;
+			ctx.lflag = TRUE;
 			break;
 		case 'n':
-			cfg.print = TRUE;
+			ctx.nflag = TRUE;
 			break;
 		case 'r':
-			cfg.recurse = TRUE;
+			ctx.rflag = TRUE;
 			break;
 		case 's':
-			cfg.disk_size = string_to_number(optarg);
+			ctx.disk_size = string_to_number(optarg);
 			break;
 		}
 	}
 
 	/* A path argument and the size option is mandatory. */
-	if (optind >= argc || cfg.disk_size <= 0)
+	if (optind >= argc || ctx.disk_size <= 0)
 		usage();
 
-	cfg.files = vector_new();
+	ctx.files = vector_new();
 	for (i = optind; (int)i < argc; ++i)
 		if (nftw(argv[i], collect, MAXFD, 0) == -1)
 			die("nftw:");
 
-	if (cfg.files->size == 0)
+	if (ctx.files->size == 0)
 		die("no files found.");
 
 	disks = vector_new();
-	fit(cfg.files, disks);
+	fit(ctx.files, disks);
 
 	/* There is room for 4 digits in the format string(s). */
 	if (disks->size > 9999)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
-	if (cfg.print) {
+	if (ctx.nflag) {
 		char *s = (disks->size == 1 ? "disk" : "disks");
 
 		printf("%lu %s.\n", (ulong)disks->size, s);
@@ -330,7 +330,7 @@ main(int argc, char **argv)
 	for (i = 0; i < disks->size; ++i) {
 		struct disk *disk = disks->items[i];
 
-		if (cfg.link) {
+		if (ctx.lflag) {
 			char *dstdir;
 
 			dstdir = xmalloc(strlen(basedir) + 6);
@@ -343,10 +343,10 @@ main(int argc, char **argv)
 	}
 
 	vector_foreach(disks, disk_free);
-	vector_free(cfg.files);
+	vector_free(ctx.files);
 	vector_free(disks);
 
-	if (cfg.link)
+	if (ctx.lflag)
 		xfree(basedir);
 
 	return EXIT_SUCCESS;
