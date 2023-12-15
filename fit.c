@@ -236,8 +236,7 @@ fit(struct vector *files, struct vector *disks)
 }
 
 static int
-collect(const char *filename, const struct stat *st,
-    int filetype, struct FTW *ftwbuf)
+collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 {
 	struct afile *afile;
 
@@ -246,23 +245,23 @@ collect(const char *filename, const struct stat *st,
 		return 0;
 
 	/* there might be access errors */
-	if (filetype == FTW_NS || filetype == FTW_SLN || filetype == FTW_DNR)
-		die("Can't access '%s':", filename);
+	if (type == FTW_NS || type == FTW_SLN || type == FTW_DNR)
+		die("Can't access '%s':", fpath);
 
 	/* skip directories */
-	if (filetype == FTW_D)
+	if (type == FTW_D)
 		return 0;
 
 	/* we can only handle regular files */
-	if (filetype != FTW_F)
-		die("'%s' is not a regular file.", filename);
+	if (type != FTW_F)
+		die("'%s' is not a regular file.", fpath);
 
 	/* which are not too big to fit */
 	if (st->st_size > ctx.disk_size)
 		die("Can never fit '%s' (%s).",
-		    filename, number_to_string(st->st_size));
+		    fpath, number_to_string(st->st_size));
 
-	afile = afile_new(filename, st->st_size);
+	afile = afile_new(fpath, st->st_size);
 	vector_add(ctx.files, afile);
 
 	return 0;

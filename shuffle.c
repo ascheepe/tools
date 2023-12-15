@@ -56,40 +56,39 @@ static struct context {
 } ctx;
 
 static int
-collect(const char *filename, const struct stat *st,
-    int filetype, struct FTW *ftwbuf)
+collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 {
-	int is_playable = FALSE;
+	int playable = FALSE;
 
 	/* these parameters are unused */
 	(void)st;
 	(void)ftwbuf;
 
 	/* skip non regular files */
-	if (filetype != FTW_F)
+	if (type != FTW_F)
 		return 0;
 
 	/* if both extension and media-type are set prefer extension search */
 	if (ctx.extension != NULL) {
-		const char *ext = NULL;
+		const char *ext;
 
-		ext = filename + strlen(filename) - strlen(ctx.extension);
-		is_playable = (ext >= filename &&
+		ext = fpath + strlen(fpath) - strlen(ctx.extension);
+		playable = (ext >= fpath &&
 		    strcasecmp(ext, ctx.extension) == 0);
 	} else if (ctx.mediatype != NULL) {
 		const char *mediatype;
 
-		mediatype = magic_file(ctx.magic_cookie, filename);
+		mediatype = magic_file(ctx.magic_cookie, fpath);
 		if (mediatype == NULL)
 			die("collect: %s", magic_error(ctx.magic_cookie));
 
-		is_playable = (strncmp(ctx.mediatype, mediatype,
+		playable = (strncmp(ctx.mediatype, mediatype,
 		    strlen(ctx.mediatype)) == 0);
 	} else
 		die("Extension or media type is not set.");
 
-	if (is_playable)
-		vector_add(ctx.files, xstrdup(filename));
+	if (playable)
+		vector_add(ctx.files, xstrdup(fpath));
 
 	return 0;
 }
