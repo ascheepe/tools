@@ -18,11 +18,12 @@ static const char *const usage_string = "\
 usage:  fit -s size [-l destination] [-nr] path [path ...]\n\
 \n\
 options:\n\
-  -s size        Disk size in k, m, g, or t.\n\
   -l destination Directory to link files into,\n\
                  if omitted just print the disks.\n\
   -n             Just show the number of disks it takes.\n\
   -r             Do a recursive search.\n\
+  -s size        Disk size in k, m, g, or t.\n\
+  -v             Print files which are being linked.\n\
   path           Path to the files to fit.\n\
 \n";
 
@@ -47,6 +48,7 @@ static struct context {
 	int lflag;
 	int nflag;
 	int rflag;
+	int vflag;
 } ctx;
 
 struct afile {
@@ -168,7 +170,8 @@ disk_link(struct disk *disk, char *dstdir)
 		dst = xmalloc(len + strlen(afile->name) + 2);
 		sprintf(dst, "%s/%s", dstdir, afile->name);
 		xlink(afile->name, dst);
-		printf("%s -> %s\n", afile->name, dstdir);
+		if (ctx.vflag)
+			printf("%s -> %s\n", afile->name, dstdir);
 		xfree(dst);
 	}
 }
@@ -282,7 +285,7 @@ main(int argc, char **argv)
 	size_t i;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "l:nrs:")) != -1) {
+	while ((opt = getopt(argc, argv, "l:nrs:v")) != -1) {
 		switch (opt) {
 		case 'l':
 			basedir = clean_path(optarg);
@@ -297,6 +300,8 @@ main(int argc, char **argv)
 		case 's':
 			ctx.disk_size = string_to_number(optarg);
 			break;
+		case 'v':
+			ctx.vflag = TRUE;
 		}
 	}
 
