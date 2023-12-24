@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Axel Scheepers
+ * Copyright (c) 2023 Axel Scheepers
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
