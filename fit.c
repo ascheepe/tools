@@ -42,13 +42,17 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
+enum flags {
+	DO_LINK   = 1,
+	SHOW_ONLY = 2,
+	RECURSIVE = 4,
+	VERBOSE   = 8
+};
+
 static struct context {
 	off_t disk_size;
 	struct vector *files;
-	int lflag;
-	int nflag;
-	int rflag;
-	int vflag;
+	enum flags flags;
 } ctx;
 
 struct afile {
@@ -170,7 +174,7 @@ disk_link(struct disk *disk, char *dstdir)
 		dst = xmalloc(len + strlen(afile->name) + 2);
 		sprintf(dst, "%s/%s", dstdir, afile->name);
 		xlink(afile->name, dst);
-		if (ctx.vflag)
+		if (ctx.flags & VERBOSE)
 			printf("%s -> %s\n", afile->name, dstdir);
 		xfree(dst);
 	}
@@ -244,7 +248,7 @@ collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 	struct afile *afile;
 
 	/* skip subdirectories if not doing a recursive collect */
-	if (!ctx.rflag && ftwbuf->level > 1)
+	if (!(ctx.flags & RECURSIVE) && ftwbuf->level > 1)
 		return 0;
 
 	/* there might be access errors */
@@ -289,19 +293,20 @@ main(int argc, char **argv)
 		switch (opt) {
 		case 'l':
 			basedir = clean_path(optarg);
-			ctx.lflag = TRUE;
+			ctx.flags |= DO_LINK;
 			break;
 		case 'n':
-			ctx.nflag = TRUE;
+			ctx.flags |= SHOW_ONLY;
 			break;
 		case 'r':
-			ctx.rflag = TRUE;
+			ctx.flags |= RECURSIVE;
 			break;
 		case 's':
 			ctx.disk_size = string_to_number(optarg);
 			break;
 		case 'v':
-			ctx.vflag = TRUE;
+			ctx.flags |= VERBOSE;
+			break;
 		}
 	}
 
@@ -324,7 +329,7 @@ main(int argc, char **argv)
 	if (disks->size > 9999)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
-	if (ctx.nflag) {
+	if (ctx.flags & SHOW_ONLY) {
 		char *s = (disks->size == 1 ? "disk" : "disks");
 
 		printf("%lu %s.\n", (ulong)disks->size, s);
@@ -334,7 +339,7 @@ main(int argc, char **argv)
 	for (i = 0; i < disks->size; ++i) {
 		struct disk *disk = disks->items[i];
 
-		if (ctx.lflag) {
+		if (ctx.flags & DO_LINK) {
 			char *dstdir;
 
 			dstdir = xmalloc(strlen(basedir) + 6);
@@ -350,7 +355,7 @@ main(int argc, char **argv)
 	vector_free(ctx.files);
 	vector_free(disks);
 
-	if (ctx.lflag)
+	if (ctx.flags & DO_LINK)
 		xfree(basedir);
 
 	return EXIT_SUCCESS;
