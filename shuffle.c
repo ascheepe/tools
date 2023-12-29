@@ -18,11 +18,14 @@ static const char *const usage_string = "\
 usage:  shuffle [-p starting path] -e extension | -m media-type command\n\
 \n\
 options:\n\
-  -p path        starts the search from this path.\n\
-  -e extension   search for files with this extension.\n\
-  -m media-type  search for files with this media type.\n\
-  -v             show what's being done.\n\
-  command        the command to execute for each file.\n\
+  -p path        Starts the search from this path.\n\
+  -e extension   Search for files with this extension.\n\
+  -m media-type  Search for files with this media type.\n\
+  -v             Show what's being done.\n\
+  command        The command to run for each file.\n\
+\n\
+  The command to run has to include a % character which\n\
+  is replaced by the filename.\n\
 \n";
 
 #define _XOPEN_SOURCE 600
@@ -50,7 +53,7 @@ static struct context {
 	char *mediatype;
 	char *extension;
 	char **command;
-	int filename_index;
+	int namepos;
 	int verbose;
 	struct vector *files;
 } ctx;
@@ -106,7 +109,7 @@ play_file(void *filenamep)
 		if (ctx.verbose)
 			printf("Playing \"%s\".\n", filename);
 
-		ctx.command[ctx.filename_index] = filename;
+		ctx.command[ctx.namepos] = filename;
 		execvp(ctx.command[0], (char *const *)ctx.command);
 		die("Can't execute player:");
 		break;
@@ -140,13 +143,18 @@ build_command(int argc, char **argv, int argend)
 	/* reserve for command + filename + NULL */
 	ctx.command = xmalloc((len + 2) * sizeof(char *));
 
-	for (i = argend; i < argc; ++i)
+	ctx.namepos = -1;
+	for (i = argend; i < argc; ++i) {
+		if (strcmp(argv[i], "%") == 0) {
+			ctx.namepos = i - argend;
+		}
 		ctx.command[i - argend] = argv[i];
+	}
 
-	ctx.filename_index = len;
+	if (ctx.namepos == -1)
+		die("No %% character found in command to run.");
 
-	ctx.command[ctx.filename_index] = NULL;
-	ctx.command[ctx.filename_index + 1] = NULL;
+	ctx.command[len] = NULL;
 }
 
 static void
