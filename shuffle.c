@@ -129,19 +129,19 @@ init_magic(void)
 		die("%s.", magic_error(ctx.mc));
 }
 
-/* build a command from the arguments. The command starts
+/*
+ * Build a command from the arguments. The command starts
  * after the normal arguments.
  */
 static void
 build_command(int argc, char **argv, int argend)
 {
-	int len = argc - argend;
-	int i;
+	int i, len = argc - argend;
 
-	/* reserve for command + filename + NULL */
-	ctx.cmd = xmalloc((len + 2) * sizeof(char *));
-
+	ctx.cmd = xmalloc((len + 1) * sizeof(char *));
+	ctx.cmd[len] = NULL;
 	ctx.namepos = -1;
+
 	for (i = argend; i < argc; ++i) {
 		if (strcmp(argv[i], "%") == 0)
 			ctx.namepos = i - argend;
@@ -150,8 +150,6 @@ build_command(int argc, char **argv, int argend)
 
 	if (ctx.namepos == -1)
 		die("No %% character found in command to run.");
-
-	ctx.cmd[len] = NULL;
 }
 
 static void
