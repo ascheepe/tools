@@ -76,7 +76,7 @@ collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 		const char *ext;
 
 		ext = fpath + strlen(fpath) - strlen(ctx.ext);
-		playable = (ext >= fpath && strcasecmp(ext, ctx.ext) == 0);
+		playable = ext >= fpath && strcasecmp(ext, ctx.ext) == 0;
 	} else if (ctx.ftype != NULL) {
 		const char *ftype;
 
@@ -84,7 +84,7 @@ collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 		if (ftype == NULL)
 			die("collect: %s", magic_error(ctx.mc));
 
-		playable = (strncmp(ctx.ftype, ftype, strlen(ctx.ftype)) == 0);
+		playable = strncmp(ctx.ftype, ftype, strlen(ctx.ftype)) == 0;
 	} else
 		die("Extension or media type is not set.");
 
