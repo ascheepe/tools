@@ -188,8 +188,7 @@ main(int argc, char **argv)
 			path = realpath(optarg, NULL);
 
 			if (path == NULL)
-				die("Can't resolve starting path '%s'.",
-				    optarg);
+				die("Can't resolve '%s'.", optarg);
 			break;
 		case 'v':
 			ctx.verbose = TRUE;
