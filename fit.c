@@ -52,7 +52,7 @@ enum flags {
 static struct context {
 	off_t disk_size;
 	struct vector *files;
-	enum flags flags;
+	unsigned int flags;
 } ctx;
 
 struct afile {
