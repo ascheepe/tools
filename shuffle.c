@@ -15,12 +15,12 @@
  */
 
 static const char *const usage_string = "\
-usage:  shuffle [-p starting path] -e extension | -m media-type command\n\
+usage:  shuffle [-p starting path] -e extension | -t media-type command\n\
 \n\
 options:\n\
   -p path        Starts the search from this path.\n\
   -e extension   Search for files with this extension.\n\
-  -m media-type  Search for files with this media type.\n\
+  -t media-type  Search for files with this media type.\n\
   -v             Show what's being done.\n\
   command        The command to run for each file.\n\
 \n\
@@ -174,15 +174,15 @@ main(int argc, char **argv)
 	 * could stop that by prefixing the command with --).
 	 */
 #ifdef __GNU_LIBRARY__
-	while ((opt = getopt(argc, argv, "+e:m:p:v")) != -1) {
+	while ((opt = getopt(argc, argv, "+e:p:t:v")) != -1) {
 #else
-	while ((opt = getopt(argc, argv, "e:m:p:v")) != -1) {
+	while ((opt = getopt(argc, argv, "e:p:t:v")) != -1) {
 #endif
 		switch (opt) {
 		case 'e':
 			ctx.ext = optarg;
 			break;
-		case 'm':
+		case 't':
 			init_magic();
 			ctx.ftype = optarg;
 			break;
