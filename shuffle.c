@@ -49,10 +49,10 @@ options:\n\
 #include "utils.h"
 
 static struct context {
-	magic_t magic_cookie;
-	char *mediatype;
-	char *extension;
-	char **command;
+	magic_t mc;
+	char *ftype;
+	char *ext;
+	char **cmd;
 	int namepos;
 	int verbose;
 	struct vector *files;
@@ -72,21 +72,19 @@ collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 		return 0;
 
 	/* if both extension and media-type are set prefer extension search */
-	if (ctx.extension != NULL) {
+	if (ctx.ext != NULL) {
 		const char *ext;
 
-		ext = fpath + strlen(fpath) - strlen(ctx.extension);
-		playable = (ext >= fpath &&
-		    strcasecmp(ext, ctx.extension) == 0);
-	} else if (ctx.mediatype != NULL) {
-		const char *mediatype;
+		ext = fpath + strlen(fpath) - strlen(ctx.ext);
+		playable = (ext >= fpath && strcasecmp(ext, ctx.ext) == 0);
+	} else if (ctx.ftype != NULL) {
+		const char *ftype;
 
-		mediatype = magic_file(ctx.magic_cookie, fpath);
-		if (mediatype == NULL)
-			die("collect: %s", magic_error(ctx.magic_cookie));
+		ftype = magic_file(ctx.mc, fpath);
+		if (ftype == NULL)
+			die("collect: %s", magic_error(ctx.mc));
 
-		playable = (strncmp(ctx.mediatype, mediatype,
-		    strlen(ctx.mediatype)) == 0);
+		playable = (strncmp(ctx.ftype, ftype, strlen(ctx.ftype)) == 0);
 	} else
 		die("Extension or media type is not set.");
 
@@ -109,8 +107,8 @@ play_file(void *filenamep)
 		if (ctx.verbose)
 			printf("Playing \"%s\".\n", filename);
 
-		ctx.command[ctx.namepos] = filename;
-		execvp(ctx.command[0], (char *const *)ctx.command);
+		ctx.cmd[ctx.namepos] = filename;
+		execvp(ctx.cmd[0], (char *const *)ctx.cmd);
 		die("Can't execute player:");
 		break;
 	default:
@@ -122,13 +120,13 @@ play_file(void *filenamep)
 static void
 init_magic(void)
 {
-	ctx.magic_cookie = magic_open(MAGIC_MIME);
+	ctx.mc = magic_open(MAGIC_MIME);
 
-	if (ctx.magic_cookie == NULL)
+	if (ctx.mc == NULL)
 		die("Can't open libmagic.");
 
-	if (magic_load(ctx.magic_cookie, NULL) == -1)
-		die("%s.", magic_error(ctx.magic_cookie));
+	if (magic_load(ctx.mc, NULL) == -1)
+		die("%s.", magic_error(ctx.mc));
 }
 
 /* build a command from the arguments. The command starts
@@ -141,20 +139,19 @@ build_command(int argc, char **argv, int argend)
 	int i;
 
 	/* reserve for command + filename + NULL */
-	ctx.command = xmalloc((len + 2) * sizeof(char *));
+	ctx.cmd = xmalloc((len + 2) * sizeof(char *));
 
 	ctx.namepos = -1;
 	for (i = argend; i < argc; ++i) {
-		if (strcmp(argv[i], "%") == 0) {
+		if (strcmp(argv[i], "%") == 0)
 			ctx.namepos = i - argend;
-		}
-		ctx.command[i - argend] = argv[i];
+		ctx.cmd[i - argend] = argv[i];
 	}
 
 	if (ctx.namepos == -1)
 		die("No %% character found in command to run.");
 
-	ctx.command[len] = NULL;
+	ctx.cmd[len] = NULL;
 }
 
 static void
@@ -183,11 +180,11 @@ main(int argc, char **argv)
 #endif
 		switch (opt) {
 		case 'e':
-			ctx.extension = optarg;
+			ctx.ext = optarg;
 			break;
 		case 'm':
 			init_magic();
-			ctx.mediatype = optarg;
+			ctx.ftype = optarg;
 			break;
 		case 'p':
 			path = realpath(optarg, NULL);
@@ -202,8 +199,8 @@ main(int argc, char **argv)
 		}
 	}
 
-	/* extension or media-type must be set */
-	if (ctx.extension == NULL && ctx.mediatype == NULL)
+	/* extension or filetype must be set */
+	if (ctx.ext == NULL && ctx.ftype == NULL)
 		usage();
 
 	/* a command to run is mandatory */
@@ -227,8 +224,8 @@ main(int argc, char **argv)
 
 	free(path);
 
-	if (ctx.magic_cookie != NULL)
-		magic_close(ctx.magic_cookie);
+	if (ctx.mc != NULL)
+		magic_close(ctx.mc);
 
 	if (ctx.files->size == 0) {
 		if (ctx.verbose)
@@ -243,7 +240,7 @@ main(int argc, char **argv)
 	vector_shuffle(ctx.files);
 	vector_foreach(ctx.files, play_file);
 
-	xfree(ctx.command);
+	xfree(ctx.cmd);
 	vector_foreach(ctx.files, free);
 	vector_free(ctx.files);
 	return EXIT_SUCCESS;
