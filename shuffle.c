@@ -49,7 +49,7 @@ options:\n\
 #include "utils.h"
 
 static struct context {
-	magic_t mc;
+	magic_t mcookie;
 	char *ftype;
 	char *ext;
 	char **cmd;
@@ -80,9 +80,9 @@ collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
 	} else if (ctx.ftype != NULL) {
 		const char *ftype;
 
-		ftype = magic_file(ctx.mc, fpath);
+		ftype = magic_file(ctx.mcookie, fpath);
 		if (ftype == NULL)
-			die("collect: %s", magic_error(ctx.mc));
+			die("collect: %s", magic_error(ctx.mcookie));
 
 		playable = strncmp(ctx.ftype, ftype, strlen(ctx.ftype)) == 0;
 	} else
@@ -120,13 +120,13 @@ play_file(void *filenamep)
 static void
 init_magic(void)
 {
-	ctx.mc = magic_open(MAGIC_MIME);
+	ctx.mcookie = magic_open(MAGIC_MIME);
 
-	if (ctx.mc == NULL)
+	if (ctx.mcookie == NULL)
 		die("Can't open libmagic.");
 
-	if (magic_load(ctx.mc, NULL) == -1)
-		die("%s.", magic_error(ctx.mc));
+	if (magic_load(ctx.mcookie, NULL) == -1)
+		die("%s.", magic_error(ctx.mcookie));
 }
 
 /*
@@ -220,8 +220,8 @@ main(int argc, char **argv)
 
 	free(path);
 
-	if (ctx.mc != NULL)
-		magic_close(ctx.mc);
+	if (ctx.mcookie != NULL)
+		magic_close(ctx.mcookie);
 
 	if (ctx.files->size == 0) {
 		if (ctx.verbose)
