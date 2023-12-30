@@ -186,7 +186,6 @@ main(int argc, char **argv)
 			break;
 		case 'p':
 			path = realpath(optarg, NULL);
-
 			if (path == NULL)
 				die("Can't resolve '%s'.", optarg);
 			break;
