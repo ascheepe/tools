@@ -24,8 +24,9 @@ options:\n\
   -v             Show what's being done.\n\
   command        The command to run for each file.\n\
 \n\
-  The command to run has to include a % character which\n\
-  is replaced by the filename.\n\
+  The command to run can include a % character which\n\
+  is replaced by the filename. If this is omitted\n\
+  the filename is appended to the command.\n\
 \n";
 
 #define _XOPEN_SOURCE 600
@@ -138,8 +139,8 @@ build_command(int argc, char **argv, int argend)
 {
 	int i, len = argc - argend;
 
-	ctx.cmd = xmalloc((len + 1) * sizeof(char *));
-	ctx.cmd[len] = NULL;
+	/* +2 in case we need to append the filename */
+	ctx.cmd = xcalloc(len + 2, sizeof(char *));
 	ctx.namepos = -1;
 
 	for (i = argend; i < argc; ++i) {
@@ -148,8 +149,9 @@ build_command(int argc, char **argv, int argend)
 		ctx.cmd[i - argend] = argv[i];
 	}
 
+	/* no % found, append filename */
 	if (ctx.namepos == -1)
-		die("No %% character found in command to run.");
+		ctx.namepos = len;
 }
 
 static void
