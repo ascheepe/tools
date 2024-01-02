@@ -43,162 +43,162 @@ options:\n\
 #include "utils.h"
 
 enum flags {
-	DO_LINK   = 1,
-	SHOW_ONLY = 2,
-	RECURSIVE = 4,
-	VERBOSE   = 8
+    DO_LINK = 1,
+    SHOW_ONLY = 2,
+    RECURSIVE = 4,
+    VERBOSE = 8
 };
 
 static struct context {
-	off_t disk_size;
-	struct vector *files;
-	uint flags;
+    off_t disk_size;
+    struct vector *files;
+    uint flags;
 } ctx;
 
+#define HAS_FLAG(flag) (ctx.flags & (flag))
+#define SET_FLAG(flag) (ctx.flags |= (flag))
+
 struct afile {
-	off_t size;
-	char *name;
+    off_t size;
+    char *name;
 };
 
-static struct afile *
-afile_new(const char *name, off_t size)
+static struct afile *afile_new(const char *name, off_t size)
 {
-	struct afile *afile;
+    struct afile *afile;
 
-	afile = xmalloc(sizeof(*afile));
-	afile->name = xstrdup(name);
-	afile->size = size;
+    afile = xmalloc(sizeof(*afile));
+    afile->name = xstrdup(name);
+    afile->size = size;
 
-	return afile;
+    return afile;
 }
 
-static void
-afile_free(void *afilep)
+static void afile_free(void *afilep)
 {
-	struct afile *afile = afilep;
+    struct afile *afile = afilep;
 
-	xfree(afile->name);
-	xfree(afile);
+    xfree(afile->name);
+    xfree(afile);
 }
 
 struct disk {
-	struct vector *files;
-	off_t free;
-	size_t id;
+    struct vector *files;
+    off_t free;
+    size_t id;
 };
 
-static struct disk *
-disk_new(off_t size)
+static struct disk *disk_new(off_t size)
 {
-	struct disk *disk;
-	static size_t id;
+    struct disk *disk;
+    static size_t id;
 
-	disk = xmalloc(sizeof(*disk));
-	disk->files = vector_new();
-	disk->free = size;
-	disk->id = ++id;
+    disk = xmalloc(sizeof(*disk));
+    disk->files = vector_new();
+    disk->free = size;
+    disk->id = ++id;
 
-	return disk;
+    return disk;
 }
 
-static void
-disk_free(void *diskp)
+static void disk_free(void *disk_ptr)
 {
-	struct disk *disk = diskp;
+    struct disk *disk = disk_ptr;
 
-	vector_foreach(disk->files, afile_free);
-	vector_free(disk->files);
-	xfree(disk);
+    vector_foreach(disk->files, afile_free);
+    vector_free(disk->files);
+    xfree(disk);
 }
 
-static void
-hline(int len)
+static void hline(int length)
 {
-	while (len-- > 0)
-		putchar('-');
+    while (length-- > 0) {
+        putchar('-');
+    }
 
-	putchar('\n');
+    putchar('\n');
 }
 
-static void
-print_header(struct disk *disk)
+static void print_header(struct disk *disk)
 {
-	char buf[BUFSIZE], *s;
-	size_t len;
+    char header[BUFSIZE];
+    char *disk_size;
+    size_t header_length;
 
-	s = number_to_string(disk->free);
-	len = sprintf(buf, "Disk #%lu, %d%% (%s) free:",
-	    (ulong)disk->id,
-	    (int)(disk->free * 100 / ctx.disk_size), s);
-	xfree(s);
+    disk_size = number_to_string(disk->free);
+    header_length = sprintf(header, "Disk #%lu, %d%% (%s) free:",
+                  (ulong) disk->id,
+                  (int) (disk->free * 100 / ctx.disk_size), disk_size);
+    xfree(disk_size);
 
-	hline(len);
-	printf("%s\n", buf);
-	hline(len);
+    hline(header_length);
+    printf("%s\n", header);
+    hline(header_length);
 }
 
 /*
  * Pretty print a disk and it's contents.
  */
-static void
-disk_print(struct disk *disk)
+static void disk_print(struct disk *disk)
 {
-	size_t i;
+    size_t i;
 
-	print_header(disk);
-	for (i = 0; i < disk->files->size; ++i) {
-		struct afile *afile = disk->files->items[i];
-		char *s;
+    print_header(disk);
+    for (i = 0; i < disk->files->size; ++i) {
+        struct afile *afile = disk->files->items[i];
+        char *file_size;
 
-		s = number_to_string(afile->size);
-		printf("%10s %s\n", s, afile->name);
-		xfree(s);
-	}
+        file_size = number_to_string(afile->size);
+        printf("%10s %s\n", file_size, afile->name);
+        xfree(file_size);
+    }
 
-	putchar('\n');
+    putchar('\n');
 }
 
 /*
  * Link the contents of a disk to the given destination directory.
  */
-static void
-disk_link(struct disk *disk, char *dstdir)
+static void disk_link(struct disk *disk, char *destination_directory)
 {
-	size_t i, len;
+    size_t directory_length;
+    size_t i;
 
-	len = strlen(dstdir);
-	for (i = 0; i < disk->files->size; ++i) {
-		struct afile *afile = disk->files->items[i];
-		char *dst;
+    directory_length = strlen(destination_directory);
+    for (i = 0; i < disk->files->size; ++i) {
+        struct afile *afile = disk->files->items[i];
+        char *link_destination;
 
-		dst = xmalloc(len + strlen(afile->name) + 2);
-		sprintf(dst, "%s/%s", dstdir, afile->name);
-		xlink(afile->name, dst);
-		if (ctx.flags & VERBOSE)
-			printf("%s -> %s\n", afile->name, dstdir);
-		xfree(dst);
-	}
+        link_destination =
+            xmalloc(directory_length + strlen(afile->name) + 2);
+        sprintf(link_destination, "%s/%s", destination_directory,
+                afile->name);
+        xlink(afile->name, link_destination);
+        if (HAS_FLAG(VERBOSE)) {
+            printf("%s -> %s\n", afile->name, destination_directory);
+        }
+        xfree(link_destination);
+    }
 }
 
-static int
-add_file(struct disk *disk, struct afile *afile)
+static int add_file(struct disk *disk, struct afile *afile)
 {
-	if (disk->free - afile->size < 0)
-		return FALSE;
+    if (disk->free - afile->size < 0) {
+        return FALSE;
+    }
 
-	vector_add(disk->files, afile);
-	disk->free -= afile->size;
+    vector_add(disk->files, afile);
+    disk->free -= afile->size;
 
-	return TRUE;
+    return TRUE;
 }
 
-static int
-by_size_descending(const void *afile_a, const void *afile_b)
+static int by_size_descending(const void *afile_a, const void *afile_b)
 {
-	struct afile *a = *((struct afile **)afile_a);
-	struct afile *b = *((struct afile **)afile_b);
+    struct afile *a = *((struct afile **) afile_a);
+    struct afile *b = *((struct afile **) afile_b);
 
-	return b->size - a->size;
+    return b->size - a->size;
 }
 
 /*
@@ -208,155 +208,163 @@ by_size_descending(const void *afile_a, const void *afile_b)
  * rapidly fill disks while the smaller remaining files will usually
  * make a good final fit.
  */
-static void
-fit(struct vector *files, struct vector *disks)
+static void fit(struct vector *files, struct vector *disks)
 {
-	size_t i;
+    size_t i;
 
-	qsort(files->items, files->size, sizeof(files->items[0]),
-	    by_size_descending);
+    qsort(files->items, files->size, sizeof(files->items[0]),
+          by_size_descending);
 
-	for (i = 0; i < files->size; ++i) {
-		struct afile *afile = files->items[i];
-		int added = FALSE;
-		size_t j;
+    for (i = 0; i < files->size; ++i) {
+        struct afile *afile = files->items[i];
+        int file_added = FALSE;
+        size_t j;
 
-		for (j = 0; j < disks->size; ++j) {
-			struct disk *disk = disks->items[j];
+        for (j = 0; j < disks->size; ++j) {
+            struct disk *disk = disks->items[j];
 
-			if (add_file(disk, afile)) {
-				added = TRUE;
-				break;
-			}
-		}
+            if (add_file(disk, afile)) {
+                file_added = TRUE;
+                break;
+            }
+        }
 
-		if (!added) {
-			struct disk *disk;
+        if (!file_added) {
+            struct disk *disk;
 
-			disk = disk_new(ctx.disk_size);
-			if (!add_file(disk, afile))
-				die("add_file failed.");
+            disk = disk_new(ctx.disk_size);
+            if (!add_file(disk, afile)) {
+                die("add_file failed.");
+            }
 
-			vector_add(disks, disk);
-		}
-	}
+            vector_add(disks, disk);
+        }
+    }
 }
 
-static int
-collect(const char *fpath, const struct stat *st, int type, struct FTW *ftwbuf)
+static int collect_files(const char *fpath, const struct stat *st, int type,
+                         struct FTW *ftwbuf)
 {
-	struct afile *afile;
+    struct afile *afile;
 
-	/* skip subdirectories if not doing a recursive collect */
-	if (!(ctx.flags & RECURSIVE) && ftwbuf->level > 1)
-		return 0;
+    /* skip subdirectories if not doing a recursive collect_files */
+    if (!HAS_FLAG(RECURSIVE) && ftwbuf->level > 1) {
+        return 0;
+    }
 
-	/* there might be access errors */
-	if (type == FTW_NS || type == FTW_SLN || type == FTW_DNR)
-		die("Can't access '%s':", fpath);
+    /* there might be access errors */
+    if (type == FTW_NS || type == FTW_SLN || type == FTW_DNR) {
+        die("Can't access '%s':", fpath);
+    }
 
-	/* skip directories */
-	if (type == FTW_D)
-		return 0;
+    /* skip directories */
+    if (type == FTW_D) {
+        return 0;
+    }
 
-	/* we can only handle regular files */
-	if (type != FTW_F)
-		die("'%s' is not a regular file.", fpath);
+    /* we can only handle regular files */
+    if (type != FTW_F) {
+        die("'%s' is not a regular file.", fpath);
+    }
 
-	/* which are not too big to fit */
-	if (st->st_size > ctx.disk_size)
-		die("Can never fit '%s' (%s).",
-		    fpath, number_to_string(st->st_size));
+    /* which are not too big to fit */
+    if (st->st_size > ctx.disk_size)
+        die("Can never fit '%s' (%s).", fpath, number_to_string(st->st_size));
 
-	afile = afile_new(fpath, st->st_size);
-	vector_add(ctx.files, afile);
+    afile = afile_new(fpath, st->st_size);
+    vector_add(ctx.files, afile);
 
-	return 0;
+    return 0;
 }
 
-static void
-usage(void)
+static void usage(void)
 {
-	fprintf(stderr, "%s", usage_string);
-	exit(EXIT_FAILURE);
+    fprintf(stderr, "%s", usage_string);
+    exit(EXIT_FAILURE);
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-	char *basedir = NULL;
-	struct vector *disks = NULL;
-	size_t i;
-	int opt;
+    char *basedir = NULL;
+    struct vector *disks = NULL;
+    size_t i;
+    int opt;
 
-	while ((opt = getopt(argc, argv, "l:nrs:v")) != -1) {
-		switch (opt) {
-		case 'l':
-			basedir = clean_path(optarg);
-			ctx.flags |= DO_LINK;
-			break;
-		case 'n':
-			ctx.flags |= SHOW_ONLY;
-			break;
-		case 'r':
-			ctx.flags |= RECURSIVE;
-			break;
-		case 's':
-			ctx.disk_size = string_to_number(optarg);
-			break;
-		case 'v':
-			ctx.flags |= VERBOSE;
-			break;
-		}
-	}
+    while ((opt = getopt(argc, argv, "l:nrs:v")) != -1) {
+        switch (opt) {
+            case 'l':
+                basedir = clean_path(optarg);
+                SET_FLAG(DO_LINK);
+                break;
+            case 'n':
+                SET_FLAG(SHOW_ONLY);
+                break;
+            case 'r':
+                SET_FLAG(RECURSIVE);
+                break;
+            case 's':
+                ctx.disk_size = string_to_number(optarg);
+                break;
+            case 'v':
+                SET_FLAG(VERBOSE);
+                break;
+        }
+    }
 
-	/* A path argument and the size option is mandatory. */
-	if (optind >= argc || ctx.disk_size <= 0)
-		usage();
+    /* A path argument and the size option is mandatory. */
+    if (optind >= argc || ctx.disk_size <= 0) {
+        usage();
+    }
 
-	ctx.files = vector_new();
-	for (i = optind; (int)i < argc; ++i)
-		if (nftw(argv[i], collect, MAXFD, 0) == -1)
-			die("nftw:");
+    ctx.files = vector_new();
+    for (i = optind; (int) i < argc; ++i)
+        if (nftw(argv[i], collect_files, MAXFD, 0) == -1) {
+            die("nftw:");
+        }
 
-	if (ctx.files->size == 0)
-		die("no files found.");
+    if (ctx.files->size == 0) {
+        die("no files found.");
+    }
 
-	disks = vector_new();
-	fit(ctx.files, disks);
+    disks = vector_new();
+    fit(ctx.files, disks);
 
-	/* There is room for 4 digits in the format string(s). */
-	if (disks->size > 9999)
-		die("Fitting takes too many (%lu) disks.", disks->size);
+    /* There is room for 4 digits in the format string(s). */
+    if (disks->size > 9999) {
+        die("Fitting takes too many (%lu) disks.", disks->size);
+    }
 
-	if (ctx.flags & SHOW_ONLY) {
-		char *s = (disks->size == 1 ? "disk" : "disks");
+    if (HAS_FLAG(SHOW_ONLY)) {
+        char *plural = (disks->size == 1 ? "disk" : "disks");
 
-		printf("%lu %s.\n", (ulong)disks->size, s);
-		exit(EXIT_SUCCESS);
-	}
+        printf("%lu %s.\n", (ulong) disks->size, plural);
+        exit(EXIT_SUCCESS);
+    }
 
-	for (i = 0; i < disks->size; ++i) {
-		struct disk *disk = disks->items[i];
+    for (i = 0; i < disks->size; ++i) {
+        struct disk *disk = disks->items[i];
 
-		if (ctx.flags & DO_LINK) {
-			char *dstdir;
+        if (HAS_FLAG(DO_LINK)) {
+            char *destination_directory;
 
-			dstdir = xmalloc(strlen(basedir) + 6);
-			sprintf(dstdir, "%s/%04lu", basedir, (ulong)disk->id);
-			makedirs(dstdir);
-			disk_link(disk, dstdir);
-			xfree(dstdir);
-		} else
-			disk_print(disk);
-	}
+            destination_directory = xmalloc(strlen(basedir) + 6);
+            sprintf(destination_directory, "%s/%04lu", basedir,
+                    (ulong) disk->id);
+            makedirs(destination_directory);
+            disk_link(disk, destination_directory);
+            xfree(destination_directory);
+        } else {
+            disk_print(disk);
+        }
+    }
 
-	vector_foreach(disks, disk_free);
-	vector_free(ctx.files);
-	vector_free(disks);
+    vector_foreach(disks, disk_free);
+    vector_free(ctx.files);
+    vector_free(disks);
 
-	if (ctx.flags & DO_LINK)
-		xfree(basedir);
+    if (HAS_FLAG(DO_LINK)) {
+        xfree(basedir);
+    }
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

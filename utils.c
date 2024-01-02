@@ -29,82 +29,82 @@
 
 #include "utils.h"
 
-void
-die(const char *fmt, ...)
+void die(const char *fmt, ...)
 {
-	va_list ap;
+    va_list ap;
 
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
 
-	if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
-		fputc(' ', stderr);
-		perror(NULL);
-	} else
-		fputc('\n', stderr);
+    if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
+        fputc(' ', stderr);
+        perror(NULL);
+    } else {
+        fputc('\n', stderr);
+    }
 
-	exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 }
 
-void *
-xcalloc(size_t nmemb, size_t size)
+void *xcalloc(size_t nmemb, size_t size)
 {
-	void *ptr;
+    void *ptr;
 
-	ptr = calloc(nmemb, size);
-	if (ptr == NULL)
-		die("calloc:");
+    ptr = calloc(nmemb, size);
+    if (ptr == NULL) {
+        die("calloc:");
+    }
 
-	return ptr;
+    return ptr;
 }
 
-void
-xlink(const char *src, const char *dst)
+void xlink(const char *src, const char *dst)
 {
-	if (link(src, dst) == -1)
-		die("Can't link '%s' to '%s':", src, dst);
+    if (link(src, dst) == -1) {
+        die("Can't link '%s' to '%s':", src, dst);
+    }
 }
 
-void *
-xmalloc(size_t size)
+void *xmalloc(size_t size)
 {
-	void *ptr;
+    void *ptr;
 
-	ptr = malloc(size);
-	if (ptr == NULL)
-		die("malloc:");
+    ptr = malloc(size);
+    if (ptr == NULL) {
+        die("malloc:");
+    }
 
-	return ptr;
+    return ptr;
 }
 
-void *
-xrealloc(void *ptr, size_t size)
+void *xrealloc(void *ptr, size_t size)
 {
-	void *newptr;
+    void *newptr;
 
-	newptr = realloc(ptr, size);
-	if (newptr == NULL)
-		die("realloc:");
+    newptr = realloc(ptr, size);
+    if (newptr == NULL) {
+        die("realloc:");
+    }
 
-	return newptr;
+    return newptr;
 }
 
-char *
-xstrdup(const char *str)
+char *xstrdup(const char *str)
 {
-	char *str_copy;
-	size_t size;
+    char *str_copy;
+    size_t size;
 
-	if (str == NULL)
-		return NULL;
+    if (str == NULL) {
+        return NULL;
+    }
 
-	size = strlen(str) + 1;
-	str_copy = xmalloc(size);
+    size = strlen(str) + 1;
+    str_copy = xmalloc(size);
 
-	memcpy(str_copy, str, size);
+    memcpy(str_copy, str, size);
 
-	return str_copy;
+    return str_copy;
 }
 
 #define KB 1000L
@@ -112,51 +112,53 @@ xstrdup(const char *str)
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t
-string_to_number(const char *str)
+off_t string_to_number(const char *str)
 {
-	char *unit;
-	off_t num;
+    char *unit;
+    off_t num;
 
-	num = strtol(str, &unit, 10);
-	if (unit == str)
-		die("Can't convert string '%s' to a number.", str);
+    num = strtol(str, &unit, 10);
+    if (unit == str) {
+        die("Can't convert string '%s' to a number.", str);
+    }
 
-	if (*unit == '\0')
-		return num;
+    if (*unit == '\0') {
+        return num;
+    }
 
-	/* unit should be one char, not more */
-	if (unit[1] == '\0') {
-		switch (tolower(*unit)) {
-		case 't':
-			return num * TB;
-		case 'g':
-			return num * GB;
-		case 'm':
-			return num * MB;
-		case 'k':
-			return num * KB;
-		case 'b':
-			return num;
-		}
-	}
+    /* unit should be one char, not more */
+    if (unit[1] == '\0') {
+        switch (tolower(*unit)) {
+            case 't':
+                return num * TB;
+            case 'g':
+                return num * GB;
+            case 'm':
+                return num * MB;
+            case 'k':
+                return num * KB;
+            case 'b':
+                return num;
+        }
+    }
 
-	die("Unknown unit: '%s'", unit);
-	return 0;
+    die("Unknown unit: '%s'", unit);
+    return 0;
 }
 
-char *
-number_to_string(double num)
+char *number_to_string(double num)
 {
-	char str[BUFSIZE];
-	char units[] = { 'b', 'K', 'M', 'G', 'T' };
-	int i;
+    char number[BUFSIZE];
+    char units[] = { 'b', 'K', 'M', 'G', 'T' };
+    int i;
 
-	for (i = 0; num > KB && i < (int)sizeof(units); ++i)
-		num /= KB;
+    for (i = 0; num > KB && i < (int) sizeof(units); ++i) {
+        num /= KB;
+    }
 
-	sprintf(str, "%.*f%c", i == 0 ? 0 : 2, num, units[i]);
-	return xstrdup(str);
+    sprintf(number, "%.*f%c", i == 0 ? 0 : 2, num, units[i]);
+
+    return xstrdup(number);
 }
 
 #undef KB
@@ -164,61 +166,65 @@ number_to_string(double num)
 #undef GB
 #undef TB
 
-char *
-clean_path(char *path)
+char *clean_path(char *path)
 {
-	char *buf, *bufp, *ret;
+    char *cleaned_path;
+    char *path_buffer;
+    char *new_path;
 
-	buf = bufp = xmalloc(strlen(path) + 1);
-	while (*path != '\0') {
-		if (*path == '/') {
-			*bufp++ = *path++;
+    path_buffer = new_path = xmalloc(strlen(path) + 1);
+    while (*path != '\0') {
+        if (*path == '/') {
+            *new_path++ = *path++;
 
-			while (*path == '/')
-				++path;
-		} else
-			*bufp++ = *path++;
-	}
+            while (*path == '/') {
+                ++path;
+            }
+        } else {
+            *new_path++ = *path++;
+        }
+    }
 
-	if (bufp > (buf + 1) && bufp[-1] == '/')
-		bufp[-1] = '\0';
-	else
-		*bufp = '\0';
+    if (new_path > (path_buffer + 1) && new_path[-1] == '/') {
+        new_path[-1] = '\0';
+    } else {
+        *new_path = '\0';
+    }
 
-	ret = xstrdup(buf);
-	xfree(buf);
+    cleaned_path = xstrdup(path_buffer);
+    xfree(path_buffer);
 
-	return ret;
+    return cleaned_path;
 }
 
-static void
-makedir(char *path)
+static void makedir(char *path)
 {
-	struct stat st;
+    struct stat st;
 
-	if (stat(path, &st) == 0) {
+    if (stat(path, &st) == 0) {
 
-		/* if path already exists it should be a directory */
-		if (!S_ISDIR(st.st_mode))
-			die("'%s' is not a directory.", path);
+        /* if path already exists it should be a directory */
+        if (!S_ISDIR(st.st_mode)) {
+            die("'%s' is not a directory.", path);
+        }
 
-		return;
-	}
+        return;
+    }
 
-	if (mkdir(path, 0700) == -1)
-		die("Can't make directory '%s':", path);
+    if (mkdir(path, 0700) == -1) {
+        die("Can't make directory '%s':", path);
+    }
 }
 
-void
-makedirs(char *path)
+void makedirs(char *path)
 {
-	char *p = path + 1;
+    char *slash_position = path + 1;
 
-	while ((p = strchr(p, '/')) != NULL) {
-		*p = '\0';
-		makedir(path);
-		*p++ = '/';
-	}
+    while ((slash_position = strchr(slash_position, '/')) != NULL) {
+        *slash_position = '\0';
+        makedir(path);
+        *slash_position++ = '/';
+    }
 
-	makedir(path);
+    makedir(path);
 }
