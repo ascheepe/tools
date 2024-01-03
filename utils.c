@@ -116,25 +116,25 @@ char *xstrdup(const char *str)
 off_t string_to_number(const char *str)
 {
     char *unit;
-    off_t num;
+    off_t number;
 
-    num = strtol(str, &unit, 10);
+    number = strtol(str, &unit, 10);
     if (unit == str) {
         die("Can't convert string '%s' to a number.", str);
     }
 
     if (*unit == '\0') {
-        return num;
+        return number;
     }
 
     /* unit should be one char, not more */
     if (unit[1] == '\0') {
         switch (tolower(*unit)) {
-            case 't': return num * TB;
-            case 'g': return num * GB;
-            case 'm': return num * MB;
-            case 'k': return num * KB;
-            case 'b': return num;
+            case 't': return number * TB;
+            case 'g': return number * GB;
+            case 'm': return number * MB;
+            case 'k': return number * KB;
+            case 'b': return number;
         }
     }
 
@@ -142,19 +142,19 @@ off_t string_to_number(const char *str)
     return 0;
 }
 
-char *number_to_string(double num)
+char *number_to_string(double number)
 {
-    char number[BUFSIZE];
+    char str[BUFSIZE];
     char units[] = { 'b', 'K', 'M', 'G', 'T' };
     int i;
 
-    for (i = 0; num > KB && i < (int) sizeof(units); ++i) {
-        num /= KB;
+    for (i = 0; number > KB && i < (int) sizeof(units); ++i) {
+        number /= KB;
     }
 
-    sprintf(number, "%.*f%c", i == 0 ? 0 : 2, num, units[i]);
+    sprintf(str, "%.*f%c", i == 0 ? 0 : 2, number, units[i]);
 
-    return xstrdup(number);
+    return xstrdup(str);
 }
 
 #undef KB
