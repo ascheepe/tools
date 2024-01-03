@@ -176,7 +176,7 @@ char *clean_path(char *path)
     path_buffer = xmalloc(strlen(path) + 1);
     buffer_position = path_buffer;
 
-    /* Replace repeating / characters. */
+    /* Replace repeating slash characters with a single one. */
     while (*path != '\0') {
         if (*path == '/') {
             *buffer_position++ = *path++;
@@ -189,7 +189,7 @@ char *clean_path(char *path)
         }
     }
 
-    /* Strip the last / if it's not the only character. */
+    /* Strip the last slash if it's not the only character. */
     if ((buffer_position > (path_buffer + 1))
             && (buffer_position[-1] == '/')) {
         buffer_position[-1] = '\0';
