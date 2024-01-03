@@ -170,9 +170,8 @@ static void disk_link(struct disk *disk, char *destination_directory)
         struct afile *afile = disk->files->items[i];
         char *link_destination;
 
-        link_destination = xmalloc(directory_length
-                                   + strlen(afile->name)
-                                   + 2);
+        link_destination =
+            xmalloc(directory_length + strlen(afile->name) + 2);
         sprintf(link_destination, "%s/%s",
                 destination_directory, afile->name);
         xlink(afile->name, link_destination);
