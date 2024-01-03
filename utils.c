@@ -203,24 +203,27 @@ char *clean_path(char *path)
     return cleaned_path;
 }
 
-static void make_directory(char *path, mode_t mode)
+static void xmkdir(char *path, mode_t mode)
 {
     struct stat st;
 
+    /* If the path already exists.. */
     if (stat(path, &st) == 0) {
         mode_t path_mode = st.st_mode & 07777;
 
-        /* if path already exists it should be a directory */
+        /* it should be a directory.. */
         if (!S_ISDIR(st.st_mode)) {
             die("'%s' is not a directory.", path);
         }
 
-        /* and have the correct mode. */
+        /* and have correct permissions. */
         if (path_mode != mode) {
             die("'%s' has invalid permissions %o, should be %o.",
                 path, path_mode, mode);
         }
     } else {
+
+        /* Otherwise, create it. */
         if (mkdir(path, mode) == -1) {
             die("Can't make directory '%s':", path);
         }
@@ -234,9 +237,9 @@ void make_directories(char *path)
 
     while ((slash_position = strchr(++slash_position, '/')) != NULL) {
         *slash_position = '\0';
-        make_directory(path, directory_mode);
+        xmkdir(path, directory_mode);
         *slash_position = '/';
     }
 
-    make_directory(path, directory_mode);
+    xmkdir(path, directory_mode);
 }
