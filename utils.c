@@ -203,7 +203,7 @@ char *clean_path(char *path)
     return cleaned_path;
 }
 
-static void xmkdir(char *path, mode_t mode)
+static void xmkdir(const char *path, mode_t mode)
 {
     struct stat st;
 
