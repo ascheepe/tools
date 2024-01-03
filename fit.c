@@ -127,8 +127,9 @@ static void print_header(struct disk *disk)
 
     disk_size = number_to_string(disk->free);
     header_length = sprintf(header, "Disk #%lu, %d%% (%s) free:",
-                  (ulong) disk->id,
-                  (int) (disk->free * 100 / ctx.disk_size), disk_size);
+                            (ulong) disk->id,
+                            (int) (disk->free * 100 / ctx.disk_size),
+                            disk_size);
     xfree(disk_size);
 
     print_separator(header_length);
