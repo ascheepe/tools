@@ -169,10 +169,11 @@ static void disk_link(struct disk *disk, char *destination_directory)
         struct afile *afile = disk->files->items[i];
         char *link_destination;
 
-        link_destination =
-            xmalloc(directory_length + strlen(afile->name) + 2);
-        sprintf(link_destination, "%s/%s", destination_directory,
-                afile->name);
+        link_destination = xmalloc(directory_length
+                                   + strlen(afile->name)
+                                   + 2);
+        sprintf(link_destination, "%s/%s",
+                destination_directory, afile->name);
         xlink(afile->name, link_destination);
         if (HAS_FLAG(VERBOSE)) {
             printf("%s -> %s\n", afile->name, destination_directory);
@@ -317,10 +318,11 @@ int main(int argc, char **argv)
     }
 
     ctx.files = vector_new();
-    for (i = optind; (int) i < argc; ++i)
+    for (i = optind; (int) i < argc; ++i) {
         if (nftw(argv[i], collect_files, MAXFD, 0) == -1) {
             die("nftw:");
         }
+    }
 
     if (ctx.files->size == 0) {
         die("no files found.");
