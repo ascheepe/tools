@@ -231,13 +231,13 @@ static void make_directory(char *path, mode_t mode)
 
 void make_directories(char *path)
 {
-    char *slash_position = path + 1;
+    char *slash_position = path;
     mode_t directory_mode = 0700;
 
-    while ((slash_position = strchr(slash_position, '/')) != NULL) {
+    while ((slash_position = strchr(++slash_position, '/')) != NULL) {
         *slash_position = '\0';
         make_directory(path, directory_mode);
-        *slash_position++ = '/';
+        *slash_position = '/';
     }
 
     make_directory(path, directory_mode);
