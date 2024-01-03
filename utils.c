@@ -18,6 +18,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <err.h>
 #include <unistd.h>
 
@@ -202,21 +203,28 @@ char *clean_path(char *path)
     return cleaned_path;
 }
 
-static void make_directory(char *path)
+static void make_directory(char *path, mode_t mode)
 {
     struct stat st;
 
     if (stat(path, &st) == 0) {
+        mode_t path_mode = st.st_mode & 07777;
 
         /* if path already exists it should be a directory */
         if (!S_ISDIR(st.st_mode)) {
             die("'%s' is not a directory.", path);
         }
 
+        /* and have the correct mode. */
+        if (path_mode != mode) {
+            die("'%s' has invalid mode %o, should be %o",
+                path, path_mode, mode);
+        }
+
         return;
     }
 
-    if (mkdir(path, 0700) == -1) {
+    if (mkdir(path, mode) == -1) {
         die("Can't make directory '%s':", path);
     }
 }
@@ -224,12 +232,13 @@ static void make_directory(char *path)
 void make_directories(char *path)
 {
     char *slash_position = path + 1;
+    mode_t directory_mode = 0700;
 
     while ((slash_position = strchr(slash_position, '/')) != NULL) {
         *slash_position = '\0';
-        make_directory(path);
+        make_directory(path, directory_mode);
         *slash_position++ = '/';
     }
 
-    make_directory(path);
+    make_directory(path, directory_mode);
 }
