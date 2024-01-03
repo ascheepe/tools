@@ -202,7 +202,7 @@ char *clean_path(char *path)
     return cleaned_path;
 }
 
-static void makedir(char *path)
+static void make_directory(char *path)
 {
     struct stat st;
 
@@ -221,15 +221,15 @@ static void makedir(char *path)
     }
 }
 
-void makedirs(char *path)
+void make_directories(char *path)
 {
     char *slash_position = path + 1;
 
     while ((slash_position = strchr(slash_position, '/')) != NULL) {
         *slash_position = '\0';
-        makedir(path);
+        make_directory(path);
         *slash_position++ = '/';
     }
 
-    makedir(path);
+    make_directory(path);
 }

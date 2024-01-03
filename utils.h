@@ -44,6 +44,6 @@ char *xstrdup(const char *);
 off_t string_to_number(const char *);
 char *number_to_string(double);
 char *clean_path(char *);
-void makedirs(char *);
+void make_directories(char *);
 
 #endif

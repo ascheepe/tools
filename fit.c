@@ -354,7 +354,7 @@ int main(int argc, char **argv)
             destination_directory = xmalloc(strlen(basedir) + 6);
             sprintf(destination_directory, "%s/%04lu", basedir,
                     (ulong) disk->id);
-            makedirs(destination_directory);
+            make_directories(destination_directory);
             disk_link(disk, destination_directory);
             xfree(destination_directory);
         } else {
