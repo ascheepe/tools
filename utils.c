@@ -60,10 +60,10 @@ void *xcalloc(size_t nmemb, size_t size)
     return ptr;
 }
 
-void xlink(const char *src, const char *dst)
+void xlink(const char *source, const char *destination)
 {
-    if (link(src, dst) == -1) {
-        die("Can't link '%s' to '%s':", src, dst);
+    if (link(source, destination) == -1) {
+        die("Can't link '%s' to '%s':", source, destination);
     }
 }
 
