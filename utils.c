@@ -220,12 +220,10 @@ static void make_directory(char *path, mode_t mode)
             die("'%s' has invalid permissions %o, should be %o.",
                 path, path_mode, mode);
         }
-
-        return;
-    }
-
-    if (mkdir(path, mode) == -1) {
-        die("Can't make directory '%s':", path);
+    } else {
+        if (mkdir(path, mode) == -1) {
+            die("Can't make directory '%s':", path);
+        }
     }
 }
 
