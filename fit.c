@@ -110,7 +110,7 @@ static void disk_free(void *disk_ptr)
     xfree(disk);
 }
 
-static void hline(int length)
+static void print_separator(int length)
 {
     while (length-- > 0) {
         putchar('-');
@@ -131,9 +131,9 @@ static void print_header(struct disk *disk)
                   (int) (disk->free * 100 / ctx.disk_size), disk_size);
     xfree(disk_size);
 
-    hline(header_length);
+    print_separator(header_length);
     printf("%s\n", header);
-    hline(header_length);
+    print_separator(header_length);
 }
 
 /*
