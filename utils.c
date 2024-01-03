@@ -168,27 +168,32 @@ char *number_to_string(double num)
 
 char *clean_path(char *path)
 {
-    char *cleaned_path;
     char *path_buffer;
-    char *new_path;
+    char *buffer_position;
+    char *cleaned_path;
 
-    path_buffer = new_path = xmalloc(strlen(path) + 1);
+    path_buffer = xmalloc(strlen(path) + 1);
+    buffer_position = path_buffer;
+
+    /* Replace repeating / characters. */
     while (*path != '\0') {
         if (*path == '/') {
-            *new_path++ = *path++;
+            *buffer_position++ = *path++;
 
             while (*path == '/') {
                 ++path;
             }
         } else {
-            *new_path++ = *path++;
+            *buffer_position++ = *path++;
         }
     }
 
-    if (new_path > (path_buffer + 1) && new_path[-1] == '/') {
-        new_path[-1] = '\0';
+    /* Strip the last / if it's not the only character. */
+    if ((buffer_position > (path_buffer + 1))
+            && (buffer_position[-1] == '/')) {
+        buffer_position[-1] = '\0';
     } else {
-        *new_path = '\0';
+        *buffer_position = '\0';
     }
 
     cleaned_path = xstrdup(path_buffer);
