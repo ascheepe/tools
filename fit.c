@@ -270,8 +270,9 @@ static int collect_files(const char *fpath, const struct stat *st, int type,
     }
 
     /* which are not too big to fit */
-    if (st->st_size > ctx.disk_size)
+    if (st->st_size > ctx.disk_size) {
         die("Can never fit '%s' (%s).", fpath, number_to_string(st->st_size));
+    }
 
     afile = afile_new(fpath, st->st_size);
     vector_add(ctx.files, afile);
