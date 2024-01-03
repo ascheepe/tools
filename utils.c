@@ -217,7 +217,7 @@ static void make_directory(char *path, mode_t mode)
 
         /* and have the correct mode. */
         if (path_mode != mode) {
-            die("'%s' has invalid permissions %o, should be %o",
+            die("'%s' has invalid permissions %o, should be %o.",
                 path, path_mode, mode);
         }
 
