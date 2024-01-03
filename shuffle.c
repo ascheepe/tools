@@ -79,7 +79,7 @@ static int collect_files(const char *fpath, const struct stat *st, int type,
 
         extension = fpath + strlen(fpath) - strlen(ctx.extension);
         is_playable = extension >= fpath
-            && strcasecmp(extension, ctx.extension) == 0;
+                      && strcasecmp(extension, ctx.extension) == 0;
     } else if (ctx.file_type != NULL) {
         const char *file_type;
 
@@ -88,8 +88,8 @@ static int collect_files(const char *fpath, const struct stat *st, int type,
             die("collect_files: %s", magic_error(ctx.magic_cookie));
         }
 
-        is_playable =
-            strncmp(ctx.file_type, file_type, strlen(ctx.file_type)) == 0;
+        is_playable = strncmp(ctx.file_type, file_type,
+                              strlen(ctx.file_type)) == 0;
     } else {
         die("Extension or media type is not set.");
     }
