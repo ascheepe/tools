@@ -74,9 +74,9 @@ static struct afile *afile_new(const char *name, off_t size)
     return afile;
 }
 
-static void afile_free(void *afilep)
+static void afile_free(void *afile_ptr)
 {
-    struct afile *afile = afilep;
+    struct afile *afile = afile_ptr;
 
     xfree(afile->name);
     xfree(afile);
