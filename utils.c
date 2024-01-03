@@ -130,16 +130,11 @@ off_t string_to_number(const char *str)
     /* unit should be one char, not more */
     if (unit[1] == '\0') {
         switch (tolower(*unit)) {
-            case 't':
-                return num * TB;
-            case 'g':
-                return num * GB;
-            case 'm':
-                return num * MB;
-            case 'k':
-                return num * KB;
-            case 'b':
-                return num;
+            case 't': return num * TB;
+            case 'g': return num * GB;
+            case 'm': return num * MB;
+            case 'k': return num * KB;
+            case 'b': return num;
         }
     }
 
