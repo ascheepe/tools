@@ -51,11 +51,15 @@ options:\n\
 
 static struct context {
     magic_t magic_cookie;
+
     char *file_type;
     char *extension;
+
     char **command;
     int filename_position;
+
     int verbose;
+
     struct vector *files;
 } ctx;
 
