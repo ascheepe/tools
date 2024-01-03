@@ -80,14 +80,14 @@ void *xmalloc(size_t size)
 
 void *xrealloc(void *ptr, size_t size)
 {
-    void *newptr;
+    void *new_ptr;
 
-    newptr = realloc(ptr, size);
-    if (newptr == NULL) {
+    new_ptr = realloc(ptr, size);
+    if (new_ptr == NULL) {
         die("realloc:");
     }
 
-    return newptr;
+    return new_ptr;
 }
 
 char *xstrdup(const char *str)
