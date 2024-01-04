@@ -218,19 +218,19 @@ static void fit(struct vector *files, struct vector *disks)
 
     for (i = 0; i < files->size; ++i) {
         struct afile *afile = files->items[i];
-        int file_added = FALSE;
+        int is_file_added = FALSE;
         size_t j;
 
         for (j = 0; j < disks->size; ++j) {
             struct disk *disk = disks->items[j];
 
             if (add_file(disk, afile)) {
-                file_added = TRUE;
+                is_file_added = TRUE;
                 break;
             }
         }
 
-        if (!file_added) {
+        if (!is_file_added) {
             struct disk *disk;
 
             disk = disk_new(ctx.disk_size);
@@ -287,15 +287,15 @@ static void usage(void)
 
 int main(int argc, char **argv)
 {
-    char *basedir = NULL;
+    char *base_directory = NULL;
     struct vector *disks = NULL;
     size_t i;
-    int opt;
+    int option;
 
-    while ((opt = getopt(argc, argv, "l:nrs:v")) != -1) {
-        switch (opt) {
+    while ((option = getopt(argc, argv, "l:nrs:v")) != -1) {
+        switch (option) {
             case 'l':
-                basedir = clean_path(optarg);
+                base_directory = clean_path(optarg);
                 SET_FLAG(DO_LINK);
                 break;
             case 'n':
@@ -350,9 +350,9 @@ int main(int argc, char **argv)
         if (HAS_FLAG(DO_LINK)) {
             char *destination_directory;
 
-            destination_directory = xmalloc(strlen(basedir) + 6);
-            sprintf(destination_directory, "%s/%04lu", basedir,
-                    (ulong) disk->id);
+            destination_directory = xmalloc(strlen(base_directory) + 6);
+            sprintf(destination_directory, "%s/%04lu",
+                    base_directory, (ulong) disk->id);
             make_directories(destination_directory);
             disk_link(disk, destination_directory);
             xfree(destination_directory);
@@ -366,7 +366,7 @@ int main(int argc, char **argv)
     vector_free(disks);
 
     if (HAS_FLAG(DO_LINK)) {
-        xfree(basedir);
+        xfree(base_directory);
     }
 
     return EXIT_SUCCESS;
