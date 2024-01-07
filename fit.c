@@ -211,18 +211,18 @@ static int by_size_descending(const void *afile_a, const void *afile_b)
  */
 static void fit(struct vector *files, struct vector *disks)
 {
-    size_t i;
+    size_t file_index;
 
     qsort(files->items, files->size, sizeof(files->items[0]),
           by_size_descending);
 
-    for (i = 0; i < files->size; ++i) {
-        struct afile *afile = files->items[i];
+    for (file_index = 0; file_index < files->size; ++file_index) {
+        struct afile *afile = files->items[file_index];
         int is_file_added = FALSE;
-        size_t j;
+        size_t disk_index;
 
-        for (j = 0; j < disks->size; ++j) {
-            struct disk *disk = disks->items[j];
+        for (disk_index = 0; disk_index < disks->size; ++disk_index) {
+            struct disk *disk = disks->items[disk_index];
 
             if (add_file(disk, afile)) {
                 is_file_added = TRUE;
