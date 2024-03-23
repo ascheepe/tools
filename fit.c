@@ -43,10 +43,10 @@ options:\n\
 #include "utils.h"
 
 enum flags {
-	DO_LINK = 1,
-	SHOW_ONLY = 2,
-	RECURSIVE = 4,
-	VERBOSE = 8
+	DO_LINK		= 0x01,
+	SHOW_ONLY	= 0x02,
+	RECURSIVE	= 0x04,
+	VERBOSE		= 0x08
 };
 
 static struct context {
