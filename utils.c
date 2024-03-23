@@ -30,82 +30,82 @@
 
 #include "utils.h"
 
-void die(const char *fmt, ...)
+void
+die(const char *fmt, ...)
 {
-    va_list ap;
+	va_list ap;
 
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    va_end(ap);
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
 
-    if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
-        fputc(' ', stderr);
-        perror(NULL);
-    } else {
-        fputc('\n', stderr);
-    }
+	if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
+		fputc(' ', stderr);
+		perror(NULL);
+	} else
+		fputc('\n', stderr);
 
-    exit(EXIT_FAILURE);
+	exit(EXIT_FAILURE);
 }
 
-void *xcalloc(size_t nmemb, size_t size)
+void *
+xcalloc(size_t nmemb, size_t size)
 {
-    void *ptr;
+	void *ptr;
 
-    ptr = calloc(nmemb, size);
-    if (ptr == NULL) {
-        die("calloc:");
-    }
+	ptr = calloc(nmemb, size);
+	if (ptr == NULL)
+		die("calloc:");
 
-    return ptr;
+	return ptr;
 }
 
-void xlink(const char *source, const char *destination)
+void
+xlink(const char *src, const char *dst)
 {
-    if (link(source, destination) == -1) {
-        die("Can't link '%s' to '%s':", source, destination);
-    }
+	if (link(src, dst) == -1)
+		die("Can't link '%s' to '%s':", src, dst);
 }
 
-void *xmalloc(size_t size)
+void *
+xmalloc(size_t size)
 {
-    void *ptr;
+	void *ptr;
 
-    ptr = malloc(size);
-    if (ptr == NULL) {
-        die("malloc:");
-    }
+	ptr = malloc(size);
+	if (ptr == NULL)
+		die("malloc:");
 
-    return ptr;
+	return ptr;
 }
 
-void *xrealloc(void *ptr, size_t size)
+void *
+xrealloc(void *ptr, size_t size)
 {
-    void *new_ptr;
+	void *new_ptr;
 
-    new_ptr = realloc(ptr, size);
-    if (new_ptr == NULL) {
-        die("realloc:");
-    }
+	new_ptr = realloc(ptr, size);
+	if (new_ptr == NULL)
+		die("realloc:");
 
-    return new_ptr;
+	return new_ptr;
 }
 
-char *xstrdup(const char *str)
+char *
+xstrdup(const char *str)
 {
-    char *str_copy;
-    size_t size;
+	char *dup;
+	size_t size;
 
-    if (str == NULL) {
-        return NULL;
-    }
+	if (str == NULL)
+		return NULL;
 
-    size = strlen(str) + 1;
-    str_copy = xmalloc(size);
+	size = strlen(str) + 1;
+	dup = xmalloc(size);
 
-    memcpy(str_copy, str, size);
+	memcpy(dup, str, size);
 
-    return str_copy;
+	return dup;
 }
 
 #define KB 1000L
@@ -113,48 +113,52 @@ char *xstrdup(const char *str)
 #define GB (MB * KB)
 #define TB (GB * KB)
 
-off_t string_to_number(const char *str)
+off_t
+string_to_number(const char *str)
 {
-    char *unit;
-    off_t number;
+	char *unit;
+	off_t num;
 
-    number = strtol(str, &unit, 10);
-    if (unit == str) {
-        die("Can't convert string '%s' to a number.", str);
-    }
+	num = strtol(str, &unit, 10);
+	if (unit == str)
+		die("Can't convert string '%s' to a number.", str);
 
-    if (*unit == '\0') {
-        return number;
-    }
+	if (*unit == '\0')
+		return num;
 
-    /* unit should be one char, not more */
-    if (unit[1] == '\0') {
-        switch (tolower(*unit)) {
-            case 't': return number * TB;
-            case 'g': return number * GB;
-            case 'm': return number * MB;
-            case 'k': return number * KB;
-            case 'b': return number;
-        }
-    }
+	/* unit should be one char, not more */
+	if (unit[1] == '\0') {
+		switch (tolower(*unit)) {
+		case 't':
+			return num * TB;
+		case 'g':
+			return num * GB;
+		case 'm':
+			return num * MB;
+		case 'k':
+			return num * KB;
+		case 'b':
+			return num;
+		}
+	}
 
-    die("Unknown unit: '%s'", unit);
-    return 0;
+	die("Unknown unit: '%s'", unit);
+	return 0;
 }
 
-char *number_to_string(double number)
+char *
+number_to_string(double num)
 {
-    char str[BUFSIZE];
-    char units[] = { 'b', 'K', 'M', 'G', 'T' };
-    int i;
+	char str[BUFSIZE];
+	char units[] = { 'b', 'K', 'M', 'G', 'T' };
+	int i;
 
-    for (i = 0; number > KB && i < (int) sizeof(units); ++i) {
-        number /= KB;
-    }
+	for (i = 0; num > KB && i < (int)sizeof(units); ++i)
+		num /= KB;
 
-    sprintf(str, "%.*f%c", i == 0 ? 0 : 2, number, units[i]);
+	sprintf(str, "%.*f%c", i == 0 ? 0 : 2, num, units[i]);
 
-    return xstrdup(str);
+	return xstrdup(str);
 }
 
 #undef KB
@@ -162,79 +166,73 @@ char *number_to_string(double number)
 #undef GB
 #undef TB
 
-char *clean_path(char *path)
+char *
+clean_path(char *path)
 {
-    char *path_buffer;
-    char *buffer_position;
-    char *cleaned_path;
+	char *buf, *bufp, *ret;
 
-    path_buffer = xmalloc(strlen(path) + 1);
-    buffer_position = path_buffer;
+	buf = xmalloc(strlen(path) + 1);
+	bufp = buf;
 
-    /* Replace repeating slash characters with a single one. */
-    while (*path != '\0') {
-        if (*path == '/') {
-            *buffer_position++ = *path++;
+	/* Replace repeating slash characters with a single one. */
+	while (*path != '\0') {
+		if (*path == '/') {
+			*bufp++ = *path++;
 
-            while (*path == '/') {
-                ++path;
-            }
-        } else {
-            *buffer_position++ = *path++;
-        }
-    }
+			while (*path == '/')
+				++path;
+		} else
+			*bufp++ = *path++;
+	}
 
-    /* Strip the last slash if it's not the only character. */
-    if ((buffer_position > (path_buffer + 1))
-            && (buffer_position[-1] == '/')) {
-        buffer_position[-1] = '\0';
-    } else {
-        *buffer_position = '\0';
-    }
+	/* Strip the last slash if it's not the only character. */
+	if ((bufp > (buf + 1)) && (bufp[-1] == '/'))
+		bufp[-1] = '\0';
+	else
+		*bufp = '\0';
 
-    cleaned_path = xstrdup(path_buffer);
-    xfree(path_buffer);
+	ret = xstrdup(buf);
+	xfree(buf);
 
-    return cleaned_path;
+	return ret;
 }
 
-static void xmkdir(const char *path, mode_t mode)
+static void
+xmkdir(const char *path, mode_t mode)
 {
-    struct stat st;
+	struct stat st;
 
-    /* If the path already exists.. */
-    if (stat(path, &st) == 0) {
-        mode_t path_mode = st.st_mode & 07777;
+	/* If the path already exists.. */
+	if (stat(path, &st) == 0) {
+		mode_t path_mode = st.st_mode & 07777;
 
-        /* it should be a directory.. */
-        if (!S_ISDIR(st.st_mode)) {
-            die("'%s' is not a directory.", path);
-        }
+		/* it should be a directory.. */
+		if (!S_ISDIR(st.st_mode))
+			die("'%s' is not a directory.", path);
 
-        /* and have correct permissions. */
-        if (path_mode != mode) {
-            die("'%s' has invalid permissions %o, should be %o.",
-                path, path_mode, mode);
-        }
-    } else {
-
-        /* Otherwise, create it. */
-        if (mkdir(path, mode) == -1) {
-            die("Can't make directory '%s':", path);
-        }
-    }
+		/* and have correct permissions. */
+		if (path_mode != mode) {
+			die("'%s' has invalid permissions %o, should be %o.",
+			    path, path_mode, mode);
+		}
+	} else {
+		/* Otherwise, create it. */
+		if (mkdir(path, mode) == -1)
+			die("Can't make directory '%s':", path);
+	}
 }
 
-void make_directories(char *path)
+void
+make_directories(char *path)
 {
-    char *slash_position = path;
-    mode_t directory_mode = 0700;
+	char *slashpos = path;
+	mode_t mode = 0700;
 
-    while ((slash_position = strchr(++slash_position, '/')) != NULL) {
-        *slash_position = '\0';
-        xmkdir(path, directory_mode);
-        *slash_position = '/';
-    }
+	while ((slashpos = strchr(++slashpos, '/')) != NULL) {
+		*slashpos = '\0';
+		xmkdir(path, mode);
+		*slashpos = '/';
+	}
 
-    xmkdir(path, directory_mode);
+	xmkdir(path, mode);
 }

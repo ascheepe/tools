@@ -50,217 +50,207 @@ options:\n\
 #include "utils.h"
 
 static struct context {
-    magic_t magic_cookie;
+	magic_t magic_cookie;
 
-    char *file_type;
-    char *extension;
+	char *file_type;
+	char *extension;
 
-    char **command;
-    int filename_position;
+	char **command;
+	int filename_position;
 
-    int verbose;
+	int verbose;
 
-    struct vector *files;
+	struct vector *files;
 } ctx;
 
-static int collect_files(const char *fpath, const struct stat *st, int type,
-                         struct FTW *ftwbuf)
+static int
+collect_files(const char *fpath, const struct stat *st, int type,
+    struct FTW *ftwbuf)
 {
-    int is_playable = FALSE;
+	int is_playable = FALSE;
 
-    /* these parameters are unused */
-    (void) st;
-    (void) ftwbuf;
+	/* these parameters are unused */
+	(void)st;
+	(void)ftwbuf;
 
-    /* skip non regular files */
-    if (type != FTW_F) {
-        return 0;
-    }
+	/* skip non regular files */
+	if (type != FTW_F)
+		return 0;
 
-    /* if both extension and media-type are set prefer extension search */
-    if (ctx.extension != NULL) {
-        const char *extension;
+	/* if both extension and media-type are set prefer extension search */
+	if (ctx.extension != NULL) {
+		const char *ext;
 
-        extension = fpath + strlen(fpath) - strlen(ctx.extension);
-        is_playable = extension >= fpath
-                      && strcasecmp(extension, ctx.extension) == 0;
-    } else if (ctx.file_type != NULL) {
-        const char *file_type;
+		ext = fpath + strlen(fpath) - strlen(ctx.extension);
+		is_playable = ext >= fpath
+		    && strcasecmp(ext, ctx.extension) == 0;
+	} else if (ctx.file_type != NULL) {
+		const char *file_type;
 
-        file_type = magic_file(ctx.magic_cookie, fpath);
-        if (file_type == NULL) {
-            die("collect_files: %s", magic_error(ctx.magic_cookie));
-        }
+		file_type = magic_file(ctx.magic_cookie, fpath);
+		if (file_type == NULL)
+			die("collect_files: %s",
+			    magic_error(ctx.magic_cookie));
 
-        is_playable = strncmp(ctx.file_type, file_type,
-                              strlen(ctx.file_type)) == 0;
-    } else {
-        die("Extension or media type is not set.");
-    }
+		is_playable = strncmp(ctx.file_type, file_type,
+		    strlen(ctx.file_type)) == 0;
+	} else
+		die("Extension or media type is not set.");
 
-    if (is_playable) {
-        vector_add(ctx.files, xstrdup(fpath));
-    }
+	if (is_playable)
+		vector_add(ctx.files, xstrdup(fpath));
 
-    return 0;
+	return 0;
 }
 
-static void play_file(void *filename_ptr)
+static void
+play_file(void *filename_ptr)
 {
-    char *filename = filename_ptr;
+	char *filename = filename_ptr;
 
-    switch (fork()) {
-        case -1:
-            die("Can't fork:");
-            return;
-        case 0:
-            if (ctx.verbose) {
-                printf("Playing \"%s\".\n", filename);
-            }
+	switch (fork()) {
+	case -1:
+		die("Can't fork:");
+		return;
+	case 0:
+		if (ctx.verbose)
+			printf("Playing \"%s\".\n", filename);
 
-            ctx.command[ctx.filename_position] = filename;
-            execvp(ctx.command[0], (char *const *) ctx.command);
-            die("Can't execute player:");
-            break;
-        default:
-            wait(NULL);
-            break;
-    }
+		ctx.command[ctx.filename_position] = filename;
+		execvp(ctx.command[0], (char *const *)ctx.command);
+		die("Can't execute player:");
+		break;
+	default:
+		wait(NULL);
+		break;
+	}
 }
 
-static void init_magic(void)
+static void
+init_magic(void)
 {
-    ctx.magic_cookie = magic_open(MAGIC_MIME);
+	ctx.magic_cookie = magic_open(MAGIC_MIME);
 
-    if (ctx.magic_cookie == NULL) {
-        die("Can't open libmagic.");
-    }
+	if (ctx.magic_cookie == NULL)
+		die("Can't open libmagic.");
 
-    if (magic_load(ctx.magic_cookie, NULL) == -1) {
-        die("%s.", magic_error(ctx.magic_cookie));
-    }
+	if (magic_load(ctx.magic_cookie, NULL) == -1)
+		die("%s.", magic_error(ctx.magic_cookie));
 }
 
 /*
  * Build a command from the arguments. The command starts
  * after the normal arguments.
  */
-static void build_command(int argc, char **argv, int arg_end)
+static void
+build_command(int argc, char **argv, int arg_end)
 {
-    int command_length = argc - arg_end;
-    int i;
+	int cmdlen = argc - arg_end;
+	int i;
 
-    /* + 2 in case we need to append the filename */
-    ctx.command = xcalloc(command_length + 2, sizeof(char *));
-    ctx.filename_position = -1;
+	/* + 2 in case we need to append the filename */
+	ctx.command = xcalloc(cmdlen + 2, sizeof(char *));
+	ctx.filename_position = -1;
 
-    for (i = arg_end; i < argc; ++i) {
-        int argument_position = i - arg_end;
+	for (i = arg_end; i < argc; ++i) {
+		int pos = i - arg_end;
 
-        if (strcmp(argv[i], "%") == 0) {
-            ctx.filename_position = argument_position;
-        }
-        ctx.command[argument_position] = argv[i];
-    }
+		if (strcmp(argv[i], "%") == 0)
+			ctx.filename_position = pos;
+		ctx.command[pos] = argv[i];
+	}
 
-    /* If no % found append filename. */
-    if (ctx.filename_position == -1) {
-        ctx.filename_position = command_length;
-    }
+	/* If no % found append filename. */
+	if (ctx.filename_position == -1)
+		ctx.filename_position = cmdlen;
 }
 
-static void usage(void)
+static void
+usage(void)
 {
-    fprintf(stderr, "%s", usage_string);
-    exit(EXIT_FAILURE);
+	fprintf(stderr, "%s", usage_string);
+	exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-    char *starting_path = NULL;
-    int opt;
+	char *starting_path = NULL;
+	int opt;
 
-    /*
-     * GNU libc is not posix compliant and needs a + to stop
-     * getopt from parsing options after the last one otherwise
-     * it will parse the command's options as flags. (but you
-     * could stop that by prefixing the command with --).
-     */
+	/*
+	 * GNU libc is not posix compliant and needs a + to stop
+	 * getopt from parsing options after the last one otherwise
+	 * it will parse the command's options as flags. (but you
+	 * could stop that by prefixing the command with --).
+	 */
 #ifdef __GNU_LIBRARY__
-    while ((opt = getopt(argc, argv, "+e:p:t:v")) != -1) {
+	while ((opt = getopt(argc, argv, "+e:p:t:v")) != -1) {
 #else
-    while ((opt = getopt(argc, argv, "e:p:t:v")) != -1) {
+	while ((opt = getopt(argc, argv, "e:p:t:v")) != -1) {
 #endif
-        switch (opt) {
-            case 'e':
-                ctx.extension = optarg;
-                break;
-            case 't':
-                init_magic();
-                ctx.file_type = optarg;
-                break;
-            case 'p':
-                starting_path = realpath(optarg, NULL);
-                if (starting_path == NULL) {
-                    die("Can't resolve '%s'.", optarg);
-                }
-                break;
-            case 'v':
-                ctx.verbose = TRUE;
-                break;
-        }
-    }
+		switch (opt) {
+		case 'e':
+			ctx.extension = optarg;
+			break;
+		case 't':
+			init_magic();
+			ctx.file_type = optarg;
+			break;
+		case 'p':
+			starting_path = realpath(optarg, NULL);
+			if (starting_path == NULL)
+				die("Can't resolve '%s'.", optarg);
+			break;
+		case 'v':
+			ctx.verbose = TRUE;
+			break;
+		}
+	}
 
-    /* extension or filetype must be set */
-    if (ctx.extension == NULL && ctx.file_type == NULL) {
-        usage();
-    }
+	/* extension or filetype must be set */
+	if (ctx.extension == NULL && ctx.file_type == NULL)
+		usage();
 
-    /* a command to run is mandatory */
-    if (optind >= argc) {
-        usage();
-    }
+	/* a command to run is mandatory */
+	if (optind >= argc)
+		usage();
 
-    build_command(argc, argv, optind);
+	build_command(argc, argv, optind);
 
-    if (ctx.verbose) {
-        printf("Searching for files...");
-        fflush(stdout);
-    }
+	if (ctx.verbose) {
+		printf("Searching for files...");
+		fflush(stdout);
+	}
 
-    ctx.files = vector_new();
+	ctx.files = vector_new();
 
-    if (starting_path == NULL) {
-        starting_path = xstrdup(".");
-    }
+	if (starting_path == NULL)
+		starting_path = xstrdup(".");
 
-    if (nftw(starting_path, collect_files, MAXFD, FTW_PHYS) == -1) {
-        die("nftw:");
-    }
+	if (nftw(starting_path, collect_files, MAXFD, FTW_PHYS) == -1)
+		die("nftw:");
 
-    free(starting_path);
+	free(starting_path);
 
-    if (ctx.magic_cookie != NULL) {
-        magic_close(ctx.magic_cookie);
-    }
+	if (ctx.magic_cookie != NULL)
+		magic_close(ctx.magic_cookie);
 
-    if (ctx.files->size == 0) {
-        if (ctx.verbose) {
-            printf("no files found.\n");
-        }
+	if (ctx.files->size == 0) {
+		if (ctx.verbose)
+			printf("no files found.\n");
 
-        exit(1);
-    }
+		exit(1);
+	}
 
-    if (ctx.verbose) {
-        printf("%lu files found.\n", (ulong) ctx.files->size);
-    }
+	if (ctx.verbose)
+		printf("%lu files found.\n", (ulong) ctx.files->size);
 
-    vector_shuffle(ctx.files);
-    vector_foreach(ctx.files, play_file);
+	vector_shuffle(ctx.files);
+	vector_foreach(ctx.files, play_file);
 
-    xfree(ctx.command);
-    vector_foreach(ctx.files, free);
-    vector_free(ctx.files);
-    return EXIT_SUCCESS;
+	xfree(ctx.command);
+	vector_foreach(ctx.files, free);
+	vector_free(ctx.files);
+	return EXIT_SUCCESS;
 }
