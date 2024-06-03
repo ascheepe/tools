@@ -328,9 +328,8 @@ main(int argc, char **argv)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
 	if (ctx.do_show_only) {
-		char *plural = (disks->size == 1 ? "disk" : "disks");
-
-		printf("%lu %s.\n", (ulong) disks->size, plural);
+		printf("%lu %s.\n", (ulong) disks->size,
+		    disks->size == 1 ? "disk" : "disks");
 		exit(EXIT_SUCCESS);
 	}
 
