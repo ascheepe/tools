@@ -42,21 +42,14 @@ options:\n\
 #include "vector.h"
 #include "utils.h"
 
-enum flags {
-	DO_LINK		= 0x01,
-	SHOW_ONLY	= 0x02,
-	RECURSIVE	= 0x04,
-	VERBOSE		= 0x08
-};
-
 static struct context {
 	off_t disk_size;
 	struct vector *files;
-	uint flags;
+	int do_link_files;
+	int do_show_only;
+	int do_recursive_search;
+	int verbose;
 } ctx;
-
-#define HAS_FLAG(flag) (ctx.flags & (flag))
-#define SET_FLAG(flag) (ctx.flags |= (flag))
 
 struct file {
 	off_t size;
@@ -178,7 +171,7 @@ disk_link(struct disk *disk, char *destdir)
 		linkdest = xmalloc(len + strlen(file->name) + 2);
 		sprintf(linkdest, "%s/%s", destdir, file->name);
 		xlink(file->name, linkdest);
-		if (HAS_FLAG(VERBOSE))
+		if (ctx.verbose)
 			printf("%s -> %s\n", file->name, destdir);
 		xfree(linkdest);
 	}
@@ -253,7 +246,7 @@ collect_files(const char *fpath, const struct stat *st, int type,
 	struct file *file;
 
 	/* skip subdirectories if not doing a recursive collect_files */
-	if (!HAS_FLAG(RECURSIVE) && ftwbuf->level > 1)
+	if (!ctx.do_recursive_search && ftwbuf->level > 1)
 		return 0;
 
 	/* there might be access errors */
@@ -298,19 +291,19 @@ main(int argc, char **argv)
 		switch (option) {
 		case 'l':
 			basedir = clean_path(optarg);
-			SET_FLAG(DO_LINK);
+			ctx.do_link_files = 1;
 			break;
 		case 'n':
-			SET_FLAG(SHOW_ONLY);
+			ctx.do_show_only = 1;
 			break;
 		case 'r':
-			SET_FLAG(RECURSIVE);
+			ctx.do_recursive_search = 1;
 			break;
 		case 's':
 			ctx.disk_size = string_to_number(optarg);
 			break;
 		case 'v':
-			SET_FLAG(VERBOSE);
+			ctx.verbose = 1;
 			break;
 		}
 	}
@@ -334,7 +327,7 @@ main(int argc, char **argv)
 	if (disks->size > 9999)
 		die("Fitting takes too many (%lu) disks.", disks->size);
 
-	if (HAS_FLAG(SHOW_ONLY)) {
+	if (ctx.do_show_only) {
 		char *plural = (disks->size == 1 ? "disk" : "disks");
 
 		printf("%lu %s.\n", (ulong) disks->size, plural);
@@ -344,7 +337,7 @@ main(int argc, char **argv)
 	for (i = 0; i < disks->size; ++i) {
 		struct disk *disk = disks->items[i];
 
-		if (HAS_FLAG(DO_LINK)) {
+		if (ctx.do_link_files) {
 			char *dest;
 
 			dest = xmalloc(strlen(basedir) + 6);
@@ -360,7 +353,7 @@ main(int argc, char **argv)
 	v_free(ctx.files);
 	v_free(disks);
 
-	if (HAS_FLAG(DO_LINK))
+	if (ctx.do_link_files)
 		xfree(basedir);
 
 	return EXIT_SUCCESS;
