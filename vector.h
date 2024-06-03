@@ -25,10 +25,10 @@ struct vector {
 
 #define INITIAL_VECTOR_CAPACITY 128
 
-struct vector *vector_new(void);
-void vector_free(struct vector *);
-void vector_add(struct vector *, void *);
-void vector_foreach(const struct vector *, void (*)(void *));
-void vector_shuffle(struct vector *);
+struct vector *v_new(void);
+void v_free(struct vector *);
+void v_add(struct vector *, void *);
+void v_foreach(const struct vector *, void (*)(void *));
+void v_shuffle(struct vector *);
 
 #endif

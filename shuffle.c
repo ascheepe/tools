@@ -98,7 +98,7 @@ collect_files(const char *fpath, const struct stat *st, int type,
 		die("Extension or media type is not set.");
 
 	if (is_playable)
-		vector_add(ctx.files, xstrdup(fpath));
+		v_add(ctx.files, xstrdup(fpath));
 
 	return 0;
 }
@@ -223,7 +223,7 @@ main(int argc, char **argv)
 		fflush(stdout);
 	}
 
-	ctx.files = vector_new();
+	ctx.files = v_new();
 
 	if (starting_path == NULL)
 		starting_path = xstrdup(".");
@@ -246,11 +246,11 @@ main(int argc, char **argv)
 	if (ctx.verbose)
 		printf("%lu files found.\n", (ulong) ctx.files->size);
 
-	vector_shuffle(ctx.files);
-	vector_foreach(ctx.files, play_file);
+	v_shuffle(ctx.files);
+	v_foreach(ctx.files, play_file);
 
 	xfree(ctx.command);
-	vector_foreach(ctx.files, free);
-	vector_free(ctx.files);
+	v_foreach(ctx.files, free);
+	v_free(ctx.files);
 	return EXIT_SUCCESS;
 }

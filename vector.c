@@ -25,7 +25,7 @@
 #include "utils.h"
 
 struct vector *
-vector_new(void)
+v_new(void)
 {
 	struct vector *v;
 
@@ -38,7 +38,7 @@ vector_new(void)
 }
 
 void
-vector_free(struct vector *v)
+v_free(struct vector *v)
 {
 	xfree(v->items);
 	v->items = NULL;
@@ -47,7 +47,7 @@ vector_free(struct vector *v)
 }
 
 void
-vector_add(struct vector *v, void *data)
+v_add(struct vector *v, void *data)
 {
 	if (v->size == v->capacity) {
 		size_t new_capacity = v->capacity + (v->capacity >> 1);
@@ -61,7 +61,7 @@ vector_add(struct vector *v, void *data)
 }
 
 void
-vector_foreach(const struct vector *v, void (*fn)(void *))
+v_foreach(const struct vector *v, void (*fn)(void *))
 {
 	size_t i;
 
@@ -70,7 +70,7 @@ vector_foreach(const struct vector *v, void (*fn)(void *))
 }
 
 void
-vector_shuffle(struct vector *v)
+v_shuffle(struct vector *v)
 {
 	static unsigned int seed;
 	size_t i;
