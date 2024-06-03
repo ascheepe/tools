@@ -58,30 +58,30 @@ static struct context {
 #define HAS_FLAG(flag) (ctx.flags & (flag))
 #define SET_FLAG(flag) (ctx.flags |= (flag))
 
-struct afile {
+struct file {
 	off_t size;
 	char *name;
 };
 
-static struct afile *
-afile_new(const char *name, off_t size)
+static struct file *
+file_new(const char *name, off_t size)
 {
-	struct afile *afile;
+	struct file *file;
 
-	afile = xmalloc(sizeof(*afile));
-	afile->name = xstrdup(name);
-	afile->size = size;
+	file = xmalloc(sizeof(*file));
+	file->name = xstrdup(name);
+	file->size = size;
 
-	return afile;
+	return file;
 }
 
 static void
-afile_free(void *afile_ptr)
+file_free(void *file_ptr)
 {
-	struct afile *afile = afile_ptr;
+	struct file *file = file_ptr;
 
-	xfree(afile->name);
-	xfree(afile);
+	xfree(file->name);
+	xfree(file);
 }
 
 struct disk {
@@ -109,7 +109,7 @@ disk_free(void *disk_ptr)
 {
 	struct disk *disk = disk_ptr;
 
-	v_foreach(disk->files, afile_free);
+	v_foreach(disk->files, file_free);
 	v_free(disk->files);
 	xfree(disk);
 }
@@ -151,11 +151,11 @@ disk_print(struct disk *disk)
 
 	print_header(disk);
 	for (i = 0; i < disk->files->size; ++i) {
-		struct afile *afile = disk->files->items[i];
+		struct file *file = disk->files->items[i];
 		char *file_size;
 
-		file_size = number_to_string(afile->size);
-		printf("%10s %s\n", file_size, afile->name);
+		file_size = number_to_string(file->size);
+		printf("%10s %s\n", file_size, file->name);
 		xfree(file_size);
 	}
 
@@ -172,35 +172,35 @@ disk_link(struct disk *disk, char *destdir)
 
 	len = strlen(destdir);
 	for (i = 0; i < disk->files->size; ++i) {
-		struct afile *afile = disk->files->items[i];
+		struct file *file = disk->files->items[i];
 		char *linkdest;
 
-		linkdest = xmalloc(len + strlen(afile->name) + 2);
-		sprintf(linkdest, "%s/%s", destdir, afile->name);
-		xlink(afile->name, linkdest);
+		linkdest = xmalloc(len + strlen(file->name) + 2);
+		sprintf(linkdest, "%s/%s", destdir, file->name);
+		xlink(file->name, linkdest);
 		if (HAS_FLAG(VERBOSE))
-			printf("%s -> %s\n", afile->name, destdir);
+			printf("%s -> %s\n", file->name, destdir);
 		xfree(linkdest);
 	}
 }
 
 static int
-add_file(struct disk *disk, struct afile *afile)
+add_file(struct disk *disk, struct file *file)
 {
-	if (disk->free - afile->size < 0)
+	if (disk->free - file->size < 0)
 		return FALSE;
 
-	v_add(disk->files, afile);
-	disk->free -= afile->size;
+	v_add(disk->files, file);
+	disk->free -= file->size;
 
 	return TRUE;
 }
 
 static int
-by_size_descending(const void *afile_a, const void *afile_b)
+by_size_descending(const void *file_a, const void *file_b)
 {
-	struct afile *a = *((struct afile **)afile_a);
-	struct afile *b = *((struct afile **)afile_b);
+	struct file *a = *((struct file **)file_a);
+	struct file *b = *((struct file **)file_b);
 
 	return b->size - a->size;
 }
@@ -221,14 +221,14 @@ fit(struct vector *files, struct vector *disks)
 	    by_size_descending);
 
 	for (i = 0; i < files->size; ++i) {
-		struct afile *afile = files->items[i];
+		struct file *file = files->items[i];
 		int added = FALSE;
 		size_t j;
 
 		for (j = 0; j < disks->size; ++j) {
 			struct disk *disk = disks->items[j];
 
-			if (add_file(disk, afile)) {
+			if (add_file(disk, file)) {
 				added = TRUE;
 				break;
 			}
@@ -238,7 +238,7 @@ fit(struct vector *files, struct vector *disks)
 			struct disk *disk;
 
 			disk = disk_new(ctx.disk_size);
-			if (!add_file(disk, afile))
+			if (!add_file(disk, file))
 				die("add_file failed.");
 
 			v_add(disks, disk);
@@ -250,7 +250,7 @@ static int
 collect_files(const char *fpath, const struct stat *st, int type,
     struct FTW *ftwbuf)
 {
-	struct afile *afile;
+	struct file *file;
 
 	/* skip subdirectories if not doing a recursive collect_files */
 	if (!HAS_FLAG(RECURSIVE) && ftwbuf->level > 1)
@@ -273,8 +273,8 @@ collect_files(const char *fpath, const struct stat *st, int type,
 		die("Can never fit '%s' (%s).", fpath,
 		    number_to_string(st->st_size));
 
-	afile = afile_new(fpath, st->st_size);
-	v_add(ctx.files, afile);
+	file = file_new(fpath, st->st_size);
+	v_add(ctx.files, file);
 
 	return 0;
 }
