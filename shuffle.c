@@ -261,6 +261,7 @@ main(int argc, char **argv)
 	xfree(ctx.command);
 	v_foreach(ctx.files, free);
 	v_free(ctx.files);
-	xfree(ctx.extension);
+	if (ctx.extension != NULL)
+		xfree(ctx.extension);
 	return EXIT_SUCCESS;
 }
