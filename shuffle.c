@@ -196,8 +196,7 @@ main(int argc, char **argv)
 				char *p;
 
 				p = xmalloc(strlen(ctx.extension) + 2);
-				strcpy(p, ".");
-				strcat(p, ctx.extension);
+				sprintf(p, ".%s", ctx.extension);
 				free(ctx.extension);
 				ctx.extension = p;
 			}
