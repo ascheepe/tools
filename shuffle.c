@@ -191,7 +191,16 @@ main(int argc, char **argv)
 #endif
 		switch (opt) {
 		case 'e':
-			ctx.extension = optarg;
+			ctx.extension = xstrdup(optarg);
+			if (ctx.extension[0] != '.') {
+				char *p;
+
+				p = xmalloc(strlen(ctx.extension) + 1);
+				strcpy(p, ".");
+				strcat(p, ctx.extension);
+				free(ctx.extension);
+				ctx.extension = p;
+			}
 			break;
 		case 't':
 			init_magic();
@@ -252,5 +261,6 @@ main(int argc, char **argv)
 	xfree(ctx.command);
 	v_foreach(ctx.files, free);
 	v_free(ctx.files);
+	xfree(ctx.extension);
 	return EXIT_SUCCESS;
 }
