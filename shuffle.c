@@ -79,11 +79,11 @@ collect_files(const char *fpath, const struct stat *st, int type,
 
 	/* if both extension and media-type are set prefer extension search */
 	if (ctx.extension != NULL) {
-		const char *ext;
+		const char *extension;
 
-		ext = fpath + strlen(fpath) - strlen(ctx.extension);
-		is_playable = ext >= fpath
-		    && strcasecmp(ext, ctx.extension) == 0;
+		extension = fpath + strlen(fpath) - strlen(ctx.extension);
+		is_playable = extension >= fpath
+		    && strcasecmp(extension, ctx.extension) == 0;
 	} else if (ctx.file_type != NULL) {
 		const char *file_type;
 
