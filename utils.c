@@ -72,7 +72,7 @@ xmalloc(size_t size)
 {
 	void *ptr;
 
-	ptr = malloc(size);
+	ptr = calloc(1, size);
 	if (ptr == NULL)
 		die("malloc:");
 
