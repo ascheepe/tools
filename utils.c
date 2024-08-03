@@ -68,18 +68,6 @@ xlink(const char *src, const char *dst)
 }
 
 void *
-xmalloc(size_t size)
-{
-	void *ptr;
-
-	ptr = calloc(1, size);
-	if (ptr == NULL)
-		die("malloc:");
-
-	return ptr;
-}
-
-void *
 xrealloc(void *ptr, size_t size)
 {
 	void *new_ptr;
@@ -101,7 +89,7 @@ xstrdup(const char *str)
 		return NULL;
 
 	size = strlen(str) + 1;
-	dup = xmalloc(size);
+	dup = xcalloc(1, size);
 
 	memcpy(dup, str, size);
 
@@ -171,7 +159,7 @@ clean_path(char *path)
 {
 	char *buf, *bufp, *ret;
 
-	buf = xmalloc(strlen(path) + 1);
+	buf = xcalloc(1, strlen(path) + 1);
 	bufp = buf;
 
 	/* Replace repeating slash characters with a single one. */

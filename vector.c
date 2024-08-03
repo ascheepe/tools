@@ -29,7 +29,7 @@ v_new(void)
 {
 	struct vector *v;
 
-	v = xmalloc(sizeof(*v));
+	v = xcalloc(1, sizeof(*v));
 	v->items = xcalloc(INITIAL_VECTOR_CAPACITY, sizeof(v->items[0]));
 	v->capacity = INITIAL_VECTOR_CAPACITY;
 	v->size = 0;

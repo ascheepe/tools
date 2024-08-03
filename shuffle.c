@@ -195,7 +195,7 @@ main(int argc, char **argv)
 			if (ctx.extension[0] != '.') {
 				char *p;
 
-				p = xmalloc(strlen(ctx.extension) + 2);
+				p = xcalloc(1, strlen(ctx.extension) + 2);
 				sprintf(p, ".%s", ctx.extension);
 				free(ctx.extension);
 				ctx.extension = p;

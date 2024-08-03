@@ -61,7 +61,7 @@ file_new(const char *name, off_t size)
 {
 	struct file *file;
 
-	file = xmalloc(sizeof(*file));
+	file = xcalloc(1, sizeof(*file));
 	file->name = xstrdup(name);
 	file->size = size;
 
@@ -89,7 +89,7 @@ disk_new(off_t size)
 	struct disk *disk;
 	static size_t id;
 
-	disk = xmalloc(sizeof(*disk));
+	disk = xcalloc(1, sizeof(*disk));
 	disk->files = v_new();
 	disk->free = size;
 	disk->id = ++id;
@@ -168,7 +168,7 @@ disk_link(struct disk *disk, char *destdir)
 		struct file *file = disk->files->items[i];
 		char *linkdest;
 
-		linkdest = xmalloc(len + strlen(file->name) + 2);
+		linkdest = xcalloc(1, len + strlen(file->name) + 2);
 		sprintf(linkdest, "%s/%s", destdir, file->name);
 		xlink(file->name, linkdest);
 		if (ctx.verbose)
@@ -339,7 +339,7 @@ main(int argc, char **argv)
 		if (ctx.do_link_files) {
 			char *dest;
 
-			dest = xmalloc(strlen(basedir) + 6);
+			dest = xcalloc(1, strlen(basedir) + 6);
 			sprintf(dest, "%s/%04lu", basedir, (ulong) disk->id);
 			make_directories(dest);
 			disk_link(disk, dest);
