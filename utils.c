@@ -174,7 +174,7 @@ clean_path(char *path)
 	}
 
 	/* Strip the last slash if it's not the only character. */
-	if ((bufp > (buf + 1)) && (bufp[-1] == '/'))
+	if (bufp > buf + 1 && bufp[-1] == '/')
 		bufp[-1] = '\0';
 	else
 		*bufp = '\0';
