@@ -108,9 +108,9 @@ disk_free(void *disk_ptr)
 }
 
 static void
-hline(int length)
+hline(int len)
 {
-	while (length-- > 0)
+	while (len-- > 0)
 		putchar('-');
 
 	putchar('\n');
