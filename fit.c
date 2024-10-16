@@ -90,7 +90,7 @@ disk_new(off_t size)
 	static size_t id;
 
 	disk = xcalloc(1, sizeof(*disk));
-	disk->files = v_new();
+	disk->files = vector_new();
 	disk->free = size;
 	disk->id = ++id;
 
@@ -102,8 +102,8 @@ disk_free(void *disk_ptr)
 {
 	struct disk *disk = disk_ptr;
 
-	v_foreach(disk->files, file_free);
-	v_free(disk->files);
+	vector_foreach(disk->files, file_free);
+	vector_free(disk->files);
 	xfree(disk);
 }
 
@@ -183,7 +183,7 @@ add_file(struct disk *disk, struct file *file)
 	if (disk->free - file->size < 0)
 		return FALSE;
 
-	v_add(disk->files, file);
+	vector_add(disk->files, file);
 	disk->free -= file->size;
 
 	return TRUE;
@@ -234,7 +234,7 @@ fit(struct vector *files, struct vector *disks)
 			if (!add_file(disk, file))
 				die("add_file failed.");
 
-			v_add(disks, disk);
+			vector_add(disks, disk);
 		}
 	}
 }
@@ -267,7 +267,7 @@ collect_files(const char *fpath, const struct stat *st, int type,
 		    number_to_string(st->st_size));
 
 	file = file_new(fpath, st->st_size);
-	v_add(ctx.files, file);
+	vector_add(ctx.files, file);
 
 	return 0;
 }
@@ -312,7 +312,7 @@ main(int argc, char **argv)
 	if (optind >= argc || ctx.disk_size <= 0)
 		usage();
 
-	ctx.files = v_new();
+	ctx.files = vector_new();
 	for (i = optind; (int)i < argc; ++i)
 		if (nftw(argv[i], collect_files, MAXFD, 0) == -1)
 			die("nftw:");
@@ -320,7 +320,7 @@ main(int argc, char **argv)
 	if (ctx.files->size == 0)
 		die("no files found.");
 
-	disks = v_new();
+	disks = vector_new();
 	fit(ctx.files, disks);
 
 	/* There is room for 4 digits in the format string(s). */
@@ -348,9 +348,9 @@ main(int argc, char **argv)
 			disk_print(disk);
 	}
 
-	v_foreach(disks, disk_free);
-	v_free(ctx.files);
-	v_free(disks);
+	vector_foreach(disks, disk_free);
+	vector_free(ctx.files);
+	vector_free(disks);
 
 	if (ctx.do_link_files)
 		xfree(basedir);
