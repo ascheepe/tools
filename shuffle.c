@@ -52,8 +52,8 @@ options:\n\
 static struct context {
 	magic_t magic_cookie;
 
-	char *file_type;
-	char *extension;
+	char *filetype;
+	char *ext;
 
 	char **command;
 	int filename_position;
@@ -67,7 +67,7 @@ static int
 collect_files(const char *fpath, const struct stat *st, int type,
     struct FTW *ftwbuf)
 {
-	int is_playable = FALSE;
+	int playable = FALSE;
 
 	/* these parameters are unused */
 	(void)st;
@@ -78,26 +78,25 @@ collect_files(const char *fpath, const struct stat *st, int type,
 		return 0;
 
 	/* if both extension and media-type are set prefer extension search */
-	if (ctx.extension != NULL) {
-		const char *extension;
+	if (ctx.ext != NULL) {
+		const char *ext;
 
-		extension = fpath + strlen(fpath) - strlen(ctx.extension);
-		is_playable = extension >= fpath
-		    && strcasecmp(extension, ctx.extension) == 0;
-	} else if (ctx.file_type != NULL) {
-		const char *file_type;
+		ext = fpath + strlen(fpath) - strlen(ctx.ext);
+		playable = ext >= fpath && strcasecmp(ext, ctx.ext) == 0;
+	} else if (ctx.filetype != NULL) {
+		const char *filetype;
 
-		file_type = magic_file(ctx.magic_cookie, fpath);
-		if (file_type == NULL)
+		filetype = magic_file(ctx.magic_cookie, fpath);
+		if (filetype == NULL)
 			die("collect_files: %s",
 			    magic_error(ctx.magic_cookie));
 
-		is_playable = strncmp(ctx.file_type, file_type,
-		    strlen(ctx.file_type)) == 0;
+		playable = strncmp(ctx.filetype, filetype,
+		    strlen(ctx.filetype)) == 0;
 	} else
 		die("Extension or media type is not set.");
 
-	if (is_playable)
+	if (playable)
 		vector_add(ctx.files, xstrdup(fpath));
 
 	return 0;
@@ -143,17 +142,17 @@ init_magic(void)
  * after the normal arguments.
  */
 static void
-build_command(int argc, char **argv, int arg_end)
+build_command(int argc, char **argv, int start)
 {
-	int cmdlen = argc - arg_end;
+	int cmdlen = argc - start;
 	int i;
 
 	/* + 2 in case we need to append the filename */
 	ctx.command = xcalloc(cmdlen + 2, sizeof(char *));
 	ctx.filename_position = -1;
 
-	for (i = arg_end; i < argc; ++i) {
-		int pos = i - arg_end;
+	for (i = start; i < argc; ++i) {
+		int pos = i - start;
 
 		if (strcmp(argv[i], "%") == 0)
 			ctx.filename_position = pos;
@@ -175,7 +174,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char *starting_path = NULL;
+	char *path = NULL;
 	int opt;
 
 	/*
@@ -191,23 +190,23 @@ main(int argc, char **argv)
 #endif
 		switch (opt) {
 		case 'e':
-			ctx.extension = xstrdup(optarg);
-			if (ctx.extension[0] != '.') {
+			ctx.ext = xstrdup(optarg);
+			if (ctx.ext[0] != '.') {
 				char *p;
 
-				p = xcalloc(1, strlen(ctx.extension) + 2);
-				sprintf(p, ".%s", ctx.extension);
-				free(ctx.extension);
-				ctx.extension = p;
+				p = xcalloc(1, strlen(ctx.ext) + 2);
+				sprintf(p, ".%s", ctx.ext);
+				free(ctx.ext);
+				ctx.ext = p;
 			}
 			break;
 		case 't':
 			init_magic();
-			ctx.file_type = optarg;
+			ctx.filetype = optarg;
 			break;
 		case 'p':
-			starting_path = realpath(optarg, NULL);
-			if (starting_path == NULL)
+			path = realpath(optarg, NULL);
+			if (path == NULL)
 				die("Can't resolve '%s'.", optarg);
 			break;
 		case 'v':
@@ -217,7 +216,7 @@ main(int argc, char **argv)
 	}
 
 	/* extension or filetype must be set */
-	if (ctx.extension == NULL && ctx.file_type == NULL)
+	if (ctx.ext == NULL && ctx.filetype == NULL)
 		usage();
 
 	/* a command to run is mandatory */
@@ -233,13 +232,13 @@ main(int argc, char **argv)
 
 	ctx.files = vector_new();
 
-	if (starting_path == NULL)
-		starting_path = xstrdup(".");
+	if (path == NULL)
+		path = xstrdup(".");
 
-	if (nftw(starting_path, collect_files, MAXFD, FTW_PHYS) == -1)
+	if (nftw(path, collect_files, MAXFD, FTW_PHYS) == -1)
 		die("nftw:");
 
-	free(starting_path);
+	free(path);
 
 	if (ctx.magic_cookie != NULL)
 		magic_close(ctx.magic_cookie);
@@ -260,8 +259,8 @@ main(int argc, char **argv)
 	xfree(ctx.command);
 	vector_foreach(ctx.files, free);
 	vector_free(ctx.files);
-	if (ctx.extension != NULL)
-		xfree(ctx.extension);
+	if (ctx.ext != NULL)
+		xfree(ctx.ext);
 
 	return EXIT_SUCCESS;
 }
