@@ -52,7 +52,7 @@ options:\n\
 static struct context {
 	magic_t mcookie;
 
-	char *filetype;
+	char *type;
 	char *ext;
 
 	char **command;
@@ -83,15 +83,14 @@ collect_files(const char *fpath, const struct stat *st, int type,
 
 		ext = fpath + strlen(fpath) - strlen(ctx.ext);
 		playable = ext >= fpath && strcasecmp(ext, ctx.ext) == 0;
-	} else if (ctx.filetype != NULL) {
-		const char *filetype;
+	} else if (ctx.type != NULL) {
+		const char *type;
 
-		filetype = magic_file(ctx.mcookie, fpath);
-		if (filetype == NULL)
+		type = magic_file(ctx.mcookie, fpath);
+		if (type == NULL)
 			die("collect_files: %s", magic_error(ctx.mcookie));
 
-		playable = strncmp(ctx.filetype, filetype,
-		    strlen(ctx.filetype)) == 0;
+		playable = strncmp(ctx.type, type, strlen(ctx.type)) == 0;
 	} else
 		die("Extension or media type is not set.");
 
@@ -201,7 +200,7 @@ main(int argc, char **argv)
 			break;
 		case 't':
 			init_magic();
-			ctx.filetype = optarg;
+			ctx.type = optarg;
 			break;
 		case 'p':
 			path = realpath(optarg, NULL);
@@ -214,8 +213,8 @@ main(int argc, char **argv)
 		}
 	}
 
-	/* extension or filetype must be set */
-	if (ctx.ext == NULL && ctx.filetype == NULL)
+	/* extension or type must be set */
+	if (ctx.ext == NULL && ctx.type == NULL)
 		usage();
 
 	/* a command to run is mandatory */
