@@ -55,7 +55,7 @@ static struct context {
 	char *type;
 	char *ext;
 
-	char **command;
+	char **cmd;
 	int pos;
 
 	int verbose;
@@ -113,8 +113,8 @@ play_file(void *filename_ptr)
 		if (ctx.verbose)
 			printf("Playing \"%s\".\n", filename);
 
-		ctx.command[ctx.pos] = filename;
-		execvp(ctx.command[0], (char *const *)ctx.command);
+		ctx.cmd[ctx.pos] = filename;
+		execvp(ctx.cmd[0], (char *const *)ctx.cmd);
 		die("Can't execute player:");
 		break;
 	default:
@@ -146,7 +146,7 @@ build_command(int argc, char **argv, int start)
 	int i;
 
 	/* + 2 in case we need to append the filename */
-	ctx.command = xcalloc(cmdlen + 2, sizeof(char *));
+	ctx.cmd = xcalloc(cmdlen + 2, sizeof(char *));
 	ctx.pos = -1;
 
 	for (i = start; i < argc; ++i) {
@@ -154,7 +154,7 @@ build_command(int argc, char **argv, int start)
 
 		if (strcmp(argv[i], "%") == 0)
 			ctx.pos = pos;
-		ctx.command[pos] = argv[i];
+		ctx.cmd[pos] = argv[i];
 	}
 
 	/* If no % found append filename. */
@@ -254,7 +254,7 @@ main(int argc, char **argv)
 	vector_shuffle(ctx.files);
 	vector_foreach(ctx.files, play_file);
 
-	xfree(ctx.command);
+	xfree(ctx.cmd);
 	vector_foreach(ctx.files, free);
 	vector_free(ctx.files);
 	if (ctx.ext != NULL)
