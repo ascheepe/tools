@@ -56,7 +56,7 @@ static struct context {
 	char *ext;
 
 	char **command;
-	int filename_position;
+	int pos;
 
 	int verbose;
 
@@ -113,7 +113,7 @@ play_file(void *filename_ptr)
 		if (ctx.verbose)
 			printf("Playing \"%s\".\n", filename);
 
-		ctx.command[ctx.filename_position] = filename;
+		ctx.command[ctx.pos] = filename;
 		execvp(ctx.command[0], (char *const *)ctx.command);
 		die("Can't execute player:");
 		break;
@@ -147,19 +147,19 @@ build_command(int argc, char **argv, int start)
 
 	/* + 2 in case we need to append the filename */
 	ctx.command = xcalloc(cmdlen + 2, sizeof(char *));
-	ctx.filename_position = -1;
+	ctx.pos = -1;
 
 	for (i = start; i < argc; ++i) {
 		int pos = i - start;
 
 		if (strcmp(argv[i], "%") == 0)
-			ctx.filename_position = pos;
+			ctx.pos = pos;
 		ctx.command[pos] = argv[i];
 	}
 
 	/* If no % found append filename. */
-	if (ctx.filename_position == -1)
-		ctx.filename_position = cmdlen;
+	if (ctx.pos == -1)
+		ctx.pos = cmdlen;
 }
 
 static void
