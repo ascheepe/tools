@@ -149,12 +149,15 @@ build_command(int argc, char **argv, int start)
 	ctx.cmd = xcalloc(cmdlen + 2, sizeof(char *));
 	ctx.pos = -1;
 
+	/* copy the command and arguments */
 	for (i = start; i < argc; ++i) {
 		int pos = i - start;
 
+		ctx.cmd[pos] = argv[i];
+
+		/* save the filename position */
 		if (strcmp(argv[i], "%") == 0)
 			ctx.pos = pos;
-		ctx.cmd[pos] = argv[i];
 	}
 
 	/* If no % found append filename. */
