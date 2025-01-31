@@ -39,8 +39,7 @@ mvtodate(const char *src, const char *fmt)
 	}
 
 	if (strftime(dir, sizeof(dir), fmt, localtime(&sb.st_mtime)) == 0) {
-		snprintf(errstr, sizeof(errstr), "strftime: bad format: %s",
-		    fmt);
+		snprintf(errstr, sizeof(errstr), "bad format: %s", fmt);
 		return -1;
 	}
 	p = strrchr(src, '/');
