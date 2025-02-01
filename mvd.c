@@ -62,10 +62,8 @@ isdir(const char *name)
 {
 	struct stat sb;
 
-	if (stat(name, &sb) == -1) {
-		fprintf(stderr, "stat(%s): %s.", name, strerror(errno));
-		usage();
-	}
+	if (stat(name, &sb) == -1)
+		errx(1, "%s: %s", name, strerror(errno));
 
 	if (S_ISDIR(sb.st_mode))
 		return 1;
