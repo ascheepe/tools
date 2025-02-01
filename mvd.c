@@ -54,7 +54,7 @@ mvd(char *file, char *destdir, char *fmt)
 void
 usage(void)
 {
-	errx(1, "usage: mvd [-f fmt] file [file ...] target");
+	errx(1, "usage: mvd [-f fmt] file [file ...] directory");
 }
 
 int
