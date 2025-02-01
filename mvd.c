@@ -21,7 +21,7 @@ mvd(char *file, char *destdir, char *fmt)
 
 	if (lstat(file, &sb) == -1) {
 		snprintf(errstr, sizeof(errstr),
-		    "lstat(%s): %s.", file, strerror(errno));
+		    "%s: %s.", file, strerror(errno));
 		return -1;
 	}
 
@@ -31,8 +31,7 @@ mvd(char *file, char *destdir, char *fmt)
 		return -1;
 	}
 
-	if (strftime(dir, sizeof(dir),
-	    fmt, localtime(&sb.st_mtime)) == 0) {
+	if (strftime(dir, sizeof(dir), fmt, localtime(&sb.st_mtime)) == 0) {
 		snprintf(errstr, sizeof(errstr), "bad format: %s", fmt);
 		return -1;
 	}
@@ -41,17 +40,16 @@ mvd(char *file, char *destdir, char *fmt)
 	if (mkdir(target, 0700) == -1) {
 		if (errno != EEXIST) {
 			snprintf(errstr, sizeof(errstr),
-			    "mkdir(%s): %s.", target, strerror(errno));
+			    "mkdir %s: %s.", target, strerror(errno));
 			return -1;
 		}
 	}
 
 	snprintf(target, sizeof(target),
 	    "%s/%s/%s", destdir, dir, basename(file));
-
 	if (rename(file, target) == -1) {
 		snprintf(errstr, sizeof(errstr),
-		    "rename(%s, %s): %s.", file, target, strerror(errno));
+		    "rename %s to %s: %s.", file, target, strerror(errno));
 		return -1;
 	}
 
@@ -83,7 +81,7 @@ isdir(const char *name)
 int
 main(int argc, char **argv)
 {
-	char *destdir, *fmt = "%Y%m";
+	char *destdir = argv[argc - 1], *fmt = "%Y%m";
 	int i, opt;
 
 	while ((opt = getopt(argc, argv, "f:")) != -1) {
@@ -96,7 +94,6 @@ main(int argc, char **argv)
 		}
 	}
 
-	destdir = argv[argc - 1];
 	if (optind >= argc || !isdir(destdir))
 		usage();
 
