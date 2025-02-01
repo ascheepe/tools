@@ -4,7 +4,7 @@ CFLAGS=	-std=c89 -O2 -pipe -Wall -Wextra -Werror -pedantic
 
 COMMON_OBJS= utils.o vector.o
 
-all: shuffle fit mvtodate
+all: shuffle fit mvd
 
 shuffle: $(COMMON_OBJS) shuffle.o
 	$(CC) $(CFLAGS) -o shuffle $(COMMON_OBJS) shuffle.o -lmagic
@@ -12,14 +12,14 @@ shuffle: $(COMMON_OBJS) shuffle.o
 fit: $(COMMON_OBJS) fit.o
 	$(CC) $(CFLAGS) -o fit $(COMMON_OBJS) fit.o
 
-mvtodate: mvtodate.o
-	$(CC) $(CFLAGS) -o mvtodate mvtodate.o
+mvd: mvd.o
+	$(CC) $(CFLAGS) -o mvd mvd.o
 
 vector.o: vector.h
 utils.o: utils.h
 
 clean:
-	rm -f *.o shuffle fit mvtodate
+	rm -f *.o shuffle fit mvd
 
-install: shuffle fit mvtodate
-	install -s shuffle fit mvtodate $(HOME)/bin
+install: shuffle fit mvd
+	install -s shuffle fit mvd $(HOME)/bin
