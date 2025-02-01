@@ -19,15 +19,9 @@ mvd(char *file, char *destdir, char *fmt)
 	char target[PATH_MAX], datestr[PATH_MAX];
 	struct stat sb;
 
-	if (lstat(file, &sb) == -1) {
+	if (stat(file, &sb) == -1) {
 		snprintf(errstr, sizeof(errstr),
 		    "%s: %s.", file, strerror(errno));
-		return -1;
-	}
-
-	if (!S_ISREG(sb.st_mode)) {
-		snprintf(errstr, sizeof(errstr),
-		    "%s is not a regular file.", file);
 		return -1;
 	}
 
