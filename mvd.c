@@ -16,7 +16,7 @@ static char errstr[1024];
 int
 mvd(char *file, char *destdir, char *fmt)
 {
-	char target[PATH_MAX], dir[PATH_MAX];
+	char target[PATH_MAX], datestr[PATH_MAX];
 	struct stat sb;
 
 	if (lstat(file, &sb) == -1) {
@@ -31,12 +31,13 @@ mvd(char *file, char *destdir, char *fmt)
 		return -1;
 	}
 
-	if (strftime(dir, sizeof(dir), fmt, localtime(&sb.st_mtime)) == 0) {
+	if (strftime(datestr, sizeof(datestr),
+	    fmt, localtime(&sb.st_mtime)) == 0) {
 		snprintf(errstr, sizeof(errstr), "bad format: %s", fmt);
 		return -1;
 	}
 
-	snprintf(target, sizeof(target), "%s/%s", destdir, dir);
+	snprintf(target, sizeof(target), "%s/%s", destdir, datestr);
 	if (mkdir(target, 0700) == -1) {
 		if (errno != EEXIST) {
 			snprintf(errstr, sizeof(errstr),
@@ -46,7 +47,7 @@ mvd(char *file, char *destdir, char *fmt)
 	}
 
 	snprintf(target, sizeof(target),
-	    "%s/%s/%s", destdir, dir, basename(file));
+	    "%s/%s/%s", destdir, datestr, basename(file));
 	if (rename(file, target) == -1) {
 		snprintf(errstr, sizeof(errstr),
 		    "rename %s to %s: %s.", file, target, strerror(errno));
