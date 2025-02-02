@@ -66,10 +66,7 @@ isdir(const char *name)
 	if (stat(name, &sb) == -1)
 		errx(1, "%s: %s", name, strerror(errno));
 
-	if (S_ISDIR(sb.st_mode))
-		return 1;
-
-	return 0;
+	return S_ISDIR(sb.st_mode);
 }
 
 int
