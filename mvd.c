@@ -90,7 +90,7 @@ main(int argc, char **argv)
 
 	for (i = optind; i < argc - 1; ++i) {
 		if (mvd(argv[i], destdir, fmt) == -1)
-			errx(1, errstr);
+			errx(1, "%s", errstr);
 	}
 
 	return 0;
