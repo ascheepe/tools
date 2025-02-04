@@ -14,7 +14,7 @@
 static char errstr[1024];
 
 int
-mvd(char *file, char *destdir, char *fmt)
+mvd(char *file, char *fmt)
 {
 	char target[PATH_MAX], datestr[PATH_MAX];
 	struct stat sb;
@@ -25,23 +25,28 @@ mvd(char *file, char *destdir, char *fmt)
 		return -1;
 	}
 
+	if (!S_ISREG(sb.st_mode)) {
+		snprintf(errstr, sizeof(errstr),
+		    "not a regular file: %s.", file);
+		return -1;
+	}
+
 	if (strftime(datestr, sizeof(datestr),
 	    fmt, localtime(&sb.st_mtime)) == 0) {
 		snprintf(errstr, sizeof(errstr), "bad format: %s", fmt);
 		return -1;
 	}
 
-	snprintf(target, sizeof(target), "%s/%s", destdir, datestr);
-	if (mkdir(target, 0700) == -1) {
+	if (mkdir(datestr, 0700) == -1) {
 		if (errno != EEXIST) {
 			snprintf(errstr, sizeof(errstr),
-			    "mkdir %s: %s.", target, strerror(errno));
+			    "mkdir %s: %s.", datestr, strerror(errno));
 			return -1;
 		}
 	}
 
 	snprintf(target, sizeof(target),
-	    "%s/%s/%s", destdir, datestr, basename(file));
+	    "%s/%s", datestr, basename(file));
 	if (rename(file, target) == -1) {
 		snprintf(errstr, sizeof(errstr),
 		    "rename %s to %s: %s.", file, target, strerror(errno));
@@ -54,25 +59,14 @@ mvd(char *file, char *destdir, char *fmt)
 void
 usage(void)
 {
-	fputs("usage: mvd [-f fmt] file [file ...] directory\n", stderr);
+	fputs("usage: mvd [-f fmt] file [file ...]\n", stderr);
 	exit(1);
-}
-
-int
-isdir(const char *name)
-{
-	struct stat sb;
-
-	if (stat(name, &sb) == -1)
-		errx(1, "%s: %s", name, strerror(errno));
-
-	return S_ISDIR(sb.st_mode);
 }
 
 int
 main(int argc, char **argv)
 {
-	char *destdir = argv[argc - 1], *fmt = "%Y%m";
+	char *fmt = "%Y%m";
 	int i, opt;
 
 	while ((opt = getopt(argc, argv, "f:")) != -1) {
@@ -85,11 +79,11 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (optind >= argc || !isdir(destdir))
+	if (optind >= argc)
 		usage();
 
-	for (i = optind; i < argc - 1; ++i) {
-		if (mvd(argv[i], destdir, fmt) == -1)
+	for (i = optind; i < argc; ++i) {
+		if (mvd(argv[i], fmt) == -1)
 			errx(1, "%s", errstr);
 	}
 
