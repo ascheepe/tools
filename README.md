@@ -16,11 +16,8 @@ NOTE: This depends on libmagic being available to be able to select
 files by type.
 
 ## mvd
-With mvd you can move files into directories named after their
-modification time. Usage is like mv except the target directory
-must not cross filesystems. You can specify a strftime date format
-with the `-f` parameter.
-
-Example: `mvd * .` will move every file in the current directory into
-directories name like YYYYmm. I use this to clean up the Downloads folder.
+With mvd you can move files in the current directory into directories
+named after their modification time. It only moves files so repeated
+runs in the same directory will work fine. I use it like:
+`cd ~/Downloads && mvd`.
 
