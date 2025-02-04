@@ -16,25 +16,12 @@
 static char errstr[1024];
 
 int
-mvd(char *file, char *fmt)
+mvd(char *file, struct stat *sb, char *fmt)
 {
 	char target[PATH_MAX], datestr[PATH_MAX];
-	struct stat sb;
-
-	if (stat(file, &sb) == -1) {
-		snprintf(errstr, sizeof(errstr),
-		    "%s: %s.", file, strerror(errno));
-		return -1;
-	}
-
-	if (!S_ISREG(sb.st_mode)) {
-		snprintf(errstr, sizeof(errstr),
-		    "not a regular file: %s.", file);
-		return -1;
-	}
 
 	if (strftime(datestr, sizeof(datestr),
-	    fmt, localtime(&sb.st_mtime)) == 0) {
+	    fmt, localtime(&sb->st_mtime)) == 0) {
 		snprintf(errstr, sizeof(errstr), "bad format: %s", fmt);
 		return -1;
 	}
@@ -47,8 +34,7 @@ mvd(char *file, char *fmt)
 		}
 	}
 
-	snprintf(target, sizeof(target),
-	    "%s/%s", datestr, basename(file));
+	snprintf(target, sizeof(target), "%s/%s", datestr, basename(file));
 	if (rename(file, target) == -1) {
 		snprintf(errstr, sizeof(errstr),
 		    "rename %s to %s: %s.", file, target, strerror(errno));
@@ -63,17 +49,6 @@ usage(void)
 {
 	fputs("usage: mvd [-f fmt]\n", stderr);
 	exit(1);
-}
-
-int
-isdir(char *name)
-{
-	struct stat sb;
-
-	if (stat(name, &sb) == -1)
-		errx(1, "%s: %s.", name, strerror(errno));
-
-	return S_ISDIR(sb.st_mode);
 }
 
 int
@@ -99,9 +74,15 @@ main(int argc, char **argv)
 		errx(1, NULL);
 
 	while ((de = readdir(dirp)) != NULL) {
-		if (isdir(de->d_name))
+		struct stat sb;
+
+		if (stat(de->d_name, &sb) == -1)
+			errx(1, "%s: %s.", de->d_name, strerror(errno));
+
+		if (S_ISDIR(sb.st_mode))
 			continue;
-		if (mvd(de->d_name, fmt) == -1)
+
+		if (mvd(de->d_name, &sb, fmt) == -1)
 			errx(1, "%s", errstr);
 	}
 
