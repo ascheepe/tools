@@ -47,7 +47,7 @@ mvd(char *file, struct stat *sb, char *fmt)
 void
 usage(void)
 {
-	fputs("usage: mvd [-f fmt]\n", stderr);
+	fputs("usage: mvd [-f fmt] directory\n", stderr);
 	exit(1);
 }
 
@@ -69,6 +69,12 @@ main(int argc, char **argv)
 			usage();
 		}
 	}
+
+	if (optind >= argc)
+		usage();
+
+	if (chdir(argv[optind]) == -1)
+		errx(1, "chdir(%s): %s", argv[optind], strerror(errno));
 
 	if ((dirp = opendir(".")) == NULL)
 		errx(1, NULL);
