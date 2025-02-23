@@ -74,7 +74,7 @@ main(int argc, char **argv)
 		usage();
 
 	if (chdir(argv[optind]) == -1)
-		errx(1, "chdir(%s): %s", argv[optind], strerror(errno));
+		errx(1, "%s: %s", argv[optind], strerror(errno));
 
 	if ((dirp = opendir(".")) == NULL)
 		errx(1, NULL);
