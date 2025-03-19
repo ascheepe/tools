@@ -16,9 +16,9 @@
 static char errstr[1024];
 
 int
-mvd(char *file, struct stat *sb, char *fmt)
+mvd(char *src, struct stat *sb, char *fmt)
 {
-	char target[PATH_MAX], datestr[PATH_MAX];
+	char dst[PATH_MAX], datestr[PATH_MAX];
 
 	if (strftime(datestr, sizeof(datestr),
 	    fmt, localtime(&sb->st_mtime)) == 0) {
@@ -34,10 +34,10 @@ mvd(char *file, struct stat *sb, char *fmt)
 		}
 	}
 
-	snprintf(target, sizeof(target), "%s/%s", datestr, basename(file));
-	if (rename(file, target) == -1) {
+	snprintf(dst, sizeof(dst), "%s/%s", datestr, basename(src));
+	if (rename(src, dst) == -1) {
 		snprintf(errstr, sizeof(errstr),
-		    "rename %s to %s: %s.", file, target, strerror(errno));
+		    "rename %s to %s: %s.", src, dst, strerror(errno));
 		return -1;
 	}
 
