@@ -16,12 +16,11 @@
 static char errstr[1024];
 
 int
-mvd(char *src, struct stat *sb, char *fmt)
+mvd(char *src, time_t mtime, char *fmt)
 {
 	char dst[PATH_MAX], datestr[PATH_MAX];
 
-	if (strftime(datestr, sizeof(datestr),
-	    fmt, localtime(&sb->st_mtime)) == 0) {
+	if (strftime(datestr, sizeof(datestr), fmt, localtime(&mtime)) == 0) {
 		snprintf(errstr, sizeof(errstr), "bad format: %s", fmt);
 		return -1;
 	}
@@ -88,7 +87,7 @@ main(int argc, char **argv)
 		if (S_ISDIR(sb.st_mode))
 			continue;
 
-		if (mvd(de->d_name, &sb, fmt) == -1)
+		if (mvd(de->d_name, sb.st_mtime, fmt) == -1)
 			errx(1, "%s", errstr);
 	}
 
