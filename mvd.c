@@ -15,6 +15,20 @@
 
 static char errstr[1024];
 
+void
+sanitize_string(char *s)
+{
+	char *p = s;
+
+	while (p && *p != '\0') {
+		if (*p == '/' || *p == '\\' || *p == ':' || *p == '*' ||
+		    *p == '?' || *p == '"' || *p == '<' || *p == '>' ||
+		    *p == '|')
+			*p = '_';
+		++p;
+	}
+}
+
 int
 mvd(char *src, time_t mtime, char *fmt)
 {
@@ -25,6 +39,7 @@ mvd(char *src, time_t mtime, char *fmt)
 		return -1;
 	}
 
+	sanitize_string(datestr);
 	if (mkdir(datestr, 0700) == -1) {
 		if (errno != EEXIST) {
 			snprintf(errstr, sizeof(errstr),
