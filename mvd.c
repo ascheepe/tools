@@ -16,14 +16,12 @@
 static char errstr[1024];
 
 void
-sanitize_string(char *s)
+sanitize_string(char *p)
 {
-	char *p = s;
-
 	while (p && *p != '\0') {
-		if (*p == '/' || *p == '\\' || *p == ':' || *p == '*' ||
+		if (*p == '/' || *p == '|' || *p == ':' || *p == '*' ||
 		    *p == '?' || *p == '"' || *p == '<' || *p == '>' ||
-		    *p == '|')
+		    *p == '\\')
 			*p = '_';
 		++p;
 	}
