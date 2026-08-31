@@ -166,6 +166,7 @@ def main():
 
     for bucket in buckets:
         if args.link_dest:
+            print(f"Linking bucket {bucket.id} to {args.link_dest}")
             for file_info in bucket.contents:
                 source = file_info.name
                 destination = os.path.join(
