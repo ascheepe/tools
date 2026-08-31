@@ -92,6 +92,17 @@ class Bucket:
 
         return "\n".join(lines)
 
+    def link(self, link_destination):
+        for file_info in self.contents:
+            source = file_info.name
+            destination = os.path.join(
+                link_destination, f"{self.id:03d}", source
+            )
+            os.makedirs(
+                os.path.dirname(destination), mode=0o700, exist_ok=True
+            )
+            os.link(source, destination)
+
 
 def fit(file_list, capacity):
     buckets = []
@@ -127,7 +138,7 @@ def main():
     )
 
     parser.add_argument(
-        "--link-dest",
+        "--link-destination",
         type=str,
         default="",
         help="Link files into this basedir.",
@@ -165,17 +176,9 @@ def main():
         return 0
 
     for bucket in buckets:
-        if args.link_dest:
-            print(f"Linking bucket {bucket.id} to {args.link_dest}")
-            for file_info in bucket.contents:
-                source = file_info.name
-                destination = os.path.join(
-                    args.link_dest, f"{bucket.id:03d}", source
-                )
-                os.makedirs(
-                    os.path.dirname(destination), mode=0o700, exist_ok=True
-                )
-                os.link(source, destination)
+        if args.link_destination:
+            print(f"=> Linking bucket {bucket.id} to {args.link_destination}")
+            bucket.link(args.link_destination)
         else:
             print(f"{bucket}\n")
 
