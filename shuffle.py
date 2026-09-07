@@ -44,7 +44,6 @@ def main():
     random.shuffle(file_list)
 
     for file in file_list:
-        append_file = True
         has_placeholder = any("{}" in arg for arg in args.command)
         command = [arg.replace("{}", file) for arg in args.command]
         if not has_placeholder:
