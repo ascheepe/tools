@@ -51,7 +51,7 @@ def main():
 
         print(f"==> {" ".join(command)}")
         try:
-            subprocess.run(command, capture_output=True, check=True)
+            subprocess.run(command, check=True)
         except Exception as e:
             print(e, file=sys.stderr)
             return 1
