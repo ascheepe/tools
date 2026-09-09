@@ -45,8 +45,10 @@ def main():
 
     for file in file_list:
         has_placeholder = any("{}" in arg for arg in args.command)
-        command = [arg.replace("{}", file) for arg in args.command]
-        if not has_placeholder:
+        if has_placeholder:
+            command = [arg.replace("{}", file) for arg in args.command]
+        else:
+            command = args.command
             command.append(file)
 
         print(f"==> {" ".join(command)}")
