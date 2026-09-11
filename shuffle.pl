@@ -9,8 +9,6 @@ use List::Util qw(shuffle);
 sub main {
     my $path = ".";
     my $extension;
-    my @command;
-    my @files;
 
     GetOptions(
         "extension=s" => \$extension,
@@ -21,6 +19,7 @@ sub main {
         $extension = lc(".$extension");
     }
 
+    my @files;
     File::Find::find(
         sub {
             return if !-f;
@@ -35,8 +34,9 @@ sub main {
     @files = shuffle @files;
 
     foreach my $file (@files) {
-        @command = @ARGV;
+        my @command = @ARGV;
         my $has_placeholder = grep { /\{\}/ } @command;
+
         if ($has_placeholder) {
             map { s/\{\}/$file/ } @command;
         }
